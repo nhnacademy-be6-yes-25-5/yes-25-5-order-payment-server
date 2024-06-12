@@ -20,23 +20,6 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: make application.yml
-        if: always()
-        run: |
-          mkdir -p ./src/main/resources
-          touch ./src/main/resources/application.yml
-          touch ./src/main/resources/application-dev.yml
-          touch ./src/main/resources/application-prod.yml
-        shell: bash
-
-      - name: deliver application.yml
-        if: always()
-        run: |
-          echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
-          echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
-          echo "${{ secrets.APPLICATION_PROD }}" > ./src/main/resources/application-prod.yml
-        shell: bash
-
       - name: Execute SonarQube Analysis
         run: |
           mvn clean verify sonar:sonar \
