@@ -21,21 +21,20 @@ jobs:
           cache: 'maven'
 
       - name: make application.yml
+        if: always()
         run: |
+          mkdir -p ./src/main/resources
           touch ./src/main/resources/application.yml
           touch ./src/main/resources/application-dev.yml
           touch ./src/main/resources/application-prod.yml
-          echo "application.yml, application-dev.yml, application-prod.yml files created"
         shell: bash
 
       - name: deliver application.yml
+        if: always()
         run: |
           echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
           echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
           echo "${{ secrets.APPLICATION_PROD }}" > ./src/main/resources/application-prod.yml
-          cat ./src/main/resources/application.yml
-          cat ./src/main/resources/application-dev.yml
-          cat ./src/main/resources/application-prod.yml
         shell: bash
 
       - name: Execute SonarQube Analysis
@@ -70,7 +69,7 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "testBot",
+              botName: "주문 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
               text: "주문 및 결제 서버의 Pull Request가 성공적으로 올라갔어요!",
               attachments: [
@@ -107,7 +106,7 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "testBot",
+              botName: "주문 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
               text: "주문 및 결제 서버의 Pull Request가 실패했어요...",
               attachments: [
@@ -116,3 +115,18 @@ jobs:
                   titleLink: process.env.PR_URL,
                   color: "red",
                   text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
+                }
+              ]
+            };
+
+            const response = await fetch(webhookUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              throw new Error(`Failed to send webhook: ${response.statusText}`);
+            }
