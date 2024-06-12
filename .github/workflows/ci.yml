@@ -1,0 +1,129 @@
+name: Java CI with Maven
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Execute SonarQube Analysis
+        run: |
+          mvn clean verify sonar:sonar \
+          -Dsonar.projectKey=yes25-5-order-payment \
+          -Dsonar.projectName='yes25-5-order-payment' \
+          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
+          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+
+      - name: Test with Maven
+        run: mvn test --batch-mode --update-snapshots
+
+      - name: Build with Maven
+        run: mvn package --batch-mode
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          check_name: 'Maven Test Results'
+          junit_files: target/surefire-reports/**/*.xml
+
+      - name: make application.yml
+        run: |
+          touch ./src/main/resources/application.yml
+          touch ./src/main/resources/application-dev.yml
+          touch ./src/main/resources/application-prod.yml
+        shell: bash
+
+      - name: deliver application.yml
+        run: |
+          echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
+          echo "${{ secrets.APPLICATION_PROD }}" > ./src/main/resources/application-prod.yml
+        shell: bash
+
+      - name: Send Dooray Webhook on Success
+        if: success()
+        uses: actions/github-script@v6
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
+        with:
+          script: |
+            const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
+            const payload = {
+              botName: "testBot",
+              botIconImage: "https://www.tistory.com/favicon.ico",
+              text: "주문 및 결제 서버의 Pull Request가 성공적으로 올라갔어요!",
+              attachments: [
+                {
+                  title: "Pull Request URL",
+                  titleLink: process.env.PR_URL,
+                  color: "green",
+                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${github.actor}`
+                }
+              ]
+            };
+
+            const response = await fetch(webhookUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              throw new Error(`Failed to send webhook: ${response.statusText}`);
+            }
+
+      - name: Send Dooray Webhook on Failure
+        if: failure()
+        uses: actions/github-script@v6
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_ACTOR: ${{ github.actor }}
+          DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
+        with:
+          script: |
+            const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
+            const payload = {
+              botName: "testBot",
+              botIconImage: "https://www.tistory.com/favicon.ico",
+              text: "주문 및 결제 서버의 Pull Request가 실패했어요...",
+              attachments: [
+                {
+                  title: "Pull Request URL",
+                  titleLink: process.env.PR_URL,
+                  color: "red",
+                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
+                }
+              ]
+            };
+
+            const response = await fetch(webhookUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              throw new Error(`Failed to send webhook: ${response.statusText}`);
+            }
