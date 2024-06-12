@@ -42,6 +42,7 @@ jobs:
           junit_files: target/surefire-reports/**/*.xml
 
       - name: make application.yml
+        if: always()
         run: |
           touch ./src/main/resources/application.yml
           touch ./src/main/resources/application-dev.yml
@@ -49,6 +50,7 @@ jobs:
         shell: bash
 
       - name: deliver application.yml
+        if: always()
         run: |
           echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
           echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
