@@ -20,6 +20,24 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: make application.yml
+        run: |
+          touch ./src/main/resources/application.yml
+          touch ./src/main/resources/application-dev.yml
+          touch ./src/main/resources/application-prod.yml
+          echo "application.yml, application-dev.yml, application-prod.yml files created"
+        shell: bash
+
+      - name: deliver application.yml
+        run: |
+          echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
+          echo "${{ secrets.APPLICATION_PROD }}" > ./src/main/resources/application-prod.yml
+          cat ./src/main/resources/application.yml
+          cat ./src/main/resources/application-dev.yml
+          cat ./src/main/resources/application-prod.yml
+        shell: bash
+
       - name: Execute SonarQube Analysis
         run: |
           mvn clean verify sonar:sonar \
@@ -40,22 +58,6 @@ jobs:
         with:
           check_name: 'Maven Test Results'
           junit_files: target/surefire-reports/**/*.xml
-
-      - name: make application.yml
-        if: always()
-        run: |
-          touch ./src/main/resources/application.yml
-          touch ./src/main/resources/application-dev.yml
-          touch ./src/main/resources/application-prod.yml
-        shell: bash
-
-      - name: deliver application.yml
-        if: always()
-        run: |
-          echo "${{ secrets.APPLICATION }}" > ./src/main/resources/application.yml
-          echo "${{ secrets.APPLICATION_DEV }}" > ./src/main/resources/application-dev.yml
-          echo "${{ secrets.APPLICATION_PROD }}" > ./src/main/resources/application-prod.yml
-        shell: bash
 
       - name: Send Dooray Webhook on Success
         if: success()
@@ -114,18 +116,3 @@ jobs:
                   titleLink: process.env.PR_URL,
                   color: "red",
                   text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
-                }
-              ]
-            };
-
-            const response = await fetch(webhookUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-              throw new Error(`Failed to send webhook: ${response.statusText}`);
-            }
