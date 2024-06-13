@@ -1,7 +1,6 @@
 name: Java CD with Maven
 
 on:
-  # 필요 시, 수정합니다.
   push:
     branches: [ "develop" ]
 
@@ -24,7 +23,6 @@ jobs:
 
       - name: Deploy JAR on Remote Server
         env:
-          # CI 설정과 동일합니다.
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
@@ -35,15 +33,11 @@ jobs:
           chmod 400 ~/.ssh/github_rsa
           ssh-keyscan ${REMOTE_HOST} >> ~/.ssh/known_hosts
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
-        # jar 파일명은 본인의 jar 파일명으로 수정합니다.
           ps aux | grep yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{print $2}' | xargs kill -9
-        # 밑은 jar 파일 위치로 바꿉니다.
           cd order
-        # jar 파일명은 본인의 jar 파일명으로 수정합니다.
           nohup java -jar yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
           EOF
 
-      # 밑은 CI 설정과 동일합니다.
       - name: Send Deployment Status to Dooray
         if: success()
         uses: actions/github-script@v6
