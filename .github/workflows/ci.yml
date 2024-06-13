@@ -49,7 +49,7 @@ jobs:
           echo "${SSH_PRIVATE_KEY}" > ~/.ssh/github_rsa
           chmod 400 ~/.ssh/github_rsa
           cat ~/.ssh/github_rsa
-          scp -o StrictHostKeyChecking=no target/*.jar ${SSH_USER}@${SSH_HOST}:${REMOTE_DIR}
+          scp -o StrictHostKeyChecking=no target/*.jar ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}
 
       - name: Send Dooray Webhook on Success
         if: success()
