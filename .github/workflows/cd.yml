@@ -36,7 +36,7 @@ jobs:
           ls -l order
           ps aux | grep yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{print $2}' | xargs kill -9
           cd order
-          java -jar yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar
+          nohup java -jar yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar &
           EOF
 
       - name: Send Deployment Status to Dooray
