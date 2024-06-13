@@ -37,3 +37,6 @@ eureka:
     enabled: false
     fetchRegistry: false
     registerWithEureka: false
+
+jwt:
+  secret: this-is-secret-key-yeah-ho-hu-yea-yes-hi-bye
