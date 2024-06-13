@@ -9,5 +9,4 @@ public class Yes255OrderPaymentServerApplication {
     public static void main(String[] args) {
         SpringApplication.run(Yes255OrderPaymentServerApplication.class, args);
     }
-
 }
