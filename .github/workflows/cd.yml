@@ -1,8 +1,8 @@
 name: Java CI with Maven
 
 on:
-  pull_request:
-    branches: [ "develop" ]
+  push:
+    branches: [ "release" ]
 
 permissions: write-all
 
@@ -43,6 +43,29 @@ jobs:
         with:
           name: order-payment-jar
           path: target/*.jar
+
+      - name: Deploy to Remote Server
+        if: success()
+        env:
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_DEPLOY_PATH: ${{ secrets.REMOTE_DEPLOY_PATH }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST << 'EOF'
+          pkill -f 'yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar'
+          EOF
+
+          scp -i private_key.pem -o StrictHostKeyChecking=no target/yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar $REMOTE_USER@$REMOTE_HOST:$REMOTE_DEPLOY_PATH
+
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST << 'EOF'
+          nohup java -jar $REMOTE_DEPLOY_PATH/yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
+          EOF
+
+          rm private_key.pem
 
       - name: Send Dooray Webhook on Success
         if: success()
