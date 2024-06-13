@@ -48,7 +48,7 @@ jobs:
           mkdir -p ~/.ssh
           echo "${SSH_PRIVATE_KEY}" > ~/.ssh/github_rsa
           chmod 400 ~/.ssh/github_rsa
-          cat ~/.ssh/github_rsa
+          ssh ${SSH_USER}@${SSH_HOST}
           scp -o StrictHostKeyChecking=no target/*.jar ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}
 
       - name: Send Dooray Webhook on Success
