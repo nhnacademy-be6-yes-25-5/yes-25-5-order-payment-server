@@ -1,6 +1,7 @@
 name: Java CD with Maven
 
 on:
+  # 필요 시, 수정합니다.
   push:
     branches: [ "develop" ]
 
@@ -23,6 +24,7 @@ jobs:
 
       - name: Deploy JAR on Remote Server
         env:
+          # CI 설정과 동일합니다.
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
@@ -33,16 +35,21 @@ jobs:
           chmod 400 ~/.ssh/github_rsa
           ssh-keyscan ${REMOTE_HOST} >> ~/.ssh/known_hosts
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
+        # jar 파일명은 본인의 jar 파일명으로 수정합니다.
           ps aux | grep yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{print $2}' | xargs kill -9
+        # 밑은 jar 파일 위치로 바꿉니다.
           cd order
+        # jar 파일명은 본인의 jar 파일명으로 수정합니다.
           nohup java -jar yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
           EOF
 
+      # 밑은 CI 설정과 동일합니다.
       - name: Send Deployment Status to Dooray
         if: success()
         uses: actions/github-script@v6
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_ACTOR: ${{ github.actor }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
         with:
@@ -57,7 +64,7 @@ jobs:
                   title: "Pull Request URL",
                   titleLink: process.env.PR_URL,
                   color: "green",
-                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${github.actor}`
+                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
                 }
               ]
             };
