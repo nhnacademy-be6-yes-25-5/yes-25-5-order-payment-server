@@ -3,7 +3,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://133.186.241.167:3306/nhn_academy_34
     username: nhn_academy_34
-    password: ${MYSQL_PASSWORD}
+    password: ${YES25_5_MYSQL_PASSWORD}
   jpa:
     open-in-view: false
     show-sql: true
@@ -25,7 +25,7 @@ spring:
       host: 133.186.241.167
       port: 6379
       database: 34
-      password: ${REDIS_PASSWORD}
+      password: ${YES25_5_REDIS_PASSWORD}
 logging:
   level:
     org.hibernate.orm.jdbc.bind: trace
