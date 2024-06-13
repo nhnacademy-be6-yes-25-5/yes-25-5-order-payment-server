@@ -1,8 +1,8 @@
-name: Java CI with Maven
+name: Java CD with Maven
 
 on:
   push:
-    branches: [ "release" ]
+    branches: [ "develop" ]
 
 permissions: write-all
 
@@ -20,29 +20,11 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Execute SonarQube Analysis
-        run: |
-          mvn clean verify sonar:sonar \
-          -Dsonar.projectKey=yes25-5-order-payment \
-          -Dsonar.projectName='yes25-5-order-payment' \
-          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-
-      - name: Build with Maven
-        run: mvn package --batch-mode
-
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          check_name: 'Maven Test Results'
-          junit_files: target/surefire-reports/**/*.xml
-
-      - name: Upload JAR Artifact
-        uses: actions/upload-artifact@v3
+      - name: Download JAR Artifact
+        uses: actions/download-artifact@v3
         with:
           name: order-payment-jar
-          path: target/*.jar
+          path: ./target
 
       - name: Deploy to Remote Server
         if: success()
@@ -67,6 +49,9 @@ jobs:
 
           rm private_key.pem
 
+      - name: Install node-fetch
+        run: npm install node-fetch@2
+
       - name: Send Dooray Webhook on Success
         if: success()
         uses: actions/github-script@v6
@@ -76,11 +61,12 @@ jobs:
           DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
         with:
           script: |
+            const fetch = require('node-fetch');
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
               botName: "주문 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "주문 및 결제 서버의 Pull Request가 성공적으로 올라갔어요!",
+              text: "주문 및 결제 서버의 배포가 성공했어요!",
               attachments: [
                 {
                   title: "Pull Request URL",
@@ -113,11 +99,12 @@ jobs:
           DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
         with:
           script: |
+            const fetch = require('node-fetch');
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
               botName: "주문 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "주문 및 결제 서버의 Pull Request가 실패했어요...",
+              text: "주문 및 결제 서버의 배포가 실패했어요...",
               attachments: [
                 {
                   title: "Pull Request URL",
