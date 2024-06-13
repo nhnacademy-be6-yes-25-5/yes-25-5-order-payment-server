@@ -33,10 +33,9 @@ jobs:
           chmod 400 ~/.ssh/github_rsa
           ssh-keyscan ${REMOTE_HOST} >> ~/.ssh/known_hosts
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
-          ls -l order
           ps aux | grep yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{print $2}' | xargs kill -9
           cd order
-          nohup java -jar yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar &
+          nohup java -jar yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
           EOF
 
       - name: Send Deployment Status to Dooray
