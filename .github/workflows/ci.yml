@@ -20,6 +20,8 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      # SONAR_HOST_URL : 소나큐브 주소
+      # SONAR_TOKEN : 소나큐브 토큰
       - name: Execute SonarQube Analysis
         run: |
           mvn clean verify sonar:sonar \
@@ -40,6 +42,10 @@ jobs:
 
       - name: Upload JAR to Remote Server
         env:
+          # SSH_PRIVATE_KEY : 원격서버에서 만든 개인키(github_rsa). (github_rsa.pub 아닙니다!)
+          # SSH_USER : 원격서버 로그인 아이디 (nhnacademy)
+          # SSH_HOST : 원격서버 IP 주소 (133.186....)
+          # REMOTE_DIR : 배포할 jar 파일 위치 (없다면 mkdir로 만드시면 될 것 같아요.)
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
@@ -57,6 +63,7 @@ jobs:
         env:
           PR_URL: ${{ github.event.pull_request.html_url }}
           PR_TITLE: ${{ github.event.pull_request.title }}
+          # 두레이 훅 주소 (https://hook.dooray.com/services/3204376758577275363/3824312399885046720/ZqH6q36TRc6JoU4aGrKTNA)
           DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
         with:
           script: |
