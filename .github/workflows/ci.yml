@@ -44,6 +44,18 @@ jobs:
           name: order-payment-jar
           path: target/*.jar
 
+      - name: Upload JAR to Remote Server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/github_rsa
+          chmod 600 ~/.ssh/github_rsa
+          scp -o StrictHostKeyChecking=no target/*.jar ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}
+
       - name: Send Dooray Webhook on Success
         if: success()
         uses: actions/github-script@v6
@@ -63,7 +75,7 @@ jobs:
                   title: "Pull Request URL",
                   titleLink: process.env.PR_URL,
                   color: "green",
-                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${github.actor}`
+                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
                 }
               ]
             };

@@ -20,12 +20,6 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Download JAR Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: order-payment-jar
-          path: ./target
-
       - name: Deploy to Remote Server
         if: success()
         env:
@@ -49,9 +43,6 @@ jobs:
 
           rm private_key.pem
 
-      - name: Install node-fetch
-        run: npm install node-fetch@2
-
       - name: Send Dooray Webhook on Success
         if: success()
         uses: actions/github-script@v6
@@ -61,7 +52,6 @@ jobs:
           DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
         with:
           script: |
-            const fetch = require('node-fetch');
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
               botName: "주문 결제 서버 Bot",
@@ -72,7 +62,7 @@ jobs:
                   title: "Pull Request URL",
                   titleLink: process.env.PR_URL,
                   color: "green",
-                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${github.actor}`
+                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
                 }
               ]
             };
@@ -99,7 +89,6 @@ jobs:
           DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
         with:
           script: |
-            const fetch = require('node-fetch');
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
               botName: "주문 결제 서버 Bot",
