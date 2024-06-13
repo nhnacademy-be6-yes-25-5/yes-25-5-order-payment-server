@@ -2,8 +2,7 @@ name: Java CD with Maven
 
 on:
   push:
-    branches:
-      - release
+    branches: [ "develop" ]
 
 permissions: write-all
 
@@ -29,6 +28,10 @@ jobs:
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
         run: |
+          mkdir -p ~/.ssh
+          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/github_rsa
+          chmod 400 ~/.ssh/github_rsa
+          ssh-keyscan ${REMOTE_HOST} >> ~/.ssh/known_hosts
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
           pkill -f 'java -jar'
           nohup java -jar ${REMOTE_DIR}/your-app.jar > /dev/null 2>&1 &
