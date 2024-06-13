@@ -38,11 +38,18 @@ jobs:
           check_name: 'Maven Test Results'
           junit_files: target/surefire-reports/**/*.xml
 
-      - name: Upload JAR Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: order-payment-jar
-          path: target/*.jar
+      - name: Upload JAR to Remote Server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/github_rsa
+          chmod 400 ~/.ssh/github_rsa
+          ssh-keyscan ${REMOTE_HOST} >> ~/.ssh/known_hosts
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no target/*.jar ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}
 
       - name: Send Dooray Webhook on Success
         if: success()
@@ -63,7 +70,7 @@ jobs:
                   title: "Pull Request URL",
                   titleLink: process.env.PR_URL,
                   color: "green",
-                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${github.actor}`
+                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
                 }
               ]
             };

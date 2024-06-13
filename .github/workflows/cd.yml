@@ -1,17 +1,19 @@
-name: Java CI with Maven
+name: Java CD with Maven
 
 on:
   push:
-    branches: [ "release" ]
+    branches:
+      - release
 
 permissions: write-all
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
       - name: Set up JDK 21
         uses: actions/setup-java@v3
@@ -20,54 +22,19 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Execute SonarQube Analysis
-        run: |
-          mvn clean verify sonar:sonar \
-          -Dsonar.projectKey=yes25-5-order-payment \
-          -Dsonar.projectName='yes25-5-order-payment' \
-          -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
-          -Dsonar.token=${{ secrets.SONAR_TOKEN }}
-
-      - name: Build with Maven
-        run: mvn package --batch-mode
-
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          check_name: 'Maven Test Results'
-          junit_files: target/surefire-reports/**/*.xml
-
-      - name: Upload JAR Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: order-payment-jar
-          path: target/*.jar
-
-      - name: Deploy to Remote Server
-        if: success()
+      - name: Deploy JAR on Remote Server
         env:
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_USER: ${{ secrets.SSH_USER }}
-          REMOTE_DEPLOY_PATH: ${{ secrets.REMOTE_DEPLOY_PATH }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
         run: |
-          echo "$SSH_PRIVATE_KEY" > private_key.pem
-          chmod 600 private_key.pem
-
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST << 'EOF'
-          pkill -f 'yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar'
+          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
+          pkill -f 'java -jar'
+          nohup java -jar ${REMOTE_DIR}/your-app.jar > /dev/null 2>&1 &
           EOF
 
-          scp -i private_key.pem -o StrictHostKeyChecking=no target/yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar $REMOTE_USER@$REMOTE_HOST:$REMOTE_DEPLOY_PATH
-
-          ssh -i private_key.pem -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST << 'EOF'
-          nohup java -jar $REMOTE_DEPLOY_PATH/yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
-          EOF
-
-          rm private_key.pem
-
-      - name: Send Dooray Webhook on Success
+      - name: Send Deployment Status to Dooray
         if: success()
         uses: actions/github-script@v6
         env:
@@ -80,7 +47,7 @@ jobs:
             const payload = {
               botName: "주문 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "주문 및 결제 서버의 Pull Request가 성공적으로 올라갔어요!",
+              text: "주문 및 결제 서버의 배포가 성공적으로 완료되었습니다!",
               attachments: [
                 {
                   title: "Pull Request URL",
@@ -103,7 +70,7 @@ jobs:
               throw new Error(`Failed to send webhook: ${response.statusText}`);
             }
 
-      - name: Send Dooray Webhook on Failure
+      - name: Send Deployment Failure to Dooray
         if: failure()
         uses: actions/github-script@v6
         env:
@@ -117,7 +84,7 @@ jobs:
             const payload = {
               botName: "주문 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "주문 및 결제 서버의 Pull Request가 실패했어요...",
+              text: "주문 및 결제 서버의 배포가 실패했습니다...",
               attachments: [
                 {
                   title: "Pull Request URL",
