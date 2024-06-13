@@ -38,12 +38,6 @@ jobs:
           check_name: 'Maven Test Results'
           junit_files: target/surefire-reports/**/*.xml
 
-      - name: Upload JAR Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: order-payment-jar
-          path: target/*.jar
-
       - name: Upload JAR to Remote Server
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -53,7 +47,8 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           echo "${SSH_PRIVATE_KEY}" > ~/.ssh/github_rsa
-          chmod 600 ~/.ssh/github_rsa
+          chmod 400 ~/.ssh/github_rsa
+          cat ~/.ssh/github_rsa
           scp -o StrictHostKeyChecking=no target/*.jar ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}
 
       - name: Send Dooray Webhook on Success
