@@ -34,7 +34,7 @@ jobs:
           ssh-keyscan ${REMOTE_HOST} >> ~/.ssh/known_hosts
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
           pkill -f 'java -jar'
-          nohup java -jar ${REMOTE_DIR}/your-app.jar > /dev/null 2>&1 &
+          nohup java -jar ${REMOTE_DIR}/*.jar > /dev/null 2>&1 &
           EOF
 
       - name: Send Deployment Status to Dooray
