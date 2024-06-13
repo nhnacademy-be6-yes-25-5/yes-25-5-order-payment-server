@@ -46,7 +46,7 @@ jobs:
           REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
         run: |
           mkdir -p ~/.ssh
-          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/github_rsa
+          echo "${SSH_PRIVATE_KEY}" | tr -d '\r' | tr ' ' '\n' > ~/.ssh/github_rsa
           chmod 400 ~/.ssh/github_rsa
           cat ~/.ssh/github_rsa
           scp -o StrictHostKeyChecking=no target/*.jar ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}
