@@ -34,6 +34,8 @@ jobs:
           ssh-keyscan ${REMOTE_HOST} >> ~/.ssh/known_hosts
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
           ps aux | grep yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{print $2}' | xargs kill -9
+          mkdir -p /home/ubuntu/order/logs
+          chmod 777 /home/ubuntu/order/logs
           nohup java -jar yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar >> /home/ubuntu/order/logs/out.log 2>> /home/ubuntu/order/logs/err.log &
           EOF
 
