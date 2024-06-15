@@ -22,7 +22,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t yes-25-5-order-payment .
+          docker build -t yes-25-5-order-payment -f docker/Dockerfile .
 
       - name: Run Maven tests in Docker
         run: |
