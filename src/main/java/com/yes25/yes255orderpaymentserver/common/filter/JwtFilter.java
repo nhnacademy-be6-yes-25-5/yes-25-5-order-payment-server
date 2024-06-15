@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
 @RequiredArgsConstructor
-@Component
+//@Component
 public class JwtFilter extends GenericFilterBean {
     private final JwtProvider jwtProvider;
 

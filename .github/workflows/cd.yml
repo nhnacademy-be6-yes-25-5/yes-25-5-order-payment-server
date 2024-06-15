@@ -14,29 +14,53 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Deploy JAR on Remote Server
+      - name: Set up SSH
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_USER: ${{ secrets.SSH_USER }}
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
         run: |
           mkdir -p ~/.ssh
           echo "${SSH_PRIVATE_KEY}" > ~/.ssh/github_rsa
           chmod 400 ~/.ssh/github_rsa
-          ssh-keyscan ${REMOTE_HOST} >> ~/.ssh/known_hosts
-          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << 'EOF'
-          ps aux | grep yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar | grep -v grep | awk '{print $2}' | xargs kill -9
-          cd order
-          nohup java -jar yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar > /dev/null 2>&1 &
+          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Copy project files to Remote Server
+        env:
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+        run: |
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no pom.xml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/pom.xml
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src
+
+      - name: Check Dockerfile on Remote Server
+        env:
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+        run: |
+          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/Dockerfile"
+          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/pom.xml"
+          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/src"
+
+      - name: Deploy JAR on Remote Server
+        env:
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+        run: |
+          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << EOF
+            cd ${REMOTE_DIR}
+            if [ ! -f Dockerfile ]; then
+              echo "Dockerfile not found!"
+              exit 1
+            fi
+            docker build -t my-app .
+            docker stop my-app || true
+            docker rm my-app || true
+            docker run -d -p 8080:8080 --name my-app my-app
           EOF
+
 
       - name: Send Deployment Status to Dooray
         if: success()
@@ -50,7 +74,7 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "주문 결제 서버 Bot",
+              botName: "주문 및 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
               text: "주문 및 결제 서버의 배포가 성공적으로 완료되었습니다!",
               attachments: [
@@ -87,7 +111,7 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "주문 결제 서버 Bot",
+              botName: "주문 및 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
               text: "주문 및 결제 서버의 배포가 실패했습니다...",
               attachments: [

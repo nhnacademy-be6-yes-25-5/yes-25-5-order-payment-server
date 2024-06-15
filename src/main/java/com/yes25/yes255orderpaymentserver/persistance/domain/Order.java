@@ -5,9 +5,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -63,12 +66,16 @@ public class Order {
     @Column(name = "order_delivery_date", nullable = false)
     private LocalDateTime orderDeliveryDate;
 
+    @OneToMany(mappedBy = "order")
+    private List<OrderProduct> orderProducts = new ArrayList<>();
+
     @Builder
     public Order(Long orderId, Long customerId, LocalDateTime orderDate,
         BigDecimal orderTotalAmount,
         Boolean orderIsTakeout, LocalDateTime orderCreatedAt, LocalDateTime orderUpdatedAt,
         Long wrappingOptionId, Long orderStatusId, String addressRaw, String addressDetail,
-        String zipCode, LocalDateTime orderStartedAt, LocalDateTime orderDeliveryDate) {
+        String zipCode, LocalDateTime orderStartedAt, LocalDateTime orderDeliveryDate,
+        List<OrderProduct> orderProducts) {
         this.orderId = orderId;
         this.customerId = customerId;
         this.orderDate = orderDate;
@@ -83,5 +90,6 @@ public class Order {
         this.zipCode = zipCode;
         this.orderStartedAt = orderStartedAt;
         this.orderDeliveryDate = orderDeliveryDate;
+        this.orderProducts = orderProducts;
     }
 }

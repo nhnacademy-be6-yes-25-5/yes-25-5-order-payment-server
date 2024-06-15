@@ -1,9 +1,13 @@
 spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://133.186.241.167:3306/nhn_academy_16
-    username: nhn_academy_16
-    password: ${{ secrets.MYSQL_PASSWORD }}
+    url: jdbc:mysql://133.186.241.167:3306/be6_yes255
+    username: be6_yes255
+    password: ${YES25_5_MYSQL_PASSWORD}
   jpa:
     open-in-view: false
     show-sql: true
@@ -22,26 +26,28 @@ spring:
       mode: always
   data:
     redis:
-      host: "133.186.241.167"
+      host: 133.186.241.167
       port: 6379
       database: 34
-      password: ${{ secrets.MYSQL_PASSWORD }}
+      password: ${YES25_5_REDIS_PASSWORD}
+  application:
+    name: order-payment-server
 logging:
   level:
     org.hibernate.orm.jdbc.bind: trace
     org.springframework.transaction.interceptor: trace
-
-#jwt:
-#  secret: my-very-secure-and-long-secret-key-here-ha-ho-ye-a
-#  expiration: 86400000
-
-
 server:
-  port: 8786
-
+  port: 8071
 eureka:
   client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
-    fetchRegistry: true
-    registerWithEureka: true
+    enabled: false
+    fetchRegistry: false
+    registerWithEureka: false
+#    enabled: true
+#    fetchRegistry: true
+#    registerWithEureka: true
+#    serviceUrl:
+#      defaultZone: http://localhost:8761/eureka/
+
+jwt:
+  secret: this-is-secret-key-yeah-ho-hu-yea-yes-hi-bye

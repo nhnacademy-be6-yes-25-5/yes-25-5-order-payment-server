@@ -1,12 +1,8 @@
 package com.yes25.yes255orderpaymentserver.application.service;
 
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
 
-@Transactional
-@Service
-@Slf4j
-public class OrderService {
+public interface OrderService {
 
+    boolean processPayment(PreOrder fakeOrder);
 }

@@ -2,9 +2,9 @@ package com.yes25.yes255orderpaymentserver.common.exception;
 
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 
-public class BusinessException extends ApplicationException {
+public class PaymentException extends ApplicationException {
 
-    public BusinessException(ErrorStatus errorStatus) {
+    public PaymentException(ErrorStatus errorStatus) {
         super(errorStatus);
     }
 }
