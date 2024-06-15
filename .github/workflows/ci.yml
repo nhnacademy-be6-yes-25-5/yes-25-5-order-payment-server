@@ -15,14 +15,14 @@ jobs:
 
       - name: Verify Dockerfile exists
         run: |
-          if [ ! -f docker/Dockerfile ]; then
+          if [ ! -f Dockerfile ]; then
             echo "Dockerfile not found!"
             exit 1
           fi
 
       - name: Build Docker image
         run: |
-          docker build -t yes-25-5-order-payment -f docker/Dockerfile .
+          docker build -t yes-25-5-order-payment -f .
 
       - name: Run Maven tests in Docker
         run: |
