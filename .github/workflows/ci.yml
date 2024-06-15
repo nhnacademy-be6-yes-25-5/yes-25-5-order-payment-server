@@ -13,23 +13,35 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up JDK 21
-        uses: actions/setup-java@v3
-        with:
-          java-version: '21'
-          distribution: 'temurin'
-          cache: 'maven'
-
-      - name: Execute SonarQube Analysis
+      - name: Verify Dockerfile exists
         run: |
-          mvn clean verify sonar:sonar \
+          if [ ! -f Dockerfile ]; then
+            echo "Dockerfile not found!"
+            exit 1
+          fi
+
+      - name: Build Docker image
+        run: |
+          docker build -t yes-25-5-order-payment .
+
+      - name: Run Maven tests in Docker
+        run: |
+          docker run --rm yes-25-5-order-payment mvn clean verify sonar:sonar \
           -Dsonar.projectKey=yes25-5-order-payment \
           -Dsonar.projectName='yes25-5-order-payment' \
           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
           -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
-      - name: Build with Maven
-        run: mvn package --batch-mode
+      - name: Build Maven project in Docker
+        run: |
+          docker run --rm -v "$(pwd)":/app -w /app yes-25-5-order-payment mvn package
+
+      - name: Check if JAR file exists
+        run: |
+          if [ ! -f target/*.jar ]; then
+            echo "JAR file not found!"
+            exit 1
+          fi
 
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
