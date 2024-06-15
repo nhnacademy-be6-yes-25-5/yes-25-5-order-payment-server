@@ -4,15 +4,14 @@
 FROM maven:3.8.8-eclipse-temurin-21
 
 # Set the working directory
-# 이 부분 사용자의 디렉토리에 맞게 수정
 WORKDIR /orders-payments
 
 # Copy the pom.xml and download dependencies
-COPY pom.xml .
+COPY ../pom.xml .
 RUN mvn dependency:go-offline
 
 # Copy the rest of the application code
-COPY . .
+COPY docker .
 
 # Build the application
 RUN mvn package

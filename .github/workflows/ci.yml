@@ -15,7 +15,7 @@ jobs:
 
       - name: Verify Dockerfile exists
         run: |
-          if [ ! -f Dockerfile ]; then
+          if [ ! -f docker/Dockerfile ]; then
             echo "Dockerfile not found!"
             exit 1
           fi
