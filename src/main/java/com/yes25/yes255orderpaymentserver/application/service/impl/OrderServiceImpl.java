@@ -13,11 +13,15 @@ import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookReposi
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,5 +56,20 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderBookRepository.saveAll(orderBooks);
+    }
+
+    @Override
+    public Page<ReadUserOrderResponse> findByUserId(Long userId,
+        Pageable pageable) {
+        Page<Order> orders = orderRepository.findAllByCustomerIdOrderByOrderCreatedAtDesc(userId, pageable);
+
+        List<ReadUserOrderResponse> responses = orders.stream()
+            .map(order -> {
+                List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+                return ReadUserOrderResponse.fromEntity(order, orderBooks);
+            })
+            .toList();
+
+        return new PageImpl<>(responses, pageable, orders.getTotalElements());
     }
 }
