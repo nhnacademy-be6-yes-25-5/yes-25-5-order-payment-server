@@ -50,6 +50,7 @@ public class Order {
     private String zipCode;
 
     private LocalDateTime orderStartedAt;
+    private LocalDateTime orderCreatedAt;
 
     @Column(nullable = false)
     private LocalDateTime orderDeliveryAt;
@@ -72,7 +73,7 @@ public class Order {
     public Order(String orderId, Long customerId, LocalDateTime orderStartedAt,
         BigDecimal orderTotalAmount,
         Takeout takeout, OrderStatus orderStatus, String addressRaw, String addressDetail,
-        String zipCode, LocalDateTime orderDeliveryAt, List<OrderBook> orderBooks,
+        String zipCode, LocalDateTime orderCreatedAt, LocalDateTime orderDeliveryAt, List<OrderBook> orderBooks,
         String orderUserName, String orderUserEmail, String orderUserPhoneNumber,
         String receiveUserName, String receiveUserEmail, String receiveUserPhoneNumber,
         String reference, Long couponId, BigDecimal points) {
@@ -85,6 +86,7 @@ public class Order {
         this.addressRaw = addressRaw;
         this.addressDetail = addressDetail;
         this.zipCode = zipCode;
+        this.orderCreatedAt = orderCreatedAt;
         this.orderDeliveryAt = orderDeliveryAt;
         this.orderBooks = orderBooks;
         this.orderUserName = orderUserName;

@@ -101,6 +101,7 @@ public class PreOrder {
             .orderStatus(orderStatus)
             .takeout(takeout)
             .addressDetail(addressDetail)
+            .orderCreatedAt(LocalDateTime.now())
             .addressRaw(addressRaw)
             .zipCode(zipcode)
             .reference(reference)
