@@ -61,7 +61,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<ReadUserOrderResponse> findByUserId(Long userId,
         Pageable pageable) {
-        Page<Order> orders = orderRepository.findAllByCustomerIdOrderByOrderCreatedAt(userId, pageable);
+        Page<Order> orders = orderRepository.findAllByCustomerIdOrderByOrderCreatedAtDesc(userId, pageable);
 
         List<ReadUserOrderResponse> responses = orders.stream()
             .map(order -> {

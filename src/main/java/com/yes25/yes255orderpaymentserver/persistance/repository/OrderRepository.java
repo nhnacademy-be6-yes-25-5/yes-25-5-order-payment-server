@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OrderRepository extends JpaRepository<Order, String> {
 
-    Page<Order> findAllByCustomerIdOrderByOrderCreatedAt(Long userId, Pageable pageable);
+    Page<Order> findAllByCustomerIdOrderByOrderCreatedAtDesc(Long userId, Pageable pageable);
 }
