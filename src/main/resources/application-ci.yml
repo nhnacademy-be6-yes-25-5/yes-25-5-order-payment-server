@@ -40,11 +40,9 @@ server:
   port: 8071
 eureka:
   client:
-    enabled: true
-    fetchRegistry: true
-    registerWithEureka: true
-    serviceUrl:
-      defaultZone: http://133.186.153.195:8761/eureka/
+    enabled: false
+    fetchRegistry: false
+    registerWithEureka: false
 
 jwt:
   secret: this-is-secret-key-yeah-ho-hu-yea-yes-hi-bye

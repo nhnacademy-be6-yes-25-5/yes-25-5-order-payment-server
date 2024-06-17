@@ -3,7 +3,6 @@ package com.yes25.yes255orderpaymentserver.application.service.queue;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderResponse;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -17,9 +16,7 @@ public class OrderProducer {
     private final RabbitTemplate rabbitTemplate;
 
     public CreateOrderResponse sendCreateOrder(CreateOrderRequest request) {
-
-        String orderId = UUID.randomUUID().toString();
-        PreOrder preOrder = PreOrder.from(request, orderId);
+        PreOrder preOrder = PreOrder.from(request);
 
         rabbitTemplate.convertAndSend("preOrderExchange", "preOrderRoutingKey", preOrder);
         log.info("가주문이 발행되었습니다. : {}", preOrder);

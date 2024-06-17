@@ -2,9 +2,10 @@ package com.yes25.yes255orderpaymentserver.persistance.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
@@ -23,73 +24,77 @@ import lombok.NoArgsConstructor;
 public class Order {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
-    private Long orderId;
+    private String orderId;
 
     @Column(name = "order_customer_id")
     private Long customerId;
 
-    @Column(name = "order_date", nullable = false)
-    private LocalDateTime orderDate;
-
     @Column(name = "order_total_amount", nullable = false)
     private BigDecimal orderTotalAmount;
 
-    @Column(name = "order_is_takeout", nullable = false)
-    private Boolean orderIsTakeout;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "takeout_id")
+    private Takeout takeout;
 
-    @Column(name = "order_crated_at", nullable = false)
-    private LocalDateTime orderCreatedAt;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_status_id")
+    private OrderStatus orderStatus;
 
-    @Column(name = "order_updated_at")
-    private LocalDateTime orderUpdatedAt;
-
-    @Column(name = "wrapping_option_id")
-    private Long wrappingOptionId;
-
-    @Column(name = "order_status_id", nullable = false)
-    private Long orderStatusId;
-
-    @Column(name = "address_raw", nullable = false)
+    @Column(nullable = false)
     private String addressRaw;
 
-    @Column(name = "address_detail")
     private String addressDetail;
 
-    @Column(name = "zip_code", nullable = false, length = 20)
+    @Column(nullable = false)
     private String zipCode;
 
-    @Column(name = "order_started_at")
     private LocalDateTime orderStartedAt;
 
-    @Column(name = "order_delivery_date", nullable = false)
-    private LocalDateTime orderDeliveryDate;
+    @Column(nullable = false)
+    private LocalDateTime orderDeliveryAt;
 
     @OneToMany(mappedBy = "order")
-    private List<OrderProduct> orderProducts = new ArrayList<>();
+    private List<OrderBook> orderBooks = new ArrayList<>();
+
+    private String orderUserName;
+    private String orderUserEmail;
+    private String orderUserPhoneNumber;
+    private String receiveUserName;
+    private String receiveUserEmail;
+    private String receiveUserPhoneNumber;
+    private String reference;
+    private Long couponId;
+    private BigDecimal points;
+
 
     @Builder
-    public Order(Long orderId, Long customerId, LocalDateTime orderDate,
+    public Order(String orderId, Long customerId, LocalDateTime orderStartedAt,
         BigDecimal orderTotalAmount,
-        Boolean orderIsTakeout, LocalDateTime orderCreatedAt, LocalDateTime orderUpdatedAt,
-        Long wrappingOptionId, Long orderStatusId, String addressRaw, String addressDetail,
-        String zipCode, LocalDateTime orderStartedAt, LocalDateTime orderDeliveryDate,
-        List<OrderProduct> orderProducts) {
+        Takeout takeout, OrderStatus orderStatus, String addressRaw, String addressDetail,
+        String zipCode, LocalDateTime orderDeliveryAt, List<OrderBook> orderBooks,
+        String orderUserName, String orderUserEmail, String orderUserPhoneNumber,
+        String receiveUserName, String receiveUserEmail, String receiveUserPhoneNumber,
+        String reference, Long couponId, BigDecimal points) {
         this.orderId = orderId;
         this.customerId = customerId;
-        this.orderDate = orderDate;
+        this.orderStartedAt = orderStartedAt;
         this.orderTotalAmount = orderTotalAmount;
-        this.orderIsTakeout = orderIsTakeout;
-        this.orderCreatedAt = orderCreatedAt;
-        this.orderUpdatedAt = orderUpdatedAt;
-        this.wrappingOptionId = wrappingOptionId;
-        this.orderStatusId = orderStatusId;
+        this.takeout = takeout;
+        this.orderStatus = orderStatus;
         this.addressRaw = addressRaw;
         this.addressDetail = addressDetail;
         this.zipCode = zipCode;
-        this.orderStartedAt = orderStartedAt;
-        this.orderDeliveryDate = orderDeliveryDate;
-        this.orderProducts = orderProducts;
+        this.orderDeliveryAt = orderDeliveryAt;
+        this.orderBooks = orderBooks;
+        this.orderUserName = orderUserName;
+        this.orderUserEmail = orderUserEmail;
+        this.orderUserPhoneNumber = orderUserPhoneNumber;
+        this.receiveUserName = receiveUserName;
+        this.receiveUserEmail = receiveUserEmail;
+        this.receiveUserPhoneNumber = receiveUserPhoneNumber;
+        this.reference = reference;
+        this.couponId = couponId;
+        this.points = points;
     }
 }
