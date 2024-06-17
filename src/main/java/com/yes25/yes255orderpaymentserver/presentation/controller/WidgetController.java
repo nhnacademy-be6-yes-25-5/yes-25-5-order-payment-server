@@ -23,12 +23,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequiredArgsConstructor
-@RequestMapping("/orders")
+@RequestMapping("/payments")
 public class WidgetController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final RabbitTemplate rabbitTemplate;
 
+    // todo. 비즈니스 로직 분리
     @PostMapping("/confirm")
     public ResponseEntity<JSONObject> confirmPayment(@RequestBody String jsonBody)
         throws Exception {
