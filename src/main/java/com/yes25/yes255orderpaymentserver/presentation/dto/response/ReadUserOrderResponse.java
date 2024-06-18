@@ -3,6 +3,7 @@ package com.yes25.yes255orderpaymentserver.presentation.dto.response;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
@@ -10,7 +11,8 @@ import lombok.Builder;
 @Builder
 public record ReadUserOrderResponse(String orderId,
                                     List<Long> productIds,
-                                    LocalDateTime deliveryDate,
+                                    LocalDate orderCreatedAt,
+                                    LocalDate orderDeliveryAt,
                                     String receiveUserName,
                                     String receiveUserPhoneNumber,
                                     String orderAddress,
@@ -26,7 +28,8 @@ public record ReadUserOrderResponse(String orderId,
             .orderId(order.getOrderId())
             .productIds(productIds)
             .orderAddress(order.getAddressRaw() + " " + order.getAddressDetail())
-            .deliveryDate(order.getOrderDeliveryAt())
+            .orderCreatedAt(LocalDate.from(order.getOrderCreatedAt()))
+            .orderDeliveryAt(LocalDate.from(order.getOrderDeliveryAt()))
             .receiveUserName(order.getOrderUserName())
             .receiveUserPhoneNumber(order.getReceiveUserPhoneNumber())
             .reference(order.getReference())
