@@ -19,12 +19,9 @@ spring:
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost/boradoo
-    username: ${DEV_MYSQL_USERNAME}
-    password: ${DEV_MYSQL_PASSWORD}
-#    url: jdbc:mysql://133.186.241.167:3306/be6_yes255
-#    username: be6_yes255
-#    password: ${YES25_5_MYSQL_PASSWORD}
+    url: jdbc:mysql://133.186.241.167:3306/be6_yes255_order
+    username: be6_yes255
+    password: ${YES25_5_MYSQL_PASSWORD}
   jpa:
     open-in-view: false
     show-sql: true

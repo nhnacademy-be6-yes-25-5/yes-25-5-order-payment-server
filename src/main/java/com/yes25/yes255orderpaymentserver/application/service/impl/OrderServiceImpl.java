@@ -13,6 +13,7 @@ import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookReposi
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -58,18 +59,32 @@ public class OrderServiceImpl implements OrderService {
         orderBookRepository.saveAll(orderBooks);
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public Page<ReadUserOrderResponse> findByUserId(Long userId,
+    public Page<ReadUserOrderAllResponse> findByUserId(Long userId,
         Pageable pageable) {
         Page<Order> orders = orderRepository.findAllByCustomerIdOrderByOrderCreatedAtDesc(userId, pageable);
 
-        List<ReadUserOrderResponse> responses = orders.stream()
+        List<ReadUserOrderAllResponse> responses = orders.stream()
             .map(order -> {
                 List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
-                return ReadUserOrderResponse.fromEntity(order, orderBooks);
+                return ReadUserOrderAllResponse.fromEntity(order, orderBooks);
             })
             .toList();
 
         return new PageImpl<>(responses, pageable, orders.getTotalElements());
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public ReadUserOrderResponse findByOrderIdAndUserId(String orderId, Long userId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new EntityNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 엔티티를 찾을 수 없습니다. : " + orderId, 404, LocalDateTime.now())
+            ));
+
+        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+
+        return ReadUserOrderResponse.fromEntities(order, orderBooks);
     }
 }

@@ -4,6 +4,7 @@ import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.application.service.queue.OrderProducer;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -31,10 +32,16 @@ public class OrderController {
     }
 
     @GetMapping("/users/{userId}")
-    public ResponseEntity<Page<ReadUserOrderResponse>> findOrderByUserId(
+    public ResponseEntity<Page<ReadUserOrderAllResponse>> findAllOrderByUserId(
         Pageable pageable,
         @PathVariable Long userId) {
         return ResponseEntity.ok(orderService.findByUserId(userId, pageable));
+    }
+
+    @GetMapping("/{orderId}/users/{userId}")
+    public ResponseEntity<ReadUserOrderResponse> findByOrderIdAndUserId(@PathVariable String orderId,
+        @PathVariable Long userId) {
+        return ResponseEntity.ok(orderService.findByOrderIdAndUserId(orderId, userId));
     }
 
 }
