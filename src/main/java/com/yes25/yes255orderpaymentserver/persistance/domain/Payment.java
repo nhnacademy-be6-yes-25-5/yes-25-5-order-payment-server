@@ -22,6 +22,7 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
 
+    private String paymentKey;
     private BigDecimal paymentAmount;
     private LocalDateTime requestedAt;
     private LocalDateTime approveAt;
@@ -29,10 +30,11 @@ public class Payment {
     private String orderId;
 
     @Builder
-    public Payment(Long paymentId, BigDecimal paymentAmount, LocalDateTime requestedAt,
+    public Payment(Long paymentId, String paymentKey, BigDecimal paymentAmount, LocalDateTime requestedAt,
         LocalDateTime approveAt,
         String paymentMethod, String orderId) {
         this.paymentId = paymentId;
+        this.paymentKey = paymentKey;
         this.paymentAmount = paymentAmount;
         this.requestedAt = requestedAt;
         this.approveAt = approveAt;
@@ -47,6 +49,7 @@ public class Payment {
 
         return Payment.builder()
             .paymentAmount(BigDecimal.valueOf((Long) jsonObject.get("totalAmount")))
+            .paymentKey((String) jsonObject.get("paymentKey"))
             .approveAt(approvedAt)
             .requestedAt(requestedAt)
             .paymentMethod((String) jsonObject.get("method"))

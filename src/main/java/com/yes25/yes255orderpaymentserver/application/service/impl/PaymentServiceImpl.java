@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
+import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentService;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
@@ -33,7 +34,6 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) {
-
         String widgetSecretKey = "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6";
         Base64.Encoder encoder = Base64.getEncoder();
         byte[] encodedBytes = encoder.encode(
@@ -74,9 +74,10 @@ public class PaymentServiceImpl implements PaymentService {
 
     private Payment savePayment(JSONObject jsonObject) {
         Payment payment = Payment.from(jsonObject);
+        SuccessPaymentResponse response = SuccessPaymentResponse.fromEntity(payment);
 
         log.info("결제가 성공적으로 이루어졌습니다. {}", payment);
-        rabbitTemplate.convertAndSend("paymentExchange", "paymentRoutingKey", payment.getOrderId());
+        rabbitTemplate.convertAndSend("paymentExchange", "paymentRoutingKey", response);
 
         return paymentRepository.save(payment);
     }

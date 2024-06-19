@@ -58,6 +58,9 @@ public class Order {
     @OneToMany(mappedBy = "order")
     private List<OrderBook> orderBooks = new ArrayList<>();
 
+    @Column(nullable = false)
+    private BigDecimal purePrice;
+
     private String orderUserName;
     private String orderUserEmail;
     private String orderUserPhoneNumber;
@@ -74,7 +77,7 @@ public class Order {
         BigDecimal orderTotalAmount,
         Takeout takeout, OrderStatus orderStatus, String addressRaw, String addressDetail,
         String zipCode, LocalDateTime orderCreatedAt, LocalDateTime orderDeliveryAt, List<OrderBook> orderBooks,
-        String orderUserName, String orderUserEmail, String orderUserPhoneNumber,
+        BigDecimal purePrice, String orderUserName, String orderUserEmail, String orderUserPhoneNumber,
         String receiveUserName, String receiveUserEmail, String receiveUserPhoneNumber,
         String reference, Long couponId, BigDecimal points) {
         this.orderId = orderId;
@@ -89,6 +92,7 @@ public class Order {
         this.orderCreatedAt = orderCreatedAt;
         this.orderDeliveryAt = orderDeliveryAt;
         this.orderBooks = orderBooks;
+        this.purePrice = purePrice;
         this.orderUserName = orderUserName;
         this.orderUserEmail = orderUserEmail;
         this.orderUserPhoneNumber = orderUserPhoneNumber;

@@ -15,6 +15,7 @@ import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepo
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderBookRepository orderBookRepository;
 
     @Override
-    public void save(PreOrder preOrder) {
+    public void createOrder(PreOrder preOrder, BigDecimal purePrice) {
+        log.info("결제가 완료되어 주문을 확정하는 중입니다. : {}", preOrder);
         OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(OrderStatusType.WAIT.name())
             .orElseThrow(() -> new EntityNotFoundException(
                 ErrorStatus.toErrorStatus("주문 상태를 찾을 수 없습니다.", 404, LocalDateTime.now())));
@@ -47,7 +49,7 @@ public class OrderServiceImpl implements OrderService {
             .orElseThrow(() -> new EntityNotFoundException(
                 ErrorStatus.toErrorStatus("포장 정보를 찾을 수 없습니다.", 404, LocalDateTime.now())));
 
-        Order order = preOrder.toEntity(orderStatus, takeout);
+        Order order = preOrder.toEntity(orderStatus, takeout, purePrice);
         Order savedOrder = orderRepository.save(order);
 
         List<OrderBook> orderBooks = new ArrayList<>();

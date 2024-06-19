@@ -2,8 +2,12 @@ package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import com.yes25.yes255orderpaymentserver.application.service.PolicyService;
 import com.yes25.yes255orderpaymentserver.persistance.domain.ShippingPolicy;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
 import com.yes25.yes255orderpaymentserver.persistance.repository.ShippingPolicyRepository;
-import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadShippingPolicyAllResponse;
+import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadShippingPolicyResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadTakeoutResponse;
+import java.math.BigDecimal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,15 +22,32 @@ import org.springframework.transaction.annotation.Transactional;
 public class PolicyServiceImpl implements PolicyService {
 
     private final ShippingPolicyRepository shippingPolicyRepository;
+    private final TakeoutRepository takeoutRepository;
 
     @Override
-    public Page<ReadShippingPolicyAllResponse> findAllShippingPolicy(Pageable pageable) {
+    public Page<ReadShippingPolicyResponse> findAllShippingPolicy(Pageable pageable) {
         Page<ShippingPolicy> shippingPolicies = shippingPolicyRepository.findAll(pageable);
 
-        List<ReadShippingPolicyAllResponse> responses = shippingPolicies.stream()
-            .map(ReadShippingPolicyAllResponse::fromEntity)
+        List<ReadShippingPolicyResponse> responses = shippingPolicies.stream()
+            .map(ReadShippingPolicyResponse::fromEntity)
             .toList();
 
         return new PageImpl<>(responses, pageable, shippingPolicies.getTotalElements());
+    }
+
+    @Override
+    public ReadShippingPolicyResponse findFreeShippingPolicy() {
+        ShippingPolicy shippingPolicy = shippingPolicyRepository.findByShippingPolicyFee(BigDecimal.ZERO);
+
+        return ReadShippingPolicyResponse.fromEntity(shippingPolicy);
+    }
+
+    @Override
+    public List<ReadTakeoutResponse> findAllTakeoutPolicy() {
+        List<Takeout> takeouts =  takeoutRepository.findAll();
+
+        return takeouts.stream()
+            .map(ReadTakeoutResponse::fromEntity)
+            .toList();
     }
 }
