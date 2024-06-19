@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PreOrder {
 
-    private String orderId;
+    private String preOrderId;
     private List<Long> bookIds;
     private List<Integer> quantities;
     private List<BigDecimal> prices;
@@ -37,13 +37,13 @@ public class PreOrder {
     private BigDecimal points;
 
     @Builder
-    public PreOrder(String orderId, List<Long> bookIds, List<Integer> quantities,
+    public PreOrder(String preOrderId, List<Long> bookIds, List<Integer> quantities,
         List<BigDecimal> prices, Long userId, BigDecimal orderTotalAmount,
         TakeoutType takeoutType, String addressRaw, String addressDetail, String zipcode,
         String reference, LocalDateTime orderedDate, LocalDateTime deliveryDate, String orderUserName,
         String orderUserEmail, String orderUserPhoneNumber, String receiveName, String receiveEmail,
         String receivePhoneNumber, Long couponId, BigDecimal points) {
-        this.orderId = orderId;
+        this.preOrderId = preOrderId;
         this.bookIds = bookIds;
         this.quantities = quantities;
         this.prices = prices;
@@ -68,7 +68,7 @@ public class PreOrder {
 
     public static PreOrder from(CreateOrderRequest request) {
         return PreOrder.builder()
-            .orderId(request.orderId())
+            .preOrderId(request.orderId())
             .bookIds(request.productIds())
             .quantities(request.quantities())
             .prices(request.prices())
@@ -94,7 +94,7 @@ public class PreOrder {
 
     public Order toEntity(OrderStatus orderStatus, Takeout takeout) {
         return Order.builder()
-            .orderId(orderId)
+            .orderId(preOrderId)
             .customerId(userId)
             .orderTotalAmount(orderTotalAmount)
             .orderDeliveryAt(orderedDate)

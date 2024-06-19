@@ -2,8 +2,11 @@ package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import com.yes25.yes255orderpaymentserver.application.service.PolicyService;
 import com.yes25.yes255orderpaymentserver.persistance.domain.ShippingPolicy;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
 import com.yes25.yes255orderpaymentserver.persistance.repository.ShippingPolicyRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadShippingPolicyResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadTakeoutResponse;
 import java.math.BigDecimal;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PolicyServiceImpl implements PolicyService {
 
     private final ShippingPolicyRepository shippingPolicyRepository;
+    private final TakeoutRepository takeoutRepository;
 
     @Override
     public Page<ReadShippingPolicyResponse> findAllShippingPolicy(Pageable pageable) {
@@ -36,5 +40,14 @@ public class PolicyServiceImpl implements PolicyService {
         ShippingPolicy shippingPolicy = shippingPolicyRepository.findByShippingPolicyFee(BigDecimal.ZERO);
 
         return ReadShippingPolicyResponse.fromEntity(shippingPolicy);
+    }
+
+    @Override
+    public List<ReadTakeoutResponse> findAllTakeoutPolicy() {
+        List<Takeout> takeouts =  takeoutRepository.findAll();
+
+        return takeouts.stream()
+            .map(ReadTakeoutResponse::fromEntity)
+            .toList();
     }
 }
