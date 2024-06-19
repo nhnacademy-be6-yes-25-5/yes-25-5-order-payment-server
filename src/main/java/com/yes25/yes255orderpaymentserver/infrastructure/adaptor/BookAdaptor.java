@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(name = "bookAdaptor", url = "http://localhost:8081/books", configuration = FeignClientConfig.class)
+@FeignClient(name = "bookAdaptor", url = "http://localhost:8061/books", configuration = FeignClientConfig.class)
 public interface BookAdaptor {
 
     @PatchMapping("/{bookId}")

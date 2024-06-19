@@ -9,6 +9,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class Order {
     private LocalDateTime orderCreatedAt;
 
     @Column(nullable = false)
-    private LocalDateTime orderDeliveryAt;
+    private LocalDate orderDeliveryAt;
 
     @OneToMany(mappedBy = "order")
     private List<OrderBook> orderBooks = new ArrayList<>();
@@ -76,7 +77,7 @@ public class Order {
     public Order(String orderId, Long customerId, LocalDateTime orderStartedAt,
         BigDecimal orderTotalAmount,
         Takeout takeout, OrderStatus orderStatus, String addressRaw, String addressDetail,
-        String zipCode, LocalDateTime orderCreatedAt, LocalDateTime orderDeliveryAt, List<OrderBook> orderBooks,
+        String zipCode, LocalDateTime orderCreatedAt, LocalDate orderDeliveryAt, List<OrderBook> orderBooks,
         BigDecimal purePrice, String orderUserName, String orderUserEmail, String orderUserPhoneNumber,
         String receiveUserName, String receiveUserEmail, String receiveUserPhoneNumber,
         String reference, Long couponId, BigDecimal points) {

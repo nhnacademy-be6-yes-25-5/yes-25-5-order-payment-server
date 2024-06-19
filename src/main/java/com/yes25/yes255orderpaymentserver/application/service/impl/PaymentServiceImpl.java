@@ -34,7 +34,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) {
-        String widgetSecretKey = "test_gsk_docs_OaPz8L5KdmQXkzRz3y47BMw6";
+        String widgetSecretKey = "test_sk_ORzdMaqN3wEgQOngbW2qr5AkYXQG";
         Base64.Encoder encoder = Base64.getEncoder();
         byte[] encodedBytes = encoder.encode(
             (widgetSecretKey + ":").getBytes(StandardCharsets.UTF_8));

@@ -30,7 +30,7 @@ public class OrderProcessor {
     /**
      * @throws PaymentException 결제 완료 후, 결제의 preOrderId와 주문의 orderId가 일치하지 않으면 발생합니다.
      * 재고 확인 및 포인트 적립은 타 서버 완료 시 확인이 가능합니다. 현재는 주석처리 하였습니다.
-     * */
+     */
     @RabbitListener(queues = "paymentQueue")
     public void receivePayment(SuccessPaymentResponse response) {
         PreOrder preOrder = (PreOrder) rabbitTemplate.receiveAndConvert("preOrderQueue");
@@ -41,10 +41,10 @@ public class OrderProcessor {
                     LocalDateTime.now()), response.paymentKey());
         }
 
-//        for (int i = 0; i < preOrder.getBookIds().size(); i++) {
-//            bookAdaptor.decreaseStock(preOrder.getBookIds().get(i),
-//                preOrder.getQuantities().get(i));
-//        }
+        for (int i = 0; i < preOrder.getBookIds().size(); i++) {
+            bookAdaptor.decreaseStock(preOrder.getBookIds().get(i),
+                preOrder.getQuantities().get(i));
+        }
 
         BigDecimal purePrice = preOrder.calculatePurePrice();
 

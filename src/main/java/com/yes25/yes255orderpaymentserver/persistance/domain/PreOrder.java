@@ -3,6 +3,7 @@ package com.yes25.yes255orderpaymentserver.persistance.domain;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.TakeoutType;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.AccessLevel;
@@ -30,7 +31,7 @@ public class PreOrder {
     private String zipcode;
     private String reference;
     private LocalDateTime orderedDate;
-    private LocalDateTime deliveryDate;
+    private LocalDate deliveryDate;
     private String orderUserName;
     private String orderUserEmail;
     private String orderUserPhoneNumber;
@@ -43,7 +44,7 @@ public class PreOrder {
     public PreOrder(String preOrderId, List<Long> bookIds, List<Integer> quantities,
         List<BigDecimal> prices, Long userId, BigDecimal orderTotalAmount,
         BigDecimal discountPrice, TakeoutType takeoutType, String addressRaw, String addressDetail, String zipcode,
-        String reference, LocalDateTime orderedDate, LocalDateTime deliveryDate, String orderUserName,
+        String reference, LocalDateTime orderedDate, LocalDate deliveryDate, String orderUserName,
         String orderUserEmail, String orderUserPhoneNumber, String receiveName, String receiveEmail,
         String receivePhoneNumber, Long couponId, BigDecimal points, BigDecimal takeoutPrice,
         BigDecimal shippingFee) {
@@ -107,7 +108,8 @@ public class PreOrder {
             .orderId(preOrderId)
             .customerId(userId)
             .orderTotalAmount(orderTotalAmount)
-            .orderDeliveryAt(orderedDate)
+            .orderStartedAt(orderedDate)
+            .orderDeliveryAt(deliveryDate)
             .orderStatus(orderStatus)
             .takeout(takeout)
             .addressDetail(addressDetail)
