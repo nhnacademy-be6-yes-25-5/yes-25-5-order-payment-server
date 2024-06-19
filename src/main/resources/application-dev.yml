@@ -7,7 +7,7 @@ spring:
         retry:
           enabled: true
           initial-interval: 1000
-          max-attempts: 3
+          max-attempts: 5
           multiplier: 1.5
         default-requeue-rejected: false
     template:

@@ -21,7 +21,7 @@ public class OrderProducer {
         rabbitTemplate.convertAndSend("preOrderExchange", "preOrderRoutingKey", preOrder);
         log.info("가주문이 발행되었습니다. : {}", preOrder);
 
-        return CreateOrderResponse.fromRequest(preOrder.getPreOrderId());
+        return CreateOrderResponse.fromRequest(preOrder);
     }
 
 }

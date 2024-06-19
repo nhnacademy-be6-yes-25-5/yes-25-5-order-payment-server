@@ -2,7 +2,7 @@ package com.yes25.yes255orderpaymentserver.presentation.dto.request;
 
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.TakeoutType;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 
 public record CreateOrderRequest(String orderId,
@@ -19,7 +19,7 @@ public record CreateOrderRequest(String orderId,
                                  String addressDetail,
                                  String zipcode,
                                  String reference,
-                                 LocalDateTime deliveryDate,
+                                 LocalDate deliveryDate,
                                  String orderName,
                                  String orderEmail,
                                  String orderPhoneNumber,
