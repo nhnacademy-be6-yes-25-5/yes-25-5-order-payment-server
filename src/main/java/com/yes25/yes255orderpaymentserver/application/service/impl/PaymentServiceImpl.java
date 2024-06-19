@@ -2,7 +2,6 @@ package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentService;
-import com.yes25.yes255orderpaymentserver.application.service.queue.OrderProducer;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
@@ -35,7 +34,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final RabbitTemplate rabbitTemplate;
     private final PaymentRepository paymentRepository;
     private final BookAdaptor bookAdaptor;
-    private final OrderProducer orderProducer;
 
     @Value("${payment.secret}")
     private String paymentSecretKey;
