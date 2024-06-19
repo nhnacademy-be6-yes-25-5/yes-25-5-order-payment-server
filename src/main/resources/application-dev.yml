@@ -60,3 +60,6 @@ eureka:
 
 jwt:
   secret: this-is-secret-key-yeah-ho-hu-yea-yes-hi-bye
+
+payment:
+  secret: ${PAYMENT_SECRET}

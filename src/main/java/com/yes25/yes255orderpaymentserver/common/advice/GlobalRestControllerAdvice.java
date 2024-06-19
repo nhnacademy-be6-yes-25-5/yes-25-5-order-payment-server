@@ -22,8 +22,6 @@ public class GlobalRestControllerAdvice {
         return new ResponseEntity<>(errorStatus, errorStatus.toHttpStatus());
     }
 
-
-    // todo. 토스 클라이언트, 시크릿키 확인 후 구현 예정
     @ExceptionHandler(PaymentException.class)
     public ResponseEntity<ErrorStatus> handlePaymentException(PaymentException e) {
         ErrorStatus errorStatus = e.getErrorStatus();
