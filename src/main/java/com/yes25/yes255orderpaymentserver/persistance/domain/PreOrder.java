@@ -20,6 +20,10 @@ public class PreOrder {
     private List<BigDecimal> prices;
     private Long userId;
     private BigDecimal orderTotalAmount;
+    private BigDecimal discountPrice;
+    private BigDecimal points;
+    private BigDecimal takeoutPrice;
+    private BigDecimal shippingFee;
     private TakeoutType takeoutType;
     private String addressRaw;
     private String addressDetail;
@@ -34,21 +38,22 @@ public class PreOrder {
     private String receiveEmail;
     private String receivePhoneNumber;
     private Long couponId;
-    private BigDecimal points;
 
     @Builder
     public PreOrder(String preOrderId, List<Long> bookIds, List<Integer> quantities,
         List<BigDecimal> prices, Long userId, BigDecimal orderTotalAmount,
-        TakeoutType takeoutType, String addressRaw, String addressDetail, String zipcode,
+        BigDecimal discountPrice, TakeoutType takeoutType, String addressRaw, String addressDetail, String zipcode,
         String reference, LocalDateTime orderedDate, LocalDateTime deliveryDate, String orderUserName,
         String orderUserEmail, String orderUserPhoneNumber, String receiveName, String receiveEmail,
-        String receivePhoneNumber, Long couponId, BigDecimal points) {
+        String receivePhoneNumber, Long couponId, BigDecimal points, BigDecimal takeoutPrice,
+        BigDecimal shippingFee) {
         this.preOrderId = preOrderId;
         this.bookIds = bookIds;
         this.quantities = quantities;
         this.prices = prices;
         this.userId = userId;
         this.orderTotalAmount = orderTotalAmount;
+        this.discountPrice = discountPrice;
         this.takeoutType = takeoutType;
         this.addressRaw = addressRaw;
         this.addressDetail = addressDetail;
@@ -64,6 +69,8 @@ public class PreOrder {
         this.receivePhoneNumber = receivePhoneNumber;
         this.couponId = couponId;
         this.points = points;
+        this.takeoutPrice = takeoutPrice;
+        this.shippingFee = shippingFee;
     }
 
     public static PreOrder from(CreateOrderRequest request) {
@@ -89,10 +96,13 @@ public class PreOrder {
             .receivePhoneNumber(request.receivePhoneNumber())
             .couponId(request.couponId())
             .points(request.points())
+            .discountPrice(request.discountPrice())
+            .takeoutPrice(request.takeoutPrice())
+            .shippingFee(request.shippingFee())
             .build();
     }
 
-    public Order toEntity(OrderStatus orderStatus, Takeout takeout) {
+    public Order toEntity(OrderStatus orderStatus, Takeout takeout, BigDecimal purePrice) {
         return Order.builder()
             .orderId(preOrderId)
             .customerId(userId)
@@ -113,6 +123,7 @@ public class PreOrder {
             .receiveUserPhoneNumber(receivePhoneNumber)
             .couponId(couponId)
             .points(points)
+            .purePrice(purePrice)
             .build();
     }
 
@@ -123,5 +134,17 @@ public class PreOrder {
             .price(prices.get(index))
             .orderProductQuantity(quantities.get(index))
             .build();
+    }
+
+    public BigDecimal calculatePurePrice() {
+        BigDecimal discount = discountPrice != null ? discountPrice : BigDecimal.ZERO;
+        BigDecimal shipping = shippingFee != null ? shippingFee : BigDecimal.ZERO;
+        BigDecimal takeout = takeoutPrice != null ? takeoutPrice : BigDecimal.ZERO;
+        BigDecimal total = orderTotalAmount != null ? orderTotalAmount : BigDecimal.ZERO;
+
+        return total
+            .subtract(discount)
+            .subtract(shipping)
+            .subtract(takeout);
     }
 }

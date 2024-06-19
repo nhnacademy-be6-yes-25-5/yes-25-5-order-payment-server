@@ -8,6 +8,7 @@ import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.UserAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class OrderProcessor {
 
     /**
      * @throws PaymentException 결제 완료 후, 결제의 preOrderId와 주문의 orderId가 일치하지 않으면 발생합니다.
+     * 재고 확인 및 포인트 적립은 타 서버 완료 시 확인이 가능합니다. 현재는 주석처리 하였습니다.
      * */
     @RabbitListener(queues = "paymentQueue")
     public void receivePayment(SuccessPaymentResponse response) {
@@ -39,19 +41,19 @@ public class OrderProcessor {
                     LocalDateTime.now()), response.paymentKey());
         }
 
-        log.info("결제가 완료되어 가주문을 큐에서 꺼냈습니다. : {}", preOrder);
+//        for (int i = 0; i < preOrder.getBookIds().size(); i++) {
+//            bookAdaptor.decreaseStock(preOrder.getBookIds().get(i),
+//                preOrder.getQuantities().get(i));
+//        }
 
-        for (int i = 0; i < preOrder.getBookIds().size(); i++) {
-            bookAdaptor.decreaseStock(preOrder.getBookIds().get(i),
-                preOrder.getQuantities().get(i));
-        }
+        BigDecimal purePrice = preOrder.calculatePurePrice();
 
-        orderService.save(preOrder);
-        updatePoints(preOrder);
+        orderService.createOrder(preOrder, purePrice);
+//        updatePoints(preOrder, purePrice);
     }
 
-    private void updatePoints(PreOrder preOrder) {
-        UpdatePointRequest updatePointRequest = UpdatePointRequest.from(preOrder);
+    private void updatePoints(PreOrder preOrder, BigDecimal purePrice) {
+        UpdatePointRequest updatePointRequest = UpdatePointRequest.from(preOrder, purePrice);
         userAdaptor.updatePoint(preOrder.getUserId(), updatePointRequest);
     }
 }

@@ -20,17 +20,17 @@ public class PolicyController {
     private final PolicyService policyService;
 
     @GetMapping("/shipping")
-    public ApiResponse<Page<ReadShippingPolicyResponse>> findAll(Pageable pageable) {
+    public Page<ReadShippingPolicyResponse> findAll(Pageable pageable) {
         return ApiResponse.ok(policyService.findAllShippingPolicy(pageable));
     }
 
     @GetMapping("/shipping/free")
-    public ApiResponse<ReadShippingPolicyResponse> find() {
+    public ReadShippingPolicyResponse find() {
         return ApiResponse.ok(policyService.findFreeShippingPolicy());
     }
 
     @GetMapping("/takeout")
-    public ApiResponse<List<ReadTakeoutResponse>> findAll() {
+    public List<ReadTakeoutResponse> findAll() {
         return ApiResponse.ok(policyService.findAllTakeoutPolicy());
     }
 }

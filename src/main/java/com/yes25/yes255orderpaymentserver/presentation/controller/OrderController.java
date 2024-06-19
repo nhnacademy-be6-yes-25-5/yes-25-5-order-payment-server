@@ -2,6 +2,7 @@ package com.yes25.yes255orderpaymentserver.presentation.controller;
 
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.application.service.queue.OrderProducer;
+import com.yes25.yes255orderpaymentserver.presentation.dto.ApiResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
@@ -26,22 +27,22 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<CreateOrderResponse> createFakeOrder(
+    public CreateOrderResponse create(
         @RequestBody CreateOrderRequest request) {
-        return ResponseEntity.ok(orderProducer.sendCreateOrder(request));
+        return ApiResponse.ok(orderProducer.sendCreateOrder(request));
     }
 
     @GetMapping("/users/{userId}")
-    public ResponseEntity<Page<ReadUserOrderAllResponse>> findAllOrderByUserId(
+    public Page<ReadUserOrderAllResponse> findAllOrderByUserId(
         Pageable pageable,
         @PathVariable Long userId) {
-        return ResponseEntity.ok(orderService.findByUserId(userId, pageable));
+        return ApiResponse.ok(orderService.findByUserId(userId, pageable));
     }
 
     @GetMapping("/{orderId}/users/{userId}")
-    public ResponseEntity<ReadUserOrderResponse> findByOrderIdAndUserId(@PathVariable String orderId,
+    public ReadUserOrderResponse findByOrderIdAndUserId(@PathVariable String orderId,
         @PathVariable Long userId) {
-        return ResponseEntity.ok(orderService.findByOrderIdAndUserId(orderId, userId));
+        return ApiResponse.ok(orderService.findByOrderIdAndUserId(orderId, userId));
     }
 
 }

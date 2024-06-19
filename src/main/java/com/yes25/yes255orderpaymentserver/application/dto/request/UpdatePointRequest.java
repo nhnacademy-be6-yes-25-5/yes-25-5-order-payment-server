@@ -5,12 +5,13 @@ import java.math.BigDecimal;
 import lombok.Builder;
 
 @Builder
-public record UpdatePointRequest(BigDecimal usedPoints, BigDecimal amount) {
+public record UpdatePointRequest(BigDecimal usedPoints, BigDecimal amount, BigDecimal purePrice) {
 
-    public static UpdatePointRequest from(PreOrder preOrder) {
+    public static UpdatePointRequest from(PreOrder preOrder, BigDecimal purePrice) {
         return UpdatePointRequest.builder()
             .usedPoints(preOrder.getPoints())
             .amount(preOrder.getOrderTotalAmount())
+            .purePrice(purePrice)
             .build();
     }
 }

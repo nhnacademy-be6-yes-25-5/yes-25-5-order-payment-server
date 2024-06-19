@@ -1,6 +1,7 @@
 package com.yes25.yes255orderpaymentserver.presentation.controller;
 
 import com.yes25.yes255orderpaymentserver.application.service.PaymentService;
+import com.yes25.yes255orderpaymentserver.presentation.dto.ApiResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +22,9 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/confirm")
-    public ResponseEntity<CreatePaymentResponse> confirmPayment(@RequestBody CreatePaymentRequest request) {
+    public CreatePaymentResponse confirmPayment(@RequestBody CreatePaymentRequest request) {
         CreatePaymentResponse response = paymentService.createPayment(request);
 
-        return ResponseEntity.status(response.status())
-            .body(response);
+        return ApiResponse.ok(response);
     }
 }
