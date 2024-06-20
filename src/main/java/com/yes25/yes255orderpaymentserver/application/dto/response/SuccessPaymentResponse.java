@@ -2,7 +2,6 @@ package com.yes25.yes255orderpaymentserver.application.dto.response;
 
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
-import jakarta.persistence.criteria.CriteriaBuilder.In;
 import java.util.List;
 import lombok.Builder;
 

@@ -2,7 +2,6 @@ package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
-import com.yes25.yes255orderpaymentserver.application.service.event.OrderCreateEvent;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
@@ -23,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -40,7 +38,6 @@ public class OrderServiceImpl implements OrderService {
     private final OrderStatusRepository orderStatusRepository;
     private final TakeoutRepository takeoutRepository;
     private final OrderBookRepository orderBookRepository;
-    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     public void createOrder(PreOrder preOrder, BigDecimal purePrice, SuccessPaymentResponse response) {
@@ -63,7 +60,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderBookRepository.saveAll(orderBooks);
-        eventPublisher.publishEvent(OrderCreateEvent.of(preOrder, response));
     }
 
     @Transactional(readOnly = true)
