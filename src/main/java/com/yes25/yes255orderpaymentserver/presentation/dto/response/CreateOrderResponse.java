@@ -8,7 +8,8 @@ import lombok.Builder;
 public record CreateOrderResponse(String orderId,
                                   Integer totalAmount,
                                   List<Long> bookIds,
-                                  List<Integer> quantities) {
+                                  List<Integer> quantities,
+                                  Integer points) {
 
     public static CreateOrderResponse fromRequest(PreOrder preOrder) {
         return CreateOrderResponse.builder()
@@ -16,6 +17,7 @@ public record CreateOrderResponse(String orderId,
             .totalAmount(preOrder.getOrderTotalAmount().intValue())
             .bookIds(preOrder.getBookIds())
             .quantities(preOrder.getQuantities())
+            .points(preOrder.getPoints().intValue())
             .build();
     }
 }

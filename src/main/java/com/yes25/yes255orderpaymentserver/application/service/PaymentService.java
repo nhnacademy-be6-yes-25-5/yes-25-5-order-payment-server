@@ -7,5 +7,6 @@ public interface PaymentService {
 
     CreatePaymentResponse createPayment(CreatePaymentRequest request);
 
-    void cancelPayment(String paymentKey, String message);
+    void cancelPayment(String paymentKey, String cancelReason, Integer paymentAmount,
+        String orderId);
 }

@@ -17,4 +17,12 @@ public record StockRequest(List<Long> bookIdList, List<Integer> quantityList, Op
             .operationType(operationType)
             .build();
     }
+
+    public static StockRequest of(List<Long> bookIdList, List<Integer> quantityList, OperationType operationType) {
+        return StockRequest.builder()
+            .bookIdList(bookIdList)
+            .quantityList(quantityList)
+            .operationType(operationType)
+            .build();
+    }
 }

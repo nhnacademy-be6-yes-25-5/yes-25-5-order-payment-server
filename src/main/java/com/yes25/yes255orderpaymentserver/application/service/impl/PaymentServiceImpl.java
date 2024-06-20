@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
+import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
@@ -7,6 +8,7 @@ import com.yes25.yes255orderpaymentserver.application.service.PaymentService;
 import com.yes25.yes255orderpaymentserver.common.exception.FeignClientException;
 import com.yes25.yes255orderpaymentserver.common.exception.StockUnavailableException;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
+import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
@@ -38,6 +40,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final RabbitTemplate rabbitTemplate;
     private final PaymentRepository paymentRepository;
     private final BookAdaptor bookAdaptor;
+    private final TossAdaptor tossAdaptor;
 
     @Value("${payment.secret}")
     private String paymentSecretKey;
@@ -54,8 +57,12 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public void cancelPayment(String paymentKey, String message) {
+    public void cancelPayment(String paymentKey, String cancelReason, Integer cancelAmount,
+        String orderId) {
+        CancelPaymentRequest request = CancelPaymentRequest.from(cancelReason, cancelAmount);
+        String authorization = "Basic " + Base64.getEncoder().encodeToString((paymentSecretKey + ":").getBytes());
 
+        tossAdaptor.cancelPayment(paymentKey, request, authorization, orderId);
     }
 
     private CreatePaymentResponse processingPayment(CreatePaymentRequest request) {

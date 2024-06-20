@@ -12,6 +12,7 @@ import lombok.Builder;
 @Builder
 public record ReadUserOrderAllResponse(String orderId,
                                        List<Long> productIds,
+                                       List<Integer> quantities,
                                        LocalDate orderCreatedAt,
                                        LocalDate orderDeliveryAt,
                                        BigDecimal amount,
@@ -22,12 +23,17 @@ public record ReadUserOrderAllResponse(String orderId,
             .map(OrderBook::getBookId)
             .toList();
 
+        List<Integer> quantities = orderBooks.stream()
+            .map(OrderBook::getOrderProductQuantity)
+            .toList();
+
         return ReadUserOrderAllResponse.builder()
             .orderId(order.getOrderId())
             .orderCreatedAt(LocalDate.from(order.getOrderCreatedAt()))
             .orderDeliveryAt(LocalDate.from(order.getOrderDeliveryAt()))
             .productIds(productIds)
             .amount(order.getOrderTotalAmount())
+            .quantities(quantities)
             .orderStatusType(OrderStatusType.valueOf(order.getOrderStatus().getOrderStatusName()))
             .build();
     }
