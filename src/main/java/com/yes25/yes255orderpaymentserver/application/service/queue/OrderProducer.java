@@ -23,5 +23,4 @@ public class OrderProducer {
 
         return CreateOrderResponse.fromRequest(preOrder);
     }
-
 }
