@@ -96,7 +96,7 @@ public class PaymentServiceImpl implements PaymentService {
             if (isSuccess) {
                 Payment payment = savePayment(jsonObject);
                 log.info("결제가 성공적으로 이루어졌습니다. {}", payment);
-                sendPaymentDoneMessage(payment);
+                sendPaymentDoneMessage(payment, request);
             }
         } catch (Exception e) {
             log.error("error : ", e);
@@ -112,8 +112,8 @@ public class PaymentServiceImpl implements PaymentService {
         bookAdaptor.updateStock(stockRequest);
     }
 
-    private void sendPaymentDoneMessage(Payment payment) {
-        SuccessPaymentResponse response = SuccessPaymentResponse.fromEntity(payment);
+    private void sendPaymentDoneMessage(Payment payment, CreatePaymentRequest request) {
+        SuccessPaymentResponse response = SuccessPaymentResponse.of(payment, request);
 
         rabbitTemplate.convertAndSend("paymentExchange", "paymentRoutingKey", response);
     }
