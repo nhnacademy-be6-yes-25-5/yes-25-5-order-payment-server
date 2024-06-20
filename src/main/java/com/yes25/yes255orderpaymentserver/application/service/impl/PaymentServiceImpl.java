@@ -98,17 +98,14 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void checkAndDecreaseInStock(CreatePaymentRequest request) {
-        throw new StockUnavailableException(ErrorStatus.toErrorStatus("주문 부족", 409, LocalDateTime.now()), request.orderId());
+        List<DecreaseInStockRequest> decreaseInStockRequests = new ArrayList<>();
 
+        for (int i = 0; i < request.bookIds().size(); i++) {
+            DecreaseInStockRequest stockRequest = DecreaseInStockRequest.of(request.bookIds().get(i), request.quantities().get(i));
+            decreaseInStockRequests.add(stockRequest);
+        }
 
-//        List<DecreaseInStockRequest> decreaseInStockRequests = new ArrayList<>();
-//
-//        for (int i = 0; i < request.bookIds().size(); i++) {
-//            DecreaseInStockRequest stockRequest = DecreaseInStockRequest.of(request.bookIds().get(i), request.quantities().get(i));
-//            decreaseInStockRequests.add(stockRequest);
-//        }
-//
-//        bookAdaptor.decreaseStock(decreaseInStockRequests);
+        bookAdaptor.decreaseStock(decreaseInStockRequests);
     }
 
     private void sendPaymentDoneMessage(Payment payment) {
