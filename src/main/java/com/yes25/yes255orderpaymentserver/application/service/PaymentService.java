@@ -6,4 +6,6 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymen
 public interface PaymentService {
 
     CreatePaymentResponse createPayment(CreatePaymentRequest request);
+
+    void cancelPayment(String paymentKey, String message);
 }
