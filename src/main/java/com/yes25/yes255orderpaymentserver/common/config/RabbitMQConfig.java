@@ -31,6 +31,12 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue preOrderCancelQueue() {
+        return QueueBuilder.durable("cancelQueue")
+            .build();
+    }
+
+    @Bean
     public DirectExchange dlxExchange() {
         return new DirectExchange("dlxExchange");
     }
@@ -46,6 +52,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public DirectExchange cancelExchange() {
+        return new DirectExchange("cancelExchange");
+    }
+
+    @Bean
     public Queue dlqPreOrderQueue() {
         return new Queue("dlq.preOrderQueue");
     }
@@ -53,6 +64,13 @@ public class RabbitMQConfig {
     @Bean
     public Queue dlqPaymentQueue() {
         return new Queue("dlq.paymentQueue");
+    }
+
+    @Bean
+    public Binding cancelBinding(Queue preOrderCancelQueue, DirectExchange cancelExchange) {
+        return BindingBuilder.bind(preOrderCancelQueue)
+            .to(cancelExchange)
+            .with("cancelRoutingKey");
     }
 
     @Bean

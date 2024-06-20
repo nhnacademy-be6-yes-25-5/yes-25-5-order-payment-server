@@ -1,7 +1,11 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
+import com.yes25.yes255orderpaymentserver.application.dto.request.DecreaseInStockRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentService;
+import com.yes25.yes255orderpaymentserver.common.exception.FeignClientException;
+import com.yes25.yes255orderpaymentserver.common.exception.StockUnavailableException;
+import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
@@ -15,7 +19,10 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
@@ -40,7 +47,11 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) {
-        checkAndDecreaseInStock(request);
+        try {
+            checkAndDecreaseInStock(request);
+        } catch (FeignClientException e) {
+            throw new StockUnavailableException(e.getErrorStatus(), request.orderId());
+        }
 
         return processingPayment(request);
     }
@@ -87,10 +98,17 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void checkAndDecreaseInStock(CreatePaymentRequest request) {
-        for (int i = 0; i < request.bookIds().size(); i++) {
-            bookAdaptor.decreaseStock(request.bookIds().get(i),
-                request.quantities().get(i));
-        }
+        throw new StockUnavailableException(ErrorStatus.toErrorStatus("주문 부족", 409, LocalDateTime.now()), request.orderId());
+
+
+//        List<DecreaseInStockRequest> decreaseInStockRequests = new ArrayList<>();
+//
+//        for (int i = 0; i < request.bookIds().size(); i++) {
+//            DecreaseInStockRequest stockRequest = DecreaseInStockRequest.of(request.bookIds().get(i), request.quantities().get(i));
+//            decreaseInStockRequests.add(stockRequest);
+//        }
+//
+//        bookAdaptor.decreaseStock(decreaseInStockRequests);
     }
 
     private void sendPaymentDoneMessage(Payment payment) {

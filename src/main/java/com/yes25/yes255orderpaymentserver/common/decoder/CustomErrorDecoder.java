@@ -31,11 +31,11 @@ public class CustomErrorDecoder implements ErrorDecoder {
     }
 
     private Exception handleException(Response response, String responseBody) {
-        if (response.status() == 409) {
-            log.error("상품 재고가 부족합니다. {}", responseBody);
-            return new StockUnavailableException(
-                ErrorStatus.toErrorStatus(responseBody, response.status(), LocalDateTime.now()));
-        }
+//        if (response.status() == 409) {
+//            log.error("상품 재고가 부족합니다. {}", responseBody);
+//            return new StockUnavailableException(
+//                ErrorStatus.toErrorStatus(responseBody, response.status(), LocalDateTime.now()));
+//        }
 
         if (response.status() == 400) {
             log.error("클라이언트 요청에서 에러가 발생하였습니다. 상태 코드: 400, 응답 본문: {}", responseBody);

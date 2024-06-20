@@ -19,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class OrderProcessor {
+public class OrderConsumer {
 
     private final RabbitTemplate rabbitTemplate;
     private final OrderService orderService;
@@ -57,5 +57,26 @@ public class OrderProcessor {
     private void updatePoints(PreOrder preOrder, BigDecimal purePrice) {
         UpdatePointRequest updatePointRequest = UpdatePointRequest.from(preOrder, purePrice);
         userAdaptor.updatePoint(preOrder.getUserId(), updatePointRequest);
+    }
+
+    @RabbitListener(queues = "cancelQueue")
+    public void receiveCancelMessage(String orderId) {
+
+        boolean orderCancelled = false;
+
+        while (!orderCancelled) {
+            PreOrder preOrder = (PreOrder) rabbitTemplate.receiveAndConvert("preOrderQueue");
+
+            if (Objects.isNull(preOrder)) {
+                log.info("주문 정보를 가져오지 못했습니다. 큐에 더이상 메세지가 존재하지 않습니다.");
+
+                orderCancelled = true;
+            } else if (preOrder.getPreOrderId().equals(orderId)) {
+                log.info("재고가 부족하여 주문을 취소합니다. 주문 ID : {}", orderId);
+                orderCancelled = true;
+            } else {
+                rabbitTemplate.convertAndSend("preOrderExchange", "preOrderRoutingKey", preOrder);
+            }
+        }
     }
 }
