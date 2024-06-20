@@ -1,11 +1,11 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
-import com.yes25.yes255orderpaymentserver.application.dto.request.DecreaseInStockRequest;
+import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
+import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentService;
 import com.yes25.yes255orderpaymentserver.common.exception.FeignClientException;
 import com.yes25.yes255orderpaymentserver.common.exception.StockUnavailableException;
-import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
@@ -19,10 +19,7 @@ import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Base64;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
@@ -54,6 +51,11 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         return processingPayment(request);
+    }
+
+    @Override
+    public void cancelPayment(String paymentKey, String message) {
+
     }
 
     private CreatePaymentResponse processingPayment(CreatePaymentRequest request) {
@@ -97,15 +99,10 @@ public class PaymentServiceImpl implements PaymentService {
         return new CreatePaymentResponse(200);
     }
 
-    private void checkAndDecreaseInStock(CreatePaymentRequest request) {
-        List<DecreaseInStockRequest> decreaseInStockRequests = new ArrayList<>();
+    private void checkAndDecreaseInStock(CreatePaymentRequest paymentRequest) {
+        StockRequest stockRequest = StockRequest.of(paymentRequest, OperationType.DECREASE);
 
-        for (int i = 0; i < request.bookIds().size(); i++) {
-            DecreaseInStockRequest stockRequest = DecreaseInStockRequest.of(request.bookIds().get(i), request.quantities().get(i));
-            decreaseInStockRequests.add(stockRequest);
-        }
-
-        bookAdaptor.decreaseStock(decreaseInStockRequests);
+        bookAdaptor.updateStock(stockRequest);
     }
 
     private void sendPaymentDoneMessage(Payment payment) {

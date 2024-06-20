@@ -37,6 +37,14 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue orderDoneQueue() {
+        return QueueBuilder.durable("orderDoneQueue")
+            .withArgument("x-dead-letter-exchange", "dlxExchange")
+            .withArgument("x-dead-letter-routing-key", "dlx.orderDoneQueue")
+            .build();
+    }
+
+    @Bean
     public DirectExchange dlxExchange() {
         return new DirectExchange("dlxExchange");
     }
@@ -44,6 +52,11 @@ public class RabbitMQConfig {
     @Bean
     public DirectExchange paymentExchange() {
         return new DirectExchange("paymentExchange");
+    }
+
+    @Bean
+    public DirectExchange orderDoneExchange() {
+        return new DirectExchange("orderDoneExchange");
     }
 
     @Bean
@@ -58,12 +71,17 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue dlqPreOrderQueue() {
-        return new Queue("dlq.preOrderQueue");
+        return new Queue("dlx.preOrderQueue");
     }
 
     @Bean
     public Queue dlqPaymentQueue() {
-        return new Queue("dlq.paymentQueue");
+        return new Queue("dlx.paymentQueue");
+    }
+
+    @Bean
+    public Queue dlqOrderDoneQueue() {
+        return new Queue("dlx.orderDoneQueue");
     }
 
     @Bean
@@ -71,6 +89,13 @@ public class RabbitMQConfig {
         return BindingBuilder.bind(preOrderCancelQueue)
             .to(cancelExchange)
             .with("cancelRoutingKey");
+    }
+
+    @Bean
+    public Binding orderDoneBinding(Queue orderDoneQueue, DirectExchange orderDoneExchange) {
+        return BindingBuilder.bind(orderDoneQueue)
+            .to(orderDoneExchange)
+            .with("orderDoneRoutingKey");
     }
 
     @Bean
@@ -88,7 +113,7 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding dlqPreOrderBinding(Queue dlqPreOrderQueue, DirectExchange dlxExchange) {
+    public Binding dlxPreOrderBinding(Queue dlqPreOrderQueue, DirectExchange dlxExchange) {
         return BindingBuilder
             .bind(dlqPreOrderQueue)
             .to(dlxExchange)
@@ -96,11 +121,19 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding dlqPaymentBinding(Queue dlqPaymentQueue, DirectExchange dlxExchange) {
+    public Binding dlxPaymentBinding(Queue dlqPaymentQueue, DirectExchange dlxExchange) {
         return BindingBuilder
             .bind(dlqPaymentQueue)
             .to(dlxExchange)
             .with("dlx.paymentQueue");
+    }
+
+    @Bean
+    public Binding dlxOrderDoneBinding(Queue dlqOrderDoneQueue, DirectExchange dlxExchange) {
+        return BindingBuilder
+            .bind(dlqOrderDoneQueue)
+            .to(dlxExchange)
+            .with("dlx.orderDoneQueue");
     }
 
     @Bean

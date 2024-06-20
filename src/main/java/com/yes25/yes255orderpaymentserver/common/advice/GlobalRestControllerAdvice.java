@@ -28,6 +28,7 @@ public class GlobalRestControllerAdvice {
     @ExceptionHandler(PaymentException.class)
     public ResponseEntity<ErrorStatus> handlePaymentException(PaymentException e) {
         ErrorStatus errorStatus = e.getErrorStatus();
+        paymentService.cancelPayment(e.getPaymentKey(), e.getErrorStatus().message());
 
         return new ResponseEntity<>(errorStatus, errorStatus.toHttpStatus());
     }

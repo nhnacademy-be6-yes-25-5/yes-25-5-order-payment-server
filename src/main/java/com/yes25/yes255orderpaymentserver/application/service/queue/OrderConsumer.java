@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.application.service.queue;
 
+import com.yes25.yes255orderpaymentserver.application.dto.request.UpdatePointMessage;
 import com.yes25.yes255orderpaymentserver.application.dto.request.UpdatePointRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
@@ -24,6 +25,7 @@ public class OrderConsumer {
     private final RabbitTemplate rabbitTemplate;
     private final OrderService orderService;
     private final UserAdaptor userAdaptor;
+    private final OrderProducer orderProducer;
 
     /**
      * @throws PaymentException 결제 완료 후, 결제의 preOrderId와 주문의 orderId가 일치하지 않으면 발생합니다. 재고 확인 및 포인트
@@ -41,7 +43,7 @@ public class OrderConsumer {
 
         if (!preOrder.getPreOrderId().equals(response.orderId())) {
             log.error("주문 정보가 일치하지 않습니다.");
-                rabbitTemplate.convertAndSend("preOrderExchange", "preOrderRoutingKey", preOrder);
+            orderProducer.sendPreOrder(preOrder);
 
             throw new PaymentException(
                 ErrorStatus.toErrorStatus("결제 큐에서 해당하는 주문를 찾을 수 없습니다.", 404,
@@ -49,16 +51,23 @@ public class OrderConsumer {
         }
 
         BigDecimal purePrice = preOrder.calculatePurePrice();
-
         orderService.createOrder(preOrder, purePrice);
-//        updatePoints(preOrder, purePrice);
+        orderProducer.sendOrderDone(preOrder, purePrice);
     }
 
-    private void updatePoints(PreOrder preOrder, BigDecimal purePrice) {
-        UpdatePointRequest updatePointRequest = UpdatePointRequest.from(preOrder, purePrice);
-        userAdaptor.updatePoint(preOrder.getUserId(), updatePointRequest);
+
+    /**
+     * @param updatePointMessage 주문 확정을 알리는 메세지
+     * */
+    @RabbitListener(queues = "orderDoneQueue")
+    private void updatePoints(UpdatePointMessage updatePointMessage) {
+        UpdatePointRequest updatePointRequest = UpdatePointRequest.from(updatePointMessage);
+        userAdaptor.updatePoint(updatePointMessage.userId(), updatePointRequest);
     }
 
+    /**
+     * @param orderId 가주문 Id
+     * */
     @RabbitListener(queues = "cancelQueue")
     public void receiveCancelMessage(String orderId) {
 
