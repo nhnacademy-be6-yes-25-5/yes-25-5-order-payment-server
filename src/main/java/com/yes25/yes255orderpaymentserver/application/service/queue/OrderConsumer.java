@@ -1,8 +1,6 @@
 package com.yes25.yes255orderpaymentserver.application.service.queue;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
-import com.yes25.yes255orderpaymentserver.application.dto.request.UpdatePointMessage;
-import com.yes25.yes255orderpaymentserver.application.dto.request.UpdatePointRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
@@ -10,7 +8,6 @@ import com.yes25.yes255orderpaymentserver.application.service.PaymentService;
 import com.yes25.yes255orderpaymentserver.common.exception.PaymentException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
-import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.UserAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -31,7 +28,6 @@ public class OrderConsumer {
 
     private final RabbitTemplate rabbitTemplate;
     private final OrderService orderService;
-    private final UserAdaptor userAdaptor;
     private final BookAdaptor bookAdaptor;
     private final OrderProducer orderProducer;
     private final PaymentService paymentService;
@@ -73,15 +69,6 @@ public class OrderConsumer {
 
         bookAdaptor.updateStock(request);
         paymentService.cancelPayment(e.getPaymentKey(), "결제 내역과 일치하는 주문이 없음", e.getPaymentAmount(), e.getOrderId());
-    }
-
-    /**
-     * @param updatePointMessage 주문 확정을 알리는 메세지
-     */
-    @RabbitListener(queues = "orderDoneQueue")
-    private void updatePoints(UpdatePointMessage updatePointMessage) {
-        UpdatePointRequest updatePointRequest = UpdatePointRequest.from(updatePointMessage);
-        userAdaptor.updatePoint(updatePointMessage.userId(), updatePointRequest);
     }
 
     /**
