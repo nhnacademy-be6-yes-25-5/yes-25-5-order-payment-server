@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
+import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
@@ -39,7 +40,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderBookRepository orderBookRepository;
 
     @Override
-    public void createOrder(PreOrder preOrder, BigDecimal purePrice) {
+    public void createOrder(PreOrder preOrder, BigDecimal purePrice, SuccessPaymentResponse response) {
         log.info("결제가 완료되어 주문을 확정하는 중입니다. : {}", preOrder);
         OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(OrderStatusType.WAIT.name())
             .orElseThrow(() -> new EntityNotFoundException(
