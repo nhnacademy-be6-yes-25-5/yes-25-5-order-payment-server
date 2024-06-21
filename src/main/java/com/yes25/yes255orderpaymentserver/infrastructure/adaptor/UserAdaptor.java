@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "userAdaptor", url = "http://localhost:8085/users", configuration = FeignClientConfig.class)
+@FeignClient(name = "userAdaptor", url = "http://133.186.153.195:8085/users", configuration = FeignClientConfig.class)
 public interface UserAdaptor {
 
     @PatchMapping("{userId}")
