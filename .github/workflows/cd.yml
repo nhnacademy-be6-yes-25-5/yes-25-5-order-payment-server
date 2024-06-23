@@ -2,7 +2,7 @@ name: Java CD with Maven
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "develop", "main" ]
 
 permissions: write-all
 
@@ -32,6 +32,7 @@ jobs:
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no pom.xml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/pom.xml
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src/main/resources/application-prod.yml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/main/resources/application-prod.yml
 
       - name: Check Dockerfile on Remote Server
         env:
@@ -58,9 +59,8 @@ jobs:
             docker build -t my-app .
             docker stop my-app || true
             docker rm my-app || true
-            docker run -d -p 8080:8080 --name my-app my-app
+            docker run -d -p 8071:8071 --name orders-payments-app orders-payments-app --spring.profiles.active=prod
           EOF
-
 
       - name: Send Deployment Status to Dooray
         if: success()
