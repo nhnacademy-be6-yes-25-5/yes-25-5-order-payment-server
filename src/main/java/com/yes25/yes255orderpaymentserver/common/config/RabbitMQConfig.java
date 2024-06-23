@@ -23,12 +23,9 @@ public class RabbitMQConfig {
             .withArgument("x-dead-letter-routing-key", "dlx.preOrderQueue")
             .build();
     }
-
     @Bean
-    public Queue paymentQueue() {
-        return QueueBuilder.durable("paymentQueue")
-            .withArgument("x-dead-letter-exchange", "dlxExchange")
-            .withArgument("x-dead-letter-routing-key", "dlx.paymentQueue")
+    public Queue payQueue() {
+        return QueueBuilder.durable("payQueue")
             .build();
     }
 
@@ -51,9 +48,14 @@ public class RabbitMQConfig {
         return new DirectExchange("dlxExchange");
     }
 
+//    @Bean
+//    public DirectExchange paymentExchange() {
+//        return new DirectExchange("paymentExchange");
+//    }
+
     @Bean
-    public DirectExchange paymentExchange() {
-        return new DirectExchange("paymentExchange");
+    public DirectExchange payExchange() {
+        return new DirectExchange("payExchange");
     }
 
     @Bean
@@ -76,10 +78,10 @@ public class RabbitMQConfig {
         return new Queue("dlx.preOrderQueue");
     }
 
-    @Bean
-    public Queue dlqPaymentQueue() {
-        return new Queue("dlx.paymentQueue");
-    }
+//    @Bean
+//    public Queue dlqPaymentQueue() {
+//        return new Queue("dlx.paymentQueue");
+//    }
 
     @Bean
     public Queue dlqOrderDoneQueue() {
@@ -101,10 +103,10 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding paymentBinding(Queue paymentQueue, DirectExchange paymentExchange) {
-        return BindingBuilder.bind(paymentQueue)
-            .to(paymentExchange)
-            .with("paymentRoutingKey");
+    public Binding payBinding(Queue payQueue, DirectExchange payExchange) {
+        return BindingBuilder.bind(payQueue)
+            .to(payExchange)
+            .with("payRoutingKey");
     }
 
     @Bean
@@ -120,14 +122,6 @@ public class RabbitMQConfig {
             .bind(dlqPreOrderQueue)
             .to(dlxExchange)
             .with("dlx.preOrderQueue");
-    }
-
-    @Bean
-    public Binding dlxPaymentBinding(Queue dlqPaymentQueue, DirectExchange dlxExchange) {
-        return BindingBuilder
-            .bind(dlqPaymentQueue)
-            .to(dlxExchange)
-            .with("dlx.paymentQueue");
     }
 
     @Bean
