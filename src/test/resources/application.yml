@@ -25,3 +25,7 @@ jwt:
 
 payment:
   secret: this-is-secret-key-yeah
+
+api:
+  books-users: http://localhost:8061
+  coupon: http://localhost:8081
