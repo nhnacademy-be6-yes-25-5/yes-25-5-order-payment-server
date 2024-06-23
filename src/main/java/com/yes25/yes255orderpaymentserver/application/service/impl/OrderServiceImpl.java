@@ -1,9 +1,12 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
+import com.yes25.yes255orderpaymentserver.application.dto.response.ReadBookResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
+import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
+import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
@@ -14,6 +17,8 @@ import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookReposi
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
 import java.math.BigDecimal;
@@ -38,6 +43,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderStatusRepository orderStatusRepository;
     private final TakeoutRepository takeoutRepository;
     private final OrderBookRepository orderBookRepository;
+    private final BookAdaptor bookAdaptor;
 
     @Override
     public void createOrder(PreOrder preOrder, BigDecimal purePrice, SuccessPaymentResponse response) {
@@ -90,4 +96,39 @@ public class OrderServiceImpl implements OrderService {
 
         return ReadUserOrderResponse.fromEntities(order, orderBooks);
     }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<ReadPaymentOrderResponse> findAllOrderByOrderId(String orderId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new OrderNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. 주문 ID : " + orderId,
+                    404, LocalDateTime.now())
+            ));
+
+        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+        List<ReadBookResponse> responses = new ArrayList<>();
+        for (OrderBook orderBook : orderBooks) {
+            ReadBookResponse response = bookAdaptor.findBookById(orderBook.getBookId());
+            responses.add(response);
+        }
+
+        return responses.stream()
+            .map(ReadPaymentOrderResponse::fromDto)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public ReadOrderStatusResponse findOrderStatusByOrderId(String orderId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new OrderNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. 주문 ID : " + orderId,
+                    404, LocalDateTime.now())
+            ));
+
+        return ReadOrderStatusResponse.fromEntity(order);
+    }
+
+
 }
