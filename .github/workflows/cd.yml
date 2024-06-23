@@ -60,7 +60,7 @@ jobs:
             docker build -t orders-payments-app .
             docker stop orders-payments-app || true
             docker rm orders-payments-app || true
-            docker run -d -p 8071:8071 --name orders-payments-app orders-payments-app --spring.profiles.active=prod
+            docker run -d -p 8071:8071 --name orders-payments-app orders-payments-app
           EOF
 
       - name: Send Deployment Status to Dooray
@@ -75,9 +75,9 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "프론트1 서버 Bot",
+              botName: "주문 및 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "프론트1 서버의 배포가 성공적으로 완료되었습니다!",
+              text: "주문 및 결제 서버의 배포가 성공적으로 완료되었습니다!",
               attachments: [
                 {
                   title: "Pull Request URL",
@@ -112,9 +112,9 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "프론트1 서버 Bot",
+              botName: "주문 및 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "프론트1 서버의 배포가 실패했습니다...",
+              text: "주문 및 결제 서버의 배포가 실패했습니다...",
               attachments: [
                 {
                   title: "Pull Request URL",
@@ -126,7 +126,16 @@ jobs:
             };
 
             const response = await fetch(webhookUrl, {
-              method
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) {
+              throw new Error(`Failed to send webhook: ${response.statusText}`);
+            }
 
 
 #name: Java CD with Maven
@@ -176,76 +185,3 @@ jobs:
 #          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/src"
 #
 #
-#      - name: Send Deployment Status to Dooray
-#        if: success()
-#        uses: actions/github-script@v6
-#        env:
-#          PR_URL: ${{ github.event.pull_request.html_url }}
-#          PR_ACTOR: ${{ github.actor }}
-#          PR_TITLE: ${{ github.event.pull_request.title }}
-#          DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
-#        with:
-#          script: |
-#            const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
-#            const payload = {
-#              botName: "주문 및 결제 서버 Bot",
-#              botIconImage: "https://www.tistory.com/favicon.ico",
-#              text: "주문 및 결제 서버의 배포가 성공적으로 완료되었습니다!",
-#              attachments: [
-#                {
-#                  title: "Pull Request URL",
-#                  titleLink: process.env.PR_URL,
-#                  color: "green",
-#                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
-#                }
-#              ]
-#            };
-#
-#            const response = await fetch(webhookUrl, {
-#              method: 'POST',
-#              headers: {
-#                'Content-Type': 'application/json'
-#              },
-#              body: JSON.stringify(payload)
-#            });
-#
-#            if (!response.ok) {
-#              throw new Error(`Failed to send webhook: ${response.statusText}`);
-#            }
-#
-#      - name: Send Deployment Failure to Dooray
-#        if: failure()
-#        uses: actions/github-script@v6
-#        env:
-#          PR_URL: ${{ github.event.pull_request.html_url }}
-#          PR_TITLE: ${{ github.event.pull_request.title }}
-#          PR_ACTOR: ${{ github.actor }}
-#          DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
-#        with:
-#          script: |
-#            const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
-#            const payload = {
-#              botName: "주문 및 결제 서버 Bot",
-#              botIconImage: "https://www.tistory.com/favicon.ico",
-#              text: "주문 및 결제 서버의 배포가 실패했습니다...",
-#              attachments: [
-#                {
-#                  title: "Pull Request URL",
-#                  titleLink: process.env.PR_URL,
-#                  color: "red",
-#                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
-#                }
-#              ]
-#            };
-#
-#            const response = await fetch(webhookUrl, {
-#              method: 'POST',
-#              headers: {
-#                'Content-Type': 'application/json'
-#              },
-#              body: JSON.stringify(payload)
-#            });
-#
-#            if (!response.ok) {
-#              throw new Error(`Failed to send webhook: ${response.statusText}`);
-#            }
