@@ -62,6 +62,9 @@ eureka:
 
 jwt:
   secret: this-is-secret-key-yeah-ho-hu-yea-yes-hi-bye
+api:
+  books-users: ${BOOK_USER_SERVER}
+  coupon: ${COUPON_SERVER}
 
 payment:
   secret: ${PAYMENT_SECRET}

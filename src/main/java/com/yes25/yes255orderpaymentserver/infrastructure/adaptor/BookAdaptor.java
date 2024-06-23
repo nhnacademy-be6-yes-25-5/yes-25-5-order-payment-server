@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "bookAdaptor", url = "http://133.186.153.195:8085/books", configuration = FeignClientConfig.class)
+@FeignClient(name = "bookAdaptor", url = "${api.books-users}/books", configuration = FeignClientConfig.class)
 public interface BookAdaptor {
 
     @PatchMapping

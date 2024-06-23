@@ -63,5 +63,9 @@ eureka:
 jwt:
   secret: this-is-secret-key-yeah-ho-hu-yea-yes-hi-bye
 
+api:
+  books-users: http://localhost:8061
+  coupon: http://localhost:8081
+
 payment:
   secret: ${PAYMENT_SECRET}
