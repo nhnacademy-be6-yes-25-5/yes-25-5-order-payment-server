@@ -50,6 +50,14 @@ jobs:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+          YES25_5_MYSQL_PASSWORD: ${{ secrets.YES25_5_MYSQL_PASSWORD }}
+          YES25_5_REDIS_PASSWORD: ${{ secrets.YES25_5_REDIS_PASSWORD }}
+          PAYMENT_SECRET: ${{ secrets.PAYMENT_SECRET }}
+          EUREKA_SERVER_HOSTNAME: ${{ secrets.EUREKA_SERVER_HOSTNAME }}
+          EUREKA_GATEWAY_PORT: ${{ secrets.EUREKA_GATEWAY_PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          BOOK_USER_SERVER: ${{ secrets.BOOK_USER_SERVER }}
+          COUPON_SERVER: ${{ secrets.COUPON_SERVER }}
         run: |
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << EOF
             cd ${REMOTE_DIR}
@@ -60,7 +68,16 @@ jobs:
             docker build -t orders-payments-app .
             docker stop orders-payments-app || true
             docker rm orders-payments-app || true
-            docker run -d -p 8071:8071 --name orders-payments-app orders-payments-app
+            docker run -d -p 8071:8071 --name orders-payments-app \
+              -e YES25_5_MYSQL_PASSWORD=${YES25_5_MYSQL_PASSWORD} \
+              -e YES25_5_REDIS_PASSWORD=${YES25_5_REDIS_PASSWORD} \
+              -e PAYMENT_SECRET=${PAYMENT_SECRET} \
+              -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} \
+              -e EUREKA_GATEWAY_PORT=${EUREKA_GATEWAY_PORT} \
+              -e JWT_SECRET=${JWT_SECRET} \
+              -e BOOK_USER_SERVER=${BOOK_USER_SERVER} \
+              -e COUPON_SERVER=${COUPON_SERVER} \
+              orders-payments-app
           EOF
 
       - name: Send Deployment Status to Dooray
@@ -136,52 +153,3 @@ jobs:
             if (!response.ok) {
               throw new Error(`Failed to send webhook: ${response.statusText}`);
             }
-
-
-#name: Java CD with Maven
-#
-#on:
-#  push:
-#    branches: [ "develop", "main" ]
-#
-#permissions: write-all
-#
-#jobs:
-#  deploy:
-#    runs-on: ubuntu-latest
-#
-#    steps:
-#      - name: Checkout Repository
-#        uses: actions/checkout@v3
-#
-#      - name: Set up SSH
-#        env:
-#          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-#        run: |
-#          mkdir -p ~/.ssh
-#          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/github_rsa
-#          chmod 400 ~/.ssh/github_rsa
-#          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
-#
-#      - name: Copy project files to Remote Server
-#        env:
-#          REMOTE_USER: ${{ secrets.SSH_USER }}
-#          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-#          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
-#        run: |
-#          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile
-#          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no pom.xml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/pom.xml
-#          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src
-#          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src/main/resources/application-prod.yml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/main/resources/application-prod.yml
-#
-#      - name: Check Dockerfile on Remote Server
-#        env:
-#          REMOTE_USER: ${{ secrets.SSH_USER }}
-#          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-#          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
-#        run: |
-#          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/Dockerfile"
-#          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/pom.xml"
-#          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/src"
-#
-#
