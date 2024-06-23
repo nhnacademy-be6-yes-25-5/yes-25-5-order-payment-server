@@ -55,7 +55,6 @@ jobs:
           PAYMENT_SECRET: ${{ secrets.PAYMENT_SECRET }}
           EUREKA_SERVER_HOSTNAME: ${{ secrets.EUREKA_SERVER_HOSTNAME }}
           EUREKA_GATEWAY_PORT: ${{ secrets.EUREKA_GATEWAY_PORT }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
           BOOK_USER_SERVER: ${{ secrets.BOOK_USER_SERVER }}
           COUPON_SERVER: ${{ secrets.COUPON_SERVER }}
         run: |
@@ -68,13 +67,12 @@ jobs:
             docker build -t orders-payments-app .
             docker stop orders-payments-app || true
             docker rm orders-payments-app || true
-            docker run -d -p 8071:8071 --name orders-payments-app \
+            docker run -d -p 8072:8072 --name orders-payments-app \
               -e YES25_5_MYSQL_PASSWORD=${YES25_5_MYSQL_PASSWORD} \
               -e YES25_5_REDIS_PASSWORD=${YES25_5_REDIS_PASSWORD} \
               -e PAYMENT_SECRET=${PAYMENT_SECRET} \
               -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} \
               -e EUREKA_GATEWAY_PORT=${EUREKA_GATEWAY_PORT} \
-              -e JWT_SECRET=${JWT_SECRET} \
               -e BOOK_USER_SERVER=${BOOK_USER_SERVER} \
               -e COUPON_SERVER=${COUPON_SERVER} \
               orders-payments-app
