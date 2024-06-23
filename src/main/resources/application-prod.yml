@@ -1,7 +1,23 @@
 spring:
   rabbitmq:
-    host: localhost
+    host: 133.186.153.195
     port: 5672
+    listener:
+      simple:
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 5
+          multiplier: 1.5
+        default-requeue-rejected: false
+    template:
+      retry:
+        enabled: true
+        initial-interval: 1000
+        max-attempts: 3
+        multiplier: 1.5
+    username: yes255
+    password: yes255
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -21,9 +37,6 @@ spring:
     hibernate:
       ddl-auto: update
     defer-datasource-initialization: true
-  sql:
-    init:
-      mode: always
   data:
     redis:
       host: 133.186.241.167
@@ -34,6 +47,7 @@ spring:
     name: order-payment-server
 logging:
   level:
+    org.springframework.amqp.rabbit.listener: debug
     org.hibernate.orm.jdbc.bind: trace
     org.springframework.transaction.interceptor: trace
 server:
@@ -44,7 +58,7 @@ eureka:
     fetchRegistry: true
     registerWithEureka: true
     serviceUrl:
-      defaultZone: http://133.186.153.195:8761/eureka/
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
 
 jwt:
   secret: this-is-secret-key-yeah-ho-hu-yea-yes-hi-bye

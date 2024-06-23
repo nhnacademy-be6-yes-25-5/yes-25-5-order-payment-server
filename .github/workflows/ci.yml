@@ -2,7 +2,7 @@ name: Java CI with Maven
 
 on:
   pull_request:
-    branches: [ "develop" ]
+    branches: [ "develop", "main" ]
 
 permissions: write-all
 
@@ -22,11 +22,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t yes-25-5-order-payment .
+          docker build -t orders-payments-app .
 
       - name: Run Maven tests in Docker
         run: |
-          docker run --rm yes-25-5-order-payment mvn clean verify sonar:sonar \
+          docker run --rm orders-payments-app mvn clean verify sonar:sonar \
           -Dsonar.projectKey=yes25-5-order-payment \
           -Dsonar.projectName='yes25-5-order-payment' \
           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
@@ -34,7 +34,7 @@ jobs:
 
       - name: Build Maven project in Docker
         run: |
-          docker run --rm -v "$(pwd)":/app -w /app yes-25-5-order-payment mvn package
+          docker run --rm -v "$(pwd)":/app -w /app orders-payments-app mvn package
 
       - name: Check if JAR file exists
         run: |
