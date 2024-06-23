@@ -56,9 +56,9 @@ jobs:
               echo "Dockerfile not found!"
               exit 1
             fi
-            docker build -t my-app .
-            docker stop my-app || true
-            docker rm my-app || true
+            docker build -t orders-payments-app .
+            docker stop orders-payments-app || true
+            docker rm orders-payments-app || true
             docker run -d -p 8071:8071 --name orders-payments-app orders-payments-app --spring.profiles.active=prod
           EOF
 
