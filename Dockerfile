@@ -17,4 +17,4 @@ COPY . .
 RUN mvn package
 
 # Default command
-CMD ["java", "-jar", "target/yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "target/yes-25-5-order-payment-server-0.0.1-SNAPSHOT.jar", "--spring.profiles.active=prod"]

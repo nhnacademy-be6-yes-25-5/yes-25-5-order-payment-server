@@ -32,7 +32,7 @@ jobs:
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no pom.xml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/pom.xml
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src
-          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src/main/resources/application-prod.yml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/main/resources/application-prod.yml
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no src/main/resources/application-prod.yml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/main/resources/application-prod.yml
 
       - name: Check Dockerfile on Remote Server
         env:
@@ -43,6 +43,7 @@ jobs:
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/Dockerfile"
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/pom.xml"
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/src"
+          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/src/main/resources/application-prod.yml"
 
       - name: Deploy JAR on Remote Server
         env:
@@ -74,9 +75,9 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "주문 및 결제 서버 Bot",
+              botName: "프론트1 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "주문 및 결제 서버의 배포가 성공적으로 완료되었습니다!",
+              text: "프론트1 서버의 배포가 성공적으로 완료되었습니다!",
               attachments: [
                 {
                   title: "Pull Request URL",
@@ -111,9 +112,9 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "주문 및 결제 서버 Bot",
+              botName: "프론트1 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "주문 및 결제 서버의 배포가 실패했습니다...",
+              text: "프론트1 서버의 배포가 실패했습니다...",
               attachments: [
                 {
                   title: "Pull Request URL",
@@ -125,13 +126,126 @@ jobs:
             };
 
             const response = await fetch(webhookUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(payload)
-            });
+              method
 
-            if (!response.ok) {
-              throw new Error(`Failed to send webhook: ${response.statusText}`);
-            }
+
+#name: Java CD with Maven
+#
+#on:
+#  push:
+#    branches: [ "develop", "main" ]
+#
+#permissions: write-all
+#
+#jobs:
+#  deploy:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout Repository
+#        uses: actions/checkout@v3
+#
+#      - name: Set up SSH
+#        env:
+#          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+#        run: |
+#          mkdir -p ~/.ssh
+#          echo "${SSH_PRIVATE_KEY}" > ~/.ssh/github_rsa
+#          chmod 400 ~/.ssh/github_rsa
+#          ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+#
+#      - name: Copy project files to Remote Server
+#        env:
+#          REMOTE_USER: ${{ secrets.SSH_USER }}
+#          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+#          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+#        run: |
+#          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile
+#          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no pom.xml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/pom.xml
+#          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src
+#          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src/main/resources/application-prod.yml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/main/resources/application-prod.yml
+#
+#      - name: Check Dockerfile on Remote Server
+#        env:
+#          REMOTE_USER: ${{ secrets.SSH_USER }}
+#          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+#          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+#        run: |
+#          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/Dockerfile"
+#          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/pom.xml"
+#          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/src"
+#
+#
+#      - name: Send Deployment Status to Dooray
+#        if: success()
+#        uses: actions/github-script@v6
+#        env:
+#          PR_URL: ${{ github.event.pull_request.html_url }}
+#          PR_ACTOR: ${{ github.actor }}
+#          PR_TITLE: ${{ github.event.pull_request.title }}
+#          DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
+#        with:
+#          script: |
+#            const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
+#            const payload = {
+#              botName: "주문 및 결제 서버 Bot",
+#              botIconImage: "https://www.tistory.com/favicon.ico",
+#              text: "주문 및 결제 서버의 배포가 성공적으로 완료되었습니다!",
+#              attachments: [
+#                {
+#                  title: "Pull Request URL",
+#                  titleLink: process.env.PR_URL,
+#                  color: "green",
+#                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
+#                }
+#              ]
+#            };
+#
+#            const response = await fetch(webhookUrl, {
+#              method: 'POST',
+#              headers: {
+#                'Content-Type': 'application/json'
+#              },
+#              body: JSON.stringify(payload)
+#            });
+#
+#            if (!response.ok) {
+#              throw new Error(`Failed to send webhook: ${response.statusText}`);
+#            }
+#
+#      - name: Send Deployment Failure to Dooray
+#        if: failure()
+#        uses: actions/github-script@v6
+#        env:
+#          PR_URL: ${{ github.event.pull_request.html_url }}
+#          PR_TITLE: ${{ github.event.pull_request.title }}
+#          PR_ACTOR: ${{ github.actor }}
+#          DOORAY_WEBHOOK_URL: ${{ secrets.DOORAY_WEBHOOK_URL }}
+#        with:
+#          script: |
+#            const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
+#            const payload = {
+#              botName: "주문 및 결제 서버 Bot",
+#              botIconImage: "https://www.tistory.com/favicon.ico",
+#              text: "주문 및 결제 서버의 배포가 실패했습니다...",
+#              attachments: [
+#                {
+#                  title: "Pull Request URL",
+#                  titleLink: process.env.PR_URL,
+#                  color: "red",
+#                  text: `PR 제목: ${process.env.PR_TITLE}, PR 작성자: ${process.env.PR_ACTOR}`
+#                }
+#              ]
+#            };
+#
+#            const response = await fetch(webhookUrl, {
+#              method: 'POST',
+#              headers: {
+#                'Content-Type': 'application/json'
+#              },
+#              body: JSON.stringify(payload)
+#            });
+#
+#            if (!response.ok) {
+#              throw new Error(`Failed to send webhook: ${response.statusText}`);
+#            }
