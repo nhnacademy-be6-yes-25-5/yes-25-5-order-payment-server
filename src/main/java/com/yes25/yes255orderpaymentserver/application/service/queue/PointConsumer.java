@@ -16,6 +16,7 @@ public class PointConsumer {
     @RabbitListener(queues = "orderDoneQueue")
     private void updatePoints(UpdatePointMessage updatePointMessage) {
         UpdatePointRequest updatePointRequest = UpdatePointRequest.from(updatePointMessage);
-        userAdaptor.updatePoint(updatePointMessage.userId(), updatePointRequest);
+
+        userAdaptor.updatePoint(updatePointRequest);
     }
 }

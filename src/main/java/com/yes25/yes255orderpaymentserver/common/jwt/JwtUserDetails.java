@@ -11,11 +11,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Builder
 public record JwtUserDetails(Long userId, List<GrantedAuthority> roles) implements UserDetails {
 
-    public static JwtUserDetails of(String userId, List<String> roles) {
+    public static JwtUserDetails of(String userId, String role) {
         List<GrantedAuthority> authorities = new ArrayList<>();
-        for (String role : roles) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role));
-        }
+        authorities.add((new SimpleGrantedAuthority("ROLE_" + role)));
 
         return JwtUserDetails.builder()
             .userId(Long.parseLong(userId))

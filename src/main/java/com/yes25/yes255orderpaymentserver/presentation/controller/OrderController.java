@@ -48,7 +48,7 @@ public class OrderController {
 
     @GetMapping("/{orderId}/users")
     public ReadUserOrderResponse findByOrderIdAndUserId(@PathVariable String orderId
-    , @CurrentUser JwtUserDetails jwtUserDetails
+//    , @CurrentUser JwtUserDetails jwtUserDetails
     ) {
 //        Long userId = jwtUserDetails.userId();
         Long userId = 8L;

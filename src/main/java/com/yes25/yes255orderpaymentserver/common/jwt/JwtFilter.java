@@ -9,7 +9,7 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
 @RequiredArgsConstructor
-//@Component
+@Component
 public class JwtFilter extends GenericFilterBean {
     private final JwtProvider jwtProvider;
 
@@ -29,11 +29,12 @@ public class JwtFilter extends GenericFilterBean {
 
         if (jwtProvider.isValidToken(token)) {
             String userName = jwtProvider.getUserNameFromToken(token);
-            List<String> roles = jwtProvider.getRolesFromToken(token);
+            String role = jwtProvider.getRolesFromToken(token);
+
+            JwtUserDetails jwtUserDetails = JwtUserDetails.of(userName, role);
 
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                userName, null,
-                roles.stream().map(SimpleGrantedAuthority::new).toList()
+                jwtUserDetails, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
             );
 
             SecurityContextHolder.getContext().setAuthentication(authToken);

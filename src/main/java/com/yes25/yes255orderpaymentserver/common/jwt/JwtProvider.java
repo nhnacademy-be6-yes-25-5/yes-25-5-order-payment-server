@@ -55,15 +55,11 @@ public class JwtProvider {
             .getSubject();
     }
 
-    public List<String> getRolesFromToken(String token) {
-        List<?> roles = (List<?>) Jwts.parserBuilder().setSigningKey(secretKey)
+    public String getRolesFromToken(String token) {
+        return (String) Jwts.parserBuilder().setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
             .getBody()
-            .get("roles");
-
-        return roles.stream()
-            .map(Object::toString)
-            .toList();
+            .get("role");
     }
 }
