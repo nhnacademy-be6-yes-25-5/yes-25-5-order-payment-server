@@ -115,7 +115,7 @@ public class PaymentServiceImpl implements PaymentService {
     private void sendPaymentDoneMessage(Payment payment, CreatePaymentRequest request) {
         SuccessPaymentResponse response = SuccessPaymentResponse.of(payment, request);
 
-        rabbitTemplate.convertAndSend("paymentExchange", "paymentRoutingKey", response);
+        rabbitTemplate.convertAndSend("payExchange", "payRoutingKey", response);
     }
 
     private Payment savePayment(JSONObject jsonObject) {

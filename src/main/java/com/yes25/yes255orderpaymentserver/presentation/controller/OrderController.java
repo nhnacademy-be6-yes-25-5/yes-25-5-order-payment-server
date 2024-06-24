@@ -5,8 +5,11 @@ import com.yes25.yes255orderpaymentserver.application.service.queue.OrderProduce
 import com.yes25.yes255orderpaymentserver.presentation.dto.ApiResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,4 +47,13 @@ public class OrderController {
         return ApiResponse.ok(orderService.findByOrderIdAndUserId(orderId, userId));
     }
 
+    @GetMapping("/{orderId}")
+    public List<ReadPaymentOrderResponse> findAll(@PathVariable String orderId) {
+        return ApiResponse.ok(orderService.findAllOrderByOrderId(orderId));
+    }
+
+    @GetMapping("/status/{orderId}")
+    public ReadOrderStatusResponse find(@PathVariable String orderId) {
+        return ApiResponse.ok(orderService.findOrderStatusByOrderId(orderId));
+    }
 }
