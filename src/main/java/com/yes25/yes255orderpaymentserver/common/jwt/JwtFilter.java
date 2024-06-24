@@ -1,8 +1,7 @@
-package com.yes25.yes255orderpaymentserver.common.filter;
+package com.yes25.yes255orderpaymentserver.common.jwt;
 
 import com.yes25.yes255orderpaymentserver.common.exception.JwtException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
-import com.yes25.yes255orderpaymentserver.common.provider.JwtProvider;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;

@@ -1,4 +1,4 @@
-package com.yes25.yes255orderpaymentserver.common.provider;
+package com.yes25.yes255orderpaymentserver.common.jwt;
 
 import com.yes25.yes255orderpaymentserver.common.exception.JwtException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
@@ -36,12 +36,6 @@ public class JwtProvider {
             if (claims.getExpiration().before(new Date())) {
                 throw new JwtException(
                     ErrorStatus.toErrorStatus("토큰의 유효시간이 지났습니다.", 401, LocalDateTime.now())
-                );
-            }
-
-            if (!claims.getIssuer().equals(ISSUER)) {
-                throw new JwtException(
-                    ErrorStatus.toErrorStatus("토큰의 발행자가 일치하지 않습니다.", 401, LocalDateTime.now())
                 );
             }
 

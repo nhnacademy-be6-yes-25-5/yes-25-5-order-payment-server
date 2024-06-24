@@ -61,7 +61,7 @@ eureka:
       defaultZone: http://${EUREKA_SERVER_HOSTNAME}:${EUREKA_SERVER_PORT}/eureka/
 
 jwt:
-  secret: this-is-secret-key-yeah-ho-hu-yea-yes-hi-bye
+  secret: ${JWT_SECRET}
 api:
   books-users: ${BOOK_USER_SERVER}
   coupon: ${COUPON_SERVER}
