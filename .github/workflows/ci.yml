@@ -22,7 +22,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t orders-payments-app .
+          docker build --no-cache -t orders-payments-app .
 
       - name: Run Maven tests in Docker
         run: |
