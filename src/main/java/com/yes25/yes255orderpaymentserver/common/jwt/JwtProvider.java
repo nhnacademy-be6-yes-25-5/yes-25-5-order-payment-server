@@ -1,4 +1,4 @@
-package com.yes25.yes255orderpaymentserver.common.provider;
+package com.yes25.yes255orderpaymentserver.common.jwt;
 
 import com.yes25.yes255orderpaymentserver.common.exception.JwtException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
@@ -39,12 +39,6 @@ public class JwtProvider {
                 );
             }
 
-            if (!claims.getIssuer().equals(ISSUER)) {
-                throw new JwtException(
-                    ErrorStatus.toErrorStatus("토큰의 발행자가 일치하지 않습니다.", 401, LocalDateTime.now())
-                );
-            }
-
             return true;
         } catch (SignatureException e) {
             throw new JwtException(
@@ -61,15 +55,11 @@ public class JwtProvider {
             .getSubject();
     }
 
-    public List<String> getRolesFromToken(String token) {
-        List<?> roles = (List<?>) Jwts.parserBuilder().setSigningKey(secretKey)
+    public String getRolesFromToken(String token) {
+        return (String) Jwts.parserBuilder().setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
             .getBody()
-            .get("roles");
-
-        return roles.stream()
-            .map(Object::toString)
-            .toList();
+            .get("role");
     }
 }

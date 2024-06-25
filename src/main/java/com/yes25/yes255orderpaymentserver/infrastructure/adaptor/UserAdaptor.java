@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 @FeignClient(name = "userAdaptor", url = "${api.books-users}/users", configuration = FeignClientConfig.class)
 public interface UserAdaptor {
 
-    @PatchMapping("{userId}")
-    UpdatePointResponse updatePoint(@PathVariable Long userId, @RequestBody UpdatePointRequest updatePointRequest);
+    @PatchMapping("/points")
+    UpdatePointResponse updatePoint(@RequestBody UpdatePointRequest updatePointRequest);
 
 }

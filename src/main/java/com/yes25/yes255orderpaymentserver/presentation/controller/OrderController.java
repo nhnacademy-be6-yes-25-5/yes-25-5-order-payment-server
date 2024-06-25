@@ -2,6 +2,8 @@ package com.yes25.yes255orderpaymentserver.presentation.controller;
 
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.application.service.queue.OrderProducer;
+import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
+import com.yes25.yes255orderpaymentserver.common.jwt.annotation.CurrentUser;
 import com.yes25.yes255orderpaymentserver.presentation.dto.ApiResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderResponse;
@@ -34,16 +36,22 @@ public class OrderController {
         return ApiResponse.ok(orderProducer.sendCreateOrder(request));
     }
 
-    @GetMapping("/users/{userId}")
+    @GetMapping("/users")
     public Page<ReadUserOrderAllResponse> findAllOrderByUserId(
-        Pageable pageable,
-        @PathVariable Long userId) {
+        Pageable pageable
+        ,@CurrentUser JwtUserDetails jwtUserDetails
+    ) {
+//        Long userId = jwtUserDetails.userId();
+        Long userId = 8L;
         return ApiResponse.ok(orderService.findByUserId(userId, pageable));
     }
 
-    @GetMapping("/{orderId}/users/{userId}")
-    public ReadUserOrderResponse findByOrderIdAndUserId(@PathVariable String orderId,
-        @PathVariable Long userId) {
+    @GetMapping("/{orderId}/users")
+    public ReadUserOrderResponse findByOrderIdAndUserId(@PathVariable String orderId
+//    , @CurrentUser JwtUserDetails jwtUserDetails
+    ) {
+//        Long userId = jwtUserDetails.userId();
+        Long userId = 8L;
         return ApiResponse.ok(orderService.findByOrderIdAndUserId(orderId, userId));
     }
 

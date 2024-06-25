@@ -1,6 +1,8 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import com.yes25.yes255orderpaymentserver.application.service.PolicyService;
+import com.yes25.yes255orderpaymentserver.common.exception.PolicyNotFoundException;
+import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.ShippingPolicy;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
 import com.yes25.yes255orderpaymentserver.persistance.repository.ShippingPolicyRepository;
@@ -8,6 +10,7 @@ import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutReposito
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadShippingPolicyResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadTakeoutResponse;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -37,7 +40,10 @@ public class PolicyServiceImpl implements PolicyService {
 
     @Override
     public ReadShippingPolicyResponse findFreeShippingPolicy() {
-        ShippingPolicy shippingPolicy = shippingPolicyRepository.findByShippingPolicyFee(BigDecimal.ZERO);
+        ShippingPolicy shippingPolicy = shippingPolicyRepository.findByShippingPolicyFee(BigDecimal.ZERO)
+            .orElseThrow(() -> new PolicyNotFoundException(
+                ErrorStatus.toErrorStatus("무료 배송 정책을 찾을 수 없습니다.", 404, LocalDateTime.now())
+            ));
 
         return ReadShippingPolicyResponse.fromEntity(shippingPolicy);
     }
