@@ -48,11 +48,11 @@ public class JwtProvider {
     }
 
     public String getUserNameFromToken(String token) {
-        return Jwts.parserBuilder().setSigningKey(secretKey)
+        return (String) Jwts.parserBuilder().setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
             .getBody()
-            .getSubject();
+            .get("customerId");
     }
 
     public String getRolesFromToken(String token) {
