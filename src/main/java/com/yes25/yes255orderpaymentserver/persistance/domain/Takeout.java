@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.persistance.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -19,8 +20,11 @@ public class Takeout extends Time{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long takeoutId;
 
+    @Column(nullable = false)
     private String takeoutName;
+    @Column(nullable = false)
     private String takeoutDescription;
+    @Column(nullable = false)
     private BigDecimal takeoutPrice;
 
     @Builder

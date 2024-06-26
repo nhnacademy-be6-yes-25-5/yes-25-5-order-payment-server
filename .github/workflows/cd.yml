@@ -151,9 +151,9 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "게이트웨이 서버 Bot",
+              botName: "주문 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "게이트웨이 서버의 배포가 성공적으로 완료되었습니다!",
+              text: "주문 결제 서버의 배포가 성공적으로 완료되었습니다!",
               attachments: [
                 {
                   title: "Pull Request URL",
@@ -188,9 +188,9 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "게이트웨이 서버 Bot",
+              botName: "주문 결제 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "게이트웨이 서버의 배포가 실패했습니다...",
+              text: "주문 결제 서버의 배포가 실패했습니다...",
               attachments: [
                 {
                   title: "Pull Request URL",

@@ -4,7 +4,7 @@ import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
-import com.yes25.yes255orderpaymentserver.application.service.PaymentService;
+import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.common.exception.PaymentException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
@@ -30,7 +30,7 @@ public class OrderConsumer {
     private final OrderService orderService;
     private final BookAdaptor bookAdaptor;
     private final OrderProducer orderProducer;
-    private final PaymentService paymentService;
+    private final PaymentProcessor paymentService;
 
     /**
      * @throws PaymentException 결제 완료 후, 결제의 preOrderId와 주문의 orderId가 일치하지 않으면 발생합니다. 재고 확인 및 포인트

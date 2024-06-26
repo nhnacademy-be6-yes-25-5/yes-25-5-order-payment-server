@@ -51,6 +51,8 @@ public class Order {
     private String zipCode;
 
     private LocalDateTime orderStartedAt;
+
+    @Column(nullable = false)
     private LocalDateTime orderCreatedAt;
 
     @Column(nullable = false)
@@ -62,12 +64,27 @@ public class Order {
     @Column(nullable = false)
     private BigDecimal purePrice;
 
+    @Column(nullable = false)
     private String orderUserName;
+
+    @Column(nullable = false)
     private String orderUserEmail;
+
+    @Column(nullable = false)
     private String orderUserPhoneNumber;
+
+    @Column(nullable = false)
     private String receiveUserName;
+
+    @Column(nullable = false)
     private String receiveUserEmail;
+
+    @Column(nullable = false)
     private String receiveUserPhoneNumber;
+
+    @Column(nullable = false)
+    private String userRole;
+
     private String reference;
     private Long couponId;
     private BigDecimal points;
@@ -80,7 +97,7 @@ public class Order {
         String zipCode, LocalDateTime orderCreatedAt, LocalDate orderDeliveryAt, List<OrderBook> orderBooks,
         BigDecimal purePrice, String orderUserName, String orderUserEmail, String orderUserPhoneNumber,
         String receiveUserName, String receiveUserEmail, String receiveUserPhoneNumber,
-        String reference, Long couponId, BigDecimal points) {
+        String userRole, String reference, Long couponId, BigDecimal points) {
         this.orderId = orderId;
         this.customerId = customerId;
         this.orderStartedAt = orderStartedAt;
@@ -100,6 +117,7 @@ public class Order {
         this.receiveUserName = receiveUserName;
         this.receiveUserEmail = receiveUserEmail;
         this.receiveUserPhoneNumber = receiveUserPhoneNumber;
+        this.userRole = userRole;
         this.reference = reference;
         this.couponId = couponId;
         this.points = points;

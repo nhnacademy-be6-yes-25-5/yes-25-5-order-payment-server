@@ -39,6 +39,7 @@ public class PreOrder {
     private String receiveEmail;
     private String receivePhoneNumber;
     private Long couponId;
+    private String role;
 
     @Builder
     public PreOrder(String preOrderId, List<Long> bookIds, List<Integer> quantities,
@@ -47,7 +48,7 @@ public class PreOrder {
         String reference, LocalDateTime orderedDate, LocalDate deliveryDate, String orderUserName,
         String orderUserEmail, String orderUserPhoneNumber, String receiveName, String receiveEmail,
         String receivePhoneNumber, Long couponId, BigDecimal points, BigDecimal takeoutPrice,
-        BigDecimal shippingFee) {
+        BigDecimal shippingFee, String role) {
         this.preOrderId = preOrderId;
         this.bookIds = bookIds;
         this.quantities = quantities;
@@ -72,6 +73,7 @@ public class PreOrder {
         this.points = points;
         this.takeoutPrice = takeoutPrice;
         this.shippingFee = shippingFee;
+        this.role = role;
     }
 
     public static PreOrder from(CreateOrderRequest request) {
@@ -100,6 +102,7 @@ public class PreOrder {
             .discountPrice(request.discountPrice())
             .takeoutPrice(request.takeoutPrice())
             .shippingFee(request.shippingFee())
+            .role(request.role())
             .build();
     }
 
@@ -126,6 +129,7 @@ public class PreOrder {
             .couponId(couponId)
             .points(points)
             .purePrice(purePrice)
+            .userRole(role)
             .build();
     }
 

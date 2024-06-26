@@ -1,6 +1,6 @@
 package com.yes25.yes255orderpaymentserver.presentation.controller;
 
-import com.yes25.yes255orderpaymentserver.application.service.PaymentService;
+import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.presentation.dto.ApiResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/payments")
 public class PaymentController {
 
-    private final PaymentService paymentService;
+    private final PaymentProcessor paymentService;
 
     @PostMapping("/confirm")
     public CreatePaymentResponse confirmPayment(@RequestBody CreatePaymentRequest request) {

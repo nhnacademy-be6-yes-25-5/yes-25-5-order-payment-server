@@ -4,7 +4,7 @@ import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentR
 import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
-import com.yes25.yes255orderpaymentserver.application.service.PaymentService;
+import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.common.exception.FeignClientException;
 import com.yes25.yes255orderpaymentserver.common.exception.StockUnavailableException;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
@@ -35,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class PaymentServiceImpl implements PaymentService {
+public class TossPaymentProcessor implements PaymentProcessor {
 
     private final RabbitTemplate rabbitTemplate;
     private final PaymentRepository paymentRepository;
