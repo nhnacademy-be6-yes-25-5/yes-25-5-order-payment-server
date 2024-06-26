@@ -1,6 +1,6 @@
 spring:
   rabbitmq:
-    host: 133.186.153.195
+    host: 133.186.241.167
     port: 5672
     listener:
       simple:
@@ -16,8 +16,8 @@ spring:
         initial-interval: 1000
         max-attempts: 3
         multiplier: 1.5
-    username: yes255
-    password: yes255
+    username: admin
+    password: ${RABBITMQ_PASSWORD}
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -50,8 +50,6 @@ logging:
     org.springframework.amqp.rabbit.listener: debug
     org.hibernate.orm.jdbc.bind: trace
     org.springframework.transaction.interceptor: trace
-server:
-  port: 8071
 eureka:
   client:
     enabled: true

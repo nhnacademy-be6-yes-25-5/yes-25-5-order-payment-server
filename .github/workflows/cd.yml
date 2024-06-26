@@ -1,4 +1,4 @@
-name: Java CD with Maven
+name: Java CD with Docker
 
 on:
   push:
@@ -23,70 +23,79 @@ jobs:
           chmod 400 ~/.ssh/github_rsa
           ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Clean Remote Directory
+      - name: Copy project files to Remote Server for 8070
         env:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
         run: |
-          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "rm -rf ${REMOTE_DIR}/*"
-
-      - name: Copy project files to Remote Server
-        env:
-          REMOTE_USER: ${{ secrets.SSH_USER }}
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
-        run: |
-          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile-8070 ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no pom.xml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/pom.xml
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src
-          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no src/main/resources/application-prod.yml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/main/resources/application-prod.yml
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src/main/resources/application-prod.yml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/main/resources/application-prod.yml
 
-      - name: Check Dockerfile on Remote Server
+      - name: Deploy JAR on Remote Server - Port 8070
         env:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
-        run: |
-          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/Dockerfile"
-          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/pom.xml"
-          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/src"
-          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "ls -la ${REMOTE_DIR}/src/main/resources/application-prod.yml"
-
-      - name: Deploy JAR on Remote Server
-        env:
-          REMOTE_USER: ${{ secrets.SSH_USER }}
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
-          YES25_5_MYSQL_PASSWORD: ${{ secrets.YES25_5_MYSQL_PASSWORD }}
-          YES25_5_REDIS_PASSWORD: ${{ secrets.YES25_5_REDIS_PASSWORD }}
-          PAYMENT_SECRET: ${{ secrets.PAYMENT_SECRET }}
           EUREKA_SERVER_HOSTNAME: ${{ secrets.EUREKA_SERVER_HOSTNAME }}
           EUREKA_SERVER_PORT: ${{ secrets.EUREKA_SERVER_PORT }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          BOOK_USER_SERVER: ${{ secrets.BOOK_USER_SERVER }}
-          COUPON_SERVER: ${{ secrets.COUPON_SERVER }}
         run: |
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << EOF
             cd ${REMOTE_DIR}
-            if [ ! -f Dockerfile ]; then
-              echo "Dockerfile not found!"
-              exit 1
-            fi
-            docker build -t orders-payments-app .
-            docker 1 orders-payments-app || true
-            docker rm orders-payments-app || true
-            docker run -d -p 8072:8072 --name orders-payments-app \
-              -e YES25_5_MYSQL_PASSWORD=${YES25_5_MYSQL_PASSWORD} \
-              -e YES25_5_REDIS_PASSWORD=${YES25_5_REDIS_PASSWORD} \
-              -e PAYMENT_SECRET=${PAYMENT_SECRET} \
-              -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} \
-              -e EUREKA_SERVER_PORT=${EUREKA_SERVER_PORT} \
-              -e BOOK_USER_SERVER=${BOOK_USER_SERVER} \
-              -e COUPON_SERVER=${COUPON_SERVER} \
-              -e JWT_SECRET=${JWT_SECRET} \
-              orders-payments-app
+            docker build -t order-payment-app-8070 -f Dockerfile .
+            docker stop order-payment-app-8070 || true
+            docker rm order-payment-app-8070 || true
+            docker run -d -p 8070:8070 --name order-payment-app-8070 -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} -e EUREKA_SERVER_PORT=${EUREKA_SERVER_PORT} order-payment-app-8070
           EOF
+
+      - name: Check if 8070 is up
+        env:
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          until ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} curl -s http://localhost:8070/actuator/health | grep -q '"status":"UP"'; do
+            echo "Waiting for 8070 to be up..."
+            sleep 10
+          done
+
+      - name: Copy project files to Remote Server for 8071
+        env:
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+        run: |
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile-8071 ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no pom.xml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/pom.xml
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src/main/resources/application-prod.yml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/main/resources/application-prod.yml
+
+      - name: Deploy JAR on Remote Server - Port 8071
+        env:
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+          EUREKA_SERVER_HOSTNAME: ${{ secrets.EUREKA_SERVER_HOSTNAME }}
+          EUREKA_SERVER_PORT: ${{ secrets.EUREKA_SERVER_PORT }}
+        run: |
+          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << EOF
+            cd ${REMOTE_DIR}
+            docker build -t order-payment-app-8071 -f Dockerfile .
+            docker stop order-payment-app-8071 || true
+            docker rm order-payment-app-8071 || true
+            docker run -d -p 8071:8071 --name order-payment-app-8071 -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} -e EUREKA_SERVER_PORT=${EUREKA_SERVER_PORT} order-payment-app-8071
+          EOF
+
+      - name: Check if 8071 is up
+        env:
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          until ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} curl -s http://localhost:8071/actuator/health | grep -q '"status":"UP"'; do
+            echo "Waiting for 8071 to be up..."
+            sleep 10
+          done
 
       - name: Send Deployment Status to Dooray
         if: success()
@@ -100,9 +109,9 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "주문 및 결제 서버 Bot",
+              botName: "게이트웨이 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "주문 및 결제 서버의 배포가 성공적으로 완료되었습니다!",
+              text: "게이트웨이 서버의 배포가 성공적으로 완료되었습니다!",
               attachments: [
                 {
                   title: "Pull Request URL",
@@ -137,9 +146,9 @@ jobs:
           script: |
             const webhookUrl = process.env.DOORAY_WEBHOOK_URL;
             const payload = {
-              botName: "주문 및 결제 서버 Bot",
+              botName: "게이트웨이 서버 Bot",
               botIconImage: "https://www.tistory.com/favicon.ico",
-              text: "주문 및 결제 서버의 배포가 실패했습니다...",
+              text: "게이트웨이 서버의 배포가 실패했습니다...",
               attachments: [
                 {
                   title: "Pull Request URL",
