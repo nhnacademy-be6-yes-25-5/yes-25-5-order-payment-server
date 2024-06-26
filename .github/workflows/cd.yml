@@ -80,7 +80,7 @@ jobs:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          until ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} curl -s http://localhost:8070/actuator/health | grep -q '"status":"UP"'; do
+          until ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "curl -s http://${REMOTE_HOST}:8070/actuator/health | grep -q '\"status\":\"UP\"'"; do
             echo "Waiting for 8070 to be up..."
             sleep 10
           done
@@ -134,7 +134,7 @@ jobs:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
         run: |
-          until ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} curl -s http://localhost:8071/actuator/health | grep -q '"status":"UP"'; do
+          until ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "curl -s http://${REMOTE_HOST}:8071/actuator/health | grep -q '\"status\":\"UP\"'"; do
             echo "Waiting for 8071 to be up..."
             sleep 10
           done
