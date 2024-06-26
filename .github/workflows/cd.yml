@@ -63,9 +63,10 @@ jobs:
               exit 1
             fi
             docker build -t orders-payments-app .
-            docker 1 orders-payments-app || true
+            docker stop orders-payments-app || true
             docker rm orders-payments-app || true
-            docker run -d -p 8072:8072 --name orders-payments-app \
+            docker run -d -p 8070:8070 --name orders-payments-app \
+              --network yes255-network \
               -e YES25_5_MYSQL_PASSWORD=${YES25_5_MYSQL_PASSWORD} \
               -e YES25_5_REDIS_PASSWORD=${YES25_5_REDIS_PASSWORD} \
               -e PAYMENT_SECRET=${PAYMENT_SECRET} \
