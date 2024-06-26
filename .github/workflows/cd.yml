@@ -23,6 +23,14 @@ jobs:
           chmod 400 ~/.ssh/github_rsa
           ssh-keyscan ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Clean Remote Directory
+        env:
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+        run: |
+          ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} "rm -rf ${REMOTE_DIR}/*"
+
       - name: Copy project files to Remote Server for 8070
         env:
           REMOTE_USER: ${{ secrets.SSH_USER }}
