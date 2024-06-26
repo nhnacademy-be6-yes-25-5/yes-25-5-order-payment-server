@@ -29,7 +29,7 @@ jobs:
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
         run: |
-          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile-8070 ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile-8070 ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile-8070
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no pom.xml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/pom.xml
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src/main/resources/application-prod.yml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/main/resources/application-prod.yml
@@ -44,7 +44,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << EOF
             cd ${REMOTE_DIR}
-            docker build -t order-payment-app-8070 -f Dockerfile .
+            docker build -t order-payment-app-8070 -f Dockerfile-8070 .
             docker stop order-payment-app-8070 || true
             docker rm order-payment-app-8070 || true
             docker run -d -p 8070:8070 --name order-payment-app-8070 -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} -e EUREKA_SERVER_PORT=${EUREKA_SERVER_PORT} order-payment-app-8070
@@ -66,7 +66,7 @@ jobs:
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
         run: |
-          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile-8071 ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile
+          scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no Dockerfile-8071 ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/Dockerfile-8071
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no pom.xml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/pom.xml
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src
           scp -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no -r src/main/resources/application-prod.yml ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_DIR}/src/main/resources/application-prod.yml
@@ -81,7 +81,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << EOF
             cd ${REMOTE_DIR}
-            docker build -t order-payment-app-8071 -f Dockerfile .
+            docker build -t order-payment-app-8071 -f Dockerfile-8071 .
             docker stop order-payment-app-8071 || true
             docker rm order-payment-app-8071 || true
             docker run -d -p 8071:8071 --name order-payment-app-8071 -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} -e EUREKA_SERVER_PORT=${EUREKA_SERVER_PORT} order-payment-app-8071
