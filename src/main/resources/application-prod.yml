@@ -57,6 +57,8 @@ eureka:
     registerWithEureka: true
     serviceUrl:
       defaultZone: http://${EUREKA_SERVER_HOSTNAME}:${EUREKA_SERVER_PORT}/eureka/
+  instance:
+    hostname: ${EUREKA_SERVER_HOSTNAME}
 
 jwt:
   secret: ${JWT_SECRET}
