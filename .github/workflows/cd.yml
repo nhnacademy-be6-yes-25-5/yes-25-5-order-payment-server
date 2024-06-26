@@ -39,15 +39,32 @@ jobs:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+          YES25_5_MYSQL_PASSWORD: ${{ secrets.YES25_5_MYSQL_PASSWORD }}
+          YES25_5_REDIS_PASSWORD: ${{ secrets.YES25_5_REDIS_PASSWORD }}
+          PAYMENT_SECRET: ${{ secrets.PAYMENT_SECRET }}
           EUREKA_SERVER_HOSTNAME: ${{ secrets.EUREKA_SERVER_HOSTNAME }}
           EUREKA_SERVER_PORT: ${{ secrets.EUREKA_SERVER_PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          BOOK_USER_SERVER: ${{ secrets.BOOK_USER_SERVER }}
+          COUPON_SERVER: ${{ secrets.COUPON_SERVER }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
         run: |
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << EOF
             cd ${REMOTE_DIR}
             docker build -t order-payment-app-8070 -f Dockerfile-8070 .
             docker stop order-payment-app-8070 || true
             docker rm order-payment-app-8070 || true
-            docker run -d -p 8070:8070 --name order-payment-app-8070 -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} -e EUREKA_SERVER_PORT=${EUREKA_SERVER_PORT} order-payment-app-8070
+            docker run -d -p 8070:8070 --name order-payment-app-8070 \
+              -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} \
+              -e EUREKA_SERVER_PORT=${EUREKA_SERVER_PORT} \
+              -e YES25_5_MYSQL_PASSWORD=${YES25_5_MYSQL_PASSWORD} \
+              -e YES25_5_REDIS_PASSWORD=${YES25_5_REDIS_PASSWORD} \
+              -e PAYMENT_SECRET=${PAYMENT_SECRET} \
+              -e JWT_SECRET=${JWT_SECRET} \
+              -e BOOK_USER_SERVER=${BOOK_USER_SERVER} \
+              -e COUPON_SERVER=${COUPON_SERVER} \
+              -e RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD} \
+              order-payment-app-8070
           EOF
 
       - name: Check if 8070 is up
@@ -76,15 +93,32 @@ jobs:
           REMOTE_USER: ${{ secrets.SSH_USER }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}
           REMOTE_DIR: ${{ secrets.REMOTE_DIR }}
+          YES25_5_MYSQL_PASSWORD: ${{ secrets.YES25_5_MYSQL_PASSWORD }}
+          YES25_5_REDIS_PASSWORD: ${{ secrets.YES25_5_REDIS_PASSWORD }}
+          PAYMENT_SECRET: ${{ secrets.PAYMENT_SECRET }}
           EUREKA_SERVER_HOSTNAME: ${{ secrets.EUREKA_SERVER_HOSTNAME }}
           EUREKA_SERVER_PORT: ${{ secrets.EUREKA_SERVER_PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          BOOK_USER_SERVER: ${{ secrets.BOOK_USER_SERVER }}
+          COUPON_SERVER: ${{ secrets.COUPON_SERVER }}
+          RABBITMQ_PASSWORD: ${{ secrets.RABBITMQ_PASSWORD }}
         run: |
           ssh -i ~/.ssh/github_rsa -o StrictHostKeyChecking=no ${REMOTE_USER}@${REMOTE_HOST} << EOF
             cd ${REMOTE_DIR}
             docker build -t order-payment-app-8071 -f Dockerfile-8071 .
             docker stop order-payment-app-8071 || true
             docker rm order-payment-app-8071 || true
-            docker run -d -p 8071:8071 --name order-payment-app-8071 -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} -e EUREKA_SERVER_PORT=${EUREKA_SERVER_PORT} order-payment-app-8071
+            docker run -d -p 8071:8071 --name order-payment-app-8071 \
+              -e EUREKA_SERVER_HOSTNAME=${EUREKA_SERVER_HOSTNAME} \
+              -e EUREKA_SERVER_PORT=${EUREKA_SERVER_PORT} \
+              -e YES25_5_MYSQL_PASSWORD=${YES25_5_MYSQL_PASSWORD} \
+              -e YES25_5_REDIS_PASSWORD=${YES25_5_REDIS_PASSWORD} \
+              -e PAYMENT_SECRET=${PAYMENT_SECRET} \
+              -e JWT_SECRET=${JWT_SECRET} \
+              -e BOOK_USER_SERVER=${BOOK_USER_SERVER} \
+              -e COUPON_SERVER=${COUPON_SERVER} \
+              -e RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD} \
+              order-payment-app-8071
           EOF
 
       - name: Check if 8071 is up
