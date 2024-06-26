@@ -66,3 +66,9 @@ api:
 
 payment:
   secret: ${PAYMENT_SECRET}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
