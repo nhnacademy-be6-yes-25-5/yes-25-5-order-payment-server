@@ -1,6 +1,6 @@
 spring:
   rabbitmq:
-    host: 133.186.153.195
+    host: 133.186.241.167
     port: 5672
     listener:
       simple:
@@ -16,14 +16,18 @@ spring:
         initial-interval: 1000
         max-attempts: 3
         multiplier: 1.5
-    username: yes255
-    password: yes255
+    username: admin
+    password: ${RABBITMQ_PASSWORD}
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://133.186.241.167:3306/be6_yes255_order
-    username: be6_yes255
-    password: ${YES25_5_MYSQL_PASSWORD}
+#    url: jdbc:mysql://133.186.241.167:3306/be6_yes255_order
+#    username: be6_yes255
+#    password: ${YES25_5_MYSQL_PASSWORD}
+
+    url: jdbc:mysql://localhost:3306/boradoo
+    username: root
+    password: 1234
   jpa:
     open-in-view: false
     show-sql: true
