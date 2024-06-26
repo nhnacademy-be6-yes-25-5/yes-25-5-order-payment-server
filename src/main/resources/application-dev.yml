@@ -1,6 +1,6 @@
 spring:
   rabbitmq:
-    host: 133.186.241.167
+    host: 133.186.153.195
     port: 5672
     listener:
       simple:
@@ -16,8 +16,8 @@ spring:
         initial-interval: 1000
         max-attempts: 3
         multiplier: 1.5
-    username: admin
-    password: ${RABBITMQ_PASSWORD}
+    username: yes255
+    password: yes255
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver

@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.persistance.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -21,12 +22,18 @@ public class OrderBook {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderBookId;
+
+    @Column(nullable = false)
     private Long bookId;
+
+    @Column(nullable = false)
     private Integer orderProductQuantity;
+
+    @Column(nullable = false)
     private BigDecimal price;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
     @Builder

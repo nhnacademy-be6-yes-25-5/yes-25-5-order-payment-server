@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.persistance.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,6 +19,7 @@ public class OrderStatus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long orderStatusId;
 
+    @Column(nullable = false)
     private String orderStatusName;
 
     @Builder

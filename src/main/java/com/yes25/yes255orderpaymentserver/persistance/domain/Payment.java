@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.persistance.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,24 +23,35 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long paymentId;
 
+    @Column(nullable = false)
     private String paymentKey;
+
+    @Column(nullable = false)
     private BigDecimal paymentAmount;
-    private LocalDateTime requestedAt;
+
+    @Column(nullable = false)
     private LocalDateTime approveAt;
+
+    @Column(nullable = false)
+    private LocalDateTime requestedAt;
+
+    @Column(nullable = false)
     private String paymentMethod;
-    private String orderId;
+
+    @Column(nullable = false)
+    private String preOrderId;
 
     @Builder
-    public Payment(Long paymentId, String paymentKey, BigDecimal paymentAmount, LocalDateTime requestedAt,
+    public Payment(Long paymentId, String paymentKey, BigDecimal paymentAmount,
         LocalDateTime approveAt,
-        String paymentMethod, String orderId) {
+        LocalDateTime requestedAt, String paymentMethod, String preOrderId) {
         this.paymentId = paymentId;
         this.paymentKey = paymentKey;
         this.paymentAmount = paymentAmount;
-        this.requestedAt = requestedAt;
         this.approveAt = approveAt;
+        this.requestedAt = requestedAt;
         this.paymentMethod = paymentMethod;
-        this.orderId = orderId;
+        this.preOrderId = preOrderId;
     }
 
     public static Payment from(JSONObject jsonObject) {
@@ -53,7 +65,7 @@ public class Payment {
             .approveAt(approvedAt)
             .requestedAt(requestedAt)
             .paymentMethod((String) jsonObject.get("method"))
-            .orderId((String) jsonObject.get("orderId"))
+            .preOrderId((String) jsonObject.get("orderId"))
             .build();
     }
 }

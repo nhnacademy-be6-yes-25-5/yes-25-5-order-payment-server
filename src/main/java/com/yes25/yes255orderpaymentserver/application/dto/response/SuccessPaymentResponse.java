@@ -14,7 +14,7 @@ public record SuccessPaymentResponse(String orderId,
 
     public static SuccessPaymentResponse of(Payment payment, CreatePaymentRequest request) {
         return SuccessPaymentResponse.builder()
-            .orderId(payment.getOrderId())
+            .orderId(payment.getPreOrderId())
             .paymentKey(payment.getPaymentKey())
             .paymentAmount(payment.getPaymentAmount().intValue())
             .bookIdList(request.bookIds())

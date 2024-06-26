@@ -27,6 +27,7 @@ public record CreateOrderRequest(String orderId,
                                  String receiveEmail,
                                  String receivePhoneNumber,
                                  Long couponId,
-                                 BigDecimal points) {
+                                 BigDecimal points,
+                                 String role) {
 
 }
