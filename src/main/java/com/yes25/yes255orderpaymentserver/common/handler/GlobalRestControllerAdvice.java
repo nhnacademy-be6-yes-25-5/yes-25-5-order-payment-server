@@ -1,6 +1,6 @@
 package com.yes25.yes255orderpaymentserver.common.handler;
 
-import com.yes25.yes255orderpaymentserver.application.service.queue.OrderProducer;
+import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
 import com.yes25.yes255orderpaymentserver.common.exception.ApplicationException;
 import com.yes25.yes255orderpaymentserver.common.exception.StockUnavailableException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RequiredArgsConstructor
 public class GlobalRestControllerAdvice {
 
-    private final OrderProducer orderProducer;
+    private final MessageProducer messageProducer;
 
     @ExceptionHandler(ApplicationException.class)
     public ResponseEntity<ErrorStatus> handleApplicationException(ApplicationException e) {
@@ -25,7 +25,7 @@ public class GlobalRestControllerAdvice {
     @ExceptionHandler(StockUnavailableException.class)
     public ResponseEntity<ErrorStatus> handleStockUnavailableException(StockUnavailableException e) {
         ErrorStatus errorStatus = e.getErrorStatus();
-        orderProducer.sendCancelMessage(e.getOrderId());
+        messageProducer.sendCancelMessage(e.getOrderId());
 
         return new ResponseEntity<>(errorStatus, errorStatus.toHttpStatus());
     }

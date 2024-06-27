@@ -1,7 +1,7 @@
 package com.yes25.yes255orderpaymentserver.presentation.controller;
 
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
-import com.yes25.yes255orderpaymentserver.application.service.queue.OrderProducer;
+import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.common.jwt.annotation.CurrentUser;
 import com.yes25.yes255orderpaymentserver.presentation.dto.ApiResponse;
@@ -27,13 +27,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class OrderController {
 
-    private final OrderProducer orderProducer;
+    private final MessageProducer messageProducer;
     private final OrderService orderService;
 
     @PostMapping
     public CreateOrderResponse create(
         @RequestBody CreateOrderRequest request) {
-        return ApiResponse.ok(orderProducer.sendCreateOrder(request));
+        return ApiResponse.ok(messageProducer.sendCreateOrder(request));
     }
 
     @GetMapping("/users")

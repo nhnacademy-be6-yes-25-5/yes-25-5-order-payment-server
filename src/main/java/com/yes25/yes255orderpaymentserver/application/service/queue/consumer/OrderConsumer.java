@@ -1,10 +1,11 @@
-package com.yes25.yes255orderpaymentserver.application.service.queue;
+package com.yes25.yes255orderpaymentserver.application.service.queue.consumer;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
+import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
 import com.yes25.yes255orderpaymentserver.common.exception.PaymentException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
@@ -29,7 +30,7 @@ public class OrderConsumer {
     private final RabbitTemplate rabbitTemplate;
     private final OrderService orderService;
     private final BookAdaptor bookAdaptor;
-    private final OrderProducer orderProducer;
+    private final MessageProducer messageProducer;
     private final PaymentProcessor paymentService;
 
     /**
@@ -50,7 +51,7 @@ public class OrderConsumer {
 
         if (!preOrder.getPreOrderId().equals(response.orderId())) {
             log.error("주문 정보가 일치하지 않습니다.");
-            orderProducer.sendPreOrder(preOrder);
+            messageProducer.sendPreOrder(preOrder);
 
             throw new PaymentException(
                 ErrorStatus.toErrorStatus("결제 큐에서 해당하는 주문를 찾을 수 없습니다.", 404,
@@ -59,7 +60,7 @@ public class OrderConsumer {
 
         BigDecimal purePrice = preOrder.calculatePurePrice();
         orderService.createOrder(preOrder, purePrice, response);
-        orderProducer.sendOrderDone(preOrder, purePrice);
+        messageProducer.sendOrderDone(preOrder, purePrice);
     }
 
     @Recover

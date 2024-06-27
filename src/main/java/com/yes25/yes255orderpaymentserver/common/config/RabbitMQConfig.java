@@ -36,10 +36,26 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue orderDoneQueue() {
-        return QueueBuilder.durable("orderDoneQueue")
+    public Queue pointUsedQueue() {
+        return QueueBuilder.durable("pointUsedQueue")
             .withArgument("x-dead-letter-exchange", "dlxExchange")
-            .withArgument("x-dead-letter-routing-key", "dlx.orderDoneQueue")
+            .withArgument("x-dead-letter-routing-key", "dlx.pointUsedQueue")
+            .build();
+    }
+
+    @Bean
+    public Queue couponUsedQueue() {
+        return QueueBuilder.durable("couponUsedQueue")
+            .withArgument("x-dead-letter-exchange", "dlxExchange")
+            .withArgument("x-dead-letter-routing-key", "dlx.couponUsedQueue")
+            .build();
+    }
+
+    @Bean
+    public Queue cartDecreaseQueue() {
+        return QueueBuilder.durable("cartDecreaseQueue")
+            .withArgument("x-dead-letter-exchange", "dlxExchange")
+            .withArgument("x-dead-letter-routing-key", "dlx.cartDecreaseQueue")
             .build();
     }
 
@@ -48,10 +64,15 @@ public class RabbitMQConfig {
         return new DirectExchange("dlxExchange");
     }
 
-//    @Bean
-//    public DirectExchange paymentExchange() {
-//        return new DirectExchange("paymentExchange");
-//    }
+    @Bean
+    public DirectExchange couponUsedExchange() {
+        return new DirectExchange("couponUsedExchange");
+    }
+
+    @Bean
+    public DirectExchange cartDecreaseExchange() {
+        return new DirectExchange("cartDecreaseExchange");
+    }
 
     @Bean
     public DirectExchange payExchange() {
@@ -59,8 +80,8 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public DirectExchange orderDoneExchange() {
-        return new DirectExchange("orderDoneExchange");
+    public DirectExchange pointUsedExchange() {
+        return new DirectExchange("pointUsedExchange");
     }
 
     @Bean
@@ -78,14 +99,19 @@ public class RabbitMQConfig {
         return new Queue("dlx.preOrderQueue");
     }
 
-//    @Bean
-//    public Queue dlqPaymentQueue() {
-//        return new Queue("dlx.paymentQueue");
-//    }
+    @Bean
+    public Queue dlqCouponUsedQueue() {
+        return new Queue("dlx.couponUsedQueue");
+    }
 
     @Bean
-    public Queue dlqOrderDoneQueue() {
-        return new Queue("dlx.orderDoneQueue");
+    public Queue dlqPointUsedQueue() {
+        return new Queue("dlx.pointUsedQueue");
+    }
+
+    @Bean
+    public Queue dlqCartDecreaseQueue() {
+        return new Queue("dlx.cartDecreaseQueue");
     }
 
     @Bean
@@ -96,10 +122,17 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding orderDoneBinding(Queue orderDoneQueue, DirectExchange orderDoneExchange) {
-        return BindingBuilder.bind(orderDoneQueue)
-            .to(orderDoneExchange)
-            .with("orderDoneRoutingKey");
+    public Binding cartDecreaseBinding(Queue cartDecreaseQueue, DirectExchange cartDecreaseExchange) {
+        return BindingBuilder.bind(cartDecreaseQueue)
+            .to(cartDecreaseExchange)
+            .with("cartDecreaseRoutingKey");
+    }
+
+    @Bean
+    public Binding pointUsedBinding(Queue pointUsedQueue, DirectExchange pointUsedExchange) {
+        return BindingBuilder.bind(pointUsedQueue)
+            .to(pointUsedExchange)
+            .with("pointUsedRoutingKey");
     }
 
     @Bean
@@ -117,6 +150,13 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Binding couponUsedBinding(Queue couponUsedQueue, DirectExchange couponUsedExchange) {
+        return BindingBuilder.bind(couponUsedQueue)
+            .to(couponUsedExchange)
+            .with("couponUsedRoutingKey");
+    }
+
+    @Bean
     public Binding dlxPreOrderBinding(Queue dlqPreOrderQueue, DirectExchange dlxExchange) {
         return BindingBuilder
             .bind(dlqPreOrderQueue)
@@ -125,11 +165,27 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Binding dlxOrderDoneBinding(Queue dlqOrderDoneQueue, DirectExchange dlxExchange) {
+    public Binding dlxPointUsedBinding(Queue dlqPointUsedQueue, DirectExchange dlxExchange) {
         return BindingBuilder
-            .bind(dlqOrderDoneQueue)
+            .bind(dlqPointUsedQueue)
             .to(dlxExchange)
-            .with("dlx.orderDoneQueue");
+            .with("dlx.pointUsedQueue");
+    }
+
+    @Bean
+    public Binding dlxCouponUsedBinding(Queue dlqCouponUsedQueue, DirectExchange dlxExchange) {
+        return BindingBuilder
+            .bind(dlqCouponUsedQueue)
+            .to(dlxExchange)
+            .with("dlx.couponUsedQueue");
+    }
+
+    @Bean
+    public Binding dlxCartDecreaseBinding(Queue dlqCartDecreaseQueue, DirectExchange dlxExchange) {
+        return BindingBuilder
+            .bind(dlqCartDecreaseQueue)
+            .to(dlxExchange)
+            .with("dlx.cartDecreaseQueue");
     }
 
     @Bean

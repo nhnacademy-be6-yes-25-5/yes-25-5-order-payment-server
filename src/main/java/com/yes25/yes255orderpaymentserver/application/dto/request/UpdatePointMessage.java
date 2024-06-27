@@ -5,11 +5,10 @@ import java.math.BigDecimal;
 import lombok.Builder;
 
 @Builder
-public record UpdatePointMessage(Long userId, BigDecimal usePoints, BigDecimal amount) {
+public record UpdatePointMessage(BigDecimal usePoints, BigDecimal amount) {
 
     public static UpdatePointMessage from(PreOrder preOrder, BigDecimal purePrice) {
         return UpdatePointMessage.builder()
-            .userId(preOrder.getUserId())
             .usePoints(preOrder.getPoints())
             .amount(purePrice)
             .build();
