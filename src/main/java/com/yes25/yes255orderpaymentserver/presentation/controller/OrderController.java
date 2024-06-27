@@ -41,17 +41,15 @@ public class OrderController {
         Pageable pageable
         ,@CurrentUser JwtUserDetails jwtUserDetails
     ) {
-//        Long userId = jwtUserDetails.userId();
-        Long userId = 8L;
+        Long userId = jwtUserDetails.userId();
         return ApiResponse.ok(orderService.findByUserId(userId, pageable));
     }
 
     @GetMapping("/{orderId}/users")
     public ReadUserOrderResponse findByOrderIdAndUserId(@PathVariable String orderId
-//    , @CurrentUser JwtUserDetails jwtUserDetails
+    , @CurrentUser JwtUserDetails jwtUserDetails
     ) {
-//        Long userId = jwtUserDetails.userId();
-        Long userId = 8L;
+        Long userId = jwtUserDetails.userId();
         return ApiResponse.ok(orderService.findByOrderIdAndUserId(orderId, userId));
     }
 

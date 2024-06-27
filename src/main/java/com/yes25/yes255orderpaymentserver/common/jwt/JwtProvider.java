@@ -47,19 +47,21 @@ public class JwtProvider {
         }
     }
 
-    public String getUserNameFromToken(String token) {
-        return (String) Jwts.parserBuilder().setSigningKey(secretKey)
+    public Long getUserNameFromToken(String token) {
+        return Long.valueOf((Integer) Jwts.parserBuilder()
+            .setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
             .getBody()
-            .get("customerId");
+            .get("customerId"));
     }
 
     public String getRolesFromToken(String token) {
-        return (String) Jwts.parserBuilder().setSigningKey(secretKey)
+        return (String) Jwts.parserBuilder()
+            .setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
             .getBody()
-            .get("role");
+            .get("userRole");
     }
 }

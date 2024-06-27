@@ -122,7 +122,7 @@ class OrderServiceImplTest {
         OrderBook orderBook = OrderBook.builder()
             .orderBookId(1L)
             .bookId(1L)
-            .orderProductQuantity(2)
+            .orderBookQuantity(2)
             .price(BigDecimal.valueOf(1000))
             .build();
 

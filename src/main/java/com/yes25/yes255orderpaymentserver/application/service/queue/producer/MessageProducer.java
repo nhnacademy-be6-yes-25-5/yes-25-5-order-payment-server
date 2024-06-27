@@ -38,7 +38,6 @@ public class MessageProducer {
     }
 
     public void sendOrderDone(PreOrder preOrder, BigDecimal purePrice) {
-
         UpdatePointMessage updatePointMessage = UpdatePointMessage.from(preOrder, purePrice);
         List<UpdateUserCartQuantityRequest> userCartQuantityRequests = createUserCartQuantityRequests(preOrder);
 

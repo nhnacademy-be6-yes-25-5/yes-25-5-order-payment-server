@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
 
 @RequiredArgsConstructor
-//@Component
+@Component
 public class JwtFilter extends GenericFilterBean {
     private final JwtProvider jwtProvider;
 
@@ -28,10 +28,10 @@ public class JwtFilter extends GenericFilterBean {
         String token = getToken((HttpServletRequest) servletRequest);
 
         if (jwtProvider.isValidToken(token)) {
-            String userName = jwtProvider.getUserNameFromToken(token);
+            Long userId = jwtProvider.getUserNameFromToken(token);
             String role = jwtProvider.getRolesFromToken(token);
 
-            JwtUserDetails jwtUserDetails = JwtUserDetails.of(userName, role);
+            JwtUserDetails jwtUserDetails = JwtUserDetails.of(userId, role);
 
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 jwtUserDetails, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
