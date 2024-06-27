@@ -27,7 +27,7 @@ public class CartConsumer {
         requests.forEach(request ->
             log.info("책 ID : {}, 수량 : {}", request.bookId(), request.quantity()));
 
-        userAdaptor.decreaseUserCartQuantity(requests);
+//        userAdaptor.decreaseUserCartQuantity(requests);
     }
 
     @Recover
