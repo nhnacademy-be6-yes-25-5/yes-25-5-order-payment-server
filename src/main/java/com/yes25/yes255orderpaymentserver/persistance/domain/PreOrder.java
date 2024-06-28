@@ -138,7 +138,7 @@ public class PreOrder {
             .order(order)
             .bookId(bookIds.get(index))
             .price(prices.get(index))
-            .orderProductQuantity(quantities.get(index))
+            .orderBookQuantity(quantities.get(index))
             .build();
     }
 

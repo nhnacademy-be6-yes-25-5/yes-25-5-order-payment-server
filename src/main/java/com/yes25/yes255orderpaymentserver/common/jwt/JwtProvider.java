@@ -13,6 +13,8 @@ import java.util.Date;
 import java.util.List;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -47,19 +49,21 @@ public class JwtProvider {
         }
     }
 
-    public String getUserNameFromToken(String token) {
-        return (String) Jwts.parserBuilder().setSigningKey(secretKey)
+    public Long getUserNameFromToken(String token) {
+        return Long.valueOf((Integer) Jwts.parserBuilder()
+            .setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
             .getBody()
-            .get("customerId");
+            .get("customerId"));
     }
 
     public String getRolesFromToken(String token) {
-        return (String) Jwts.parserBuilder().setSigningKey(secretKey)
+        return (String) Jwts.parserBuilder()
+            .setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
             .getBody()
-            .get("role");
+            .get("userRole");
     }
 }

@@ -5,7 +5,6 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Builder;
 
@@ -24,7 +23,7 @@ public record ReadUserOrderAllResponse(String orderId,
             .toList();
 
         List<Integer> quantities = orderBooks.stream()
-            .map(OrderBook::getOrderProductQuantity)
+            .map(OrderBook::getOrderBookQuantity)
             .toList();
 
         return ReadUserOrderAllResponse.builder()

@@ -47,7 +47,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public void createOrder(PreOrder preOrder, BigDecimal purePrice, SuccessPaymentResponse response) {
-        log.info("결제가 완료되어 주문을 확정하는 중입니다. : {}", preOrder);
+        log.info("결제가 완료되어 주문을 확정하는 중입니다. 주문 ID : {}", preOrder.getPreOrderId());
         OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(OrderStatusType.WAIT.name())
             .orElseThrow(() -> new EntityNotFoundException(
                 ErrorStatus.toErrorStatus("주문 상태를 찾을 수 없습니다.", 404, LocalDateTime.now())));
@@ -66,6 +66,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         orderBookRepository.saveAll(orderBooks);
+        log.info("주문이 확정되었습니다. 주문 ID: {}", preOrder.getPreOrderId());
     }
 
     @Transactional(readOnly = true)

@@ -50,6 +50,8 @@ logging:
     org.springframework.amqp.rabbit.listener: debug
     org.hibernate.orm.jdbc.bind: trace
     org.springframework.transaction.interceptor: trace
+  file:
+    path: ${user.home}/logs/${spring.application.name}
 eureka:
   client:
     enabled: true

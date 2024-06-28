@@ -23,6 +23,7 @@ public class RabbitMQConfig {
             .withArgument("x-dead-letter-routing-key", "dlx.preOrderQueue")
             .build();
     }
+
     @Bean
     public Queue payQueue() {
         return QueueBuilder.durable("payQueue")
@@ -56,6 +57,14 @@ public class RabbitMQConfig {
         return QueueBuilder.durable("cartDecreaseQueue")
             .withArgument("x-dead-letter-exchange", "dlxExchange")
             .withArgument("x-dead-letter-routing-key", "dlx.cartDecreaseQueue")
+            .build();
+    }
+
+    @Bean
+    public Queue stockDecreaseQueue() {
+        return QueueBuilder.durable("stockDecreaseQueue")
+            .withArgument("x-dead-letter-exchange", "dlxExchange")
+            .withArgument("x-dead-letter-routing-key", "dlx.stockDecreaseQueue")
             .build();
     }
 
@@ -95,6 +104,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public DirectExchange stockDecreaseExchange() {
+        return new DirectExchange("stockDecreaseExchange");
+    }
+
+    @Bean
     public Queue dlqPreOrderQueue() {
         return new Queue("dlx.preOrderQueue");
     }
@@ -112,6 +126,11 @@ public class RabbitMQConfig {
     @Bean
     public Queue dlqCartDecreaseQueue() {
         return new Queue("dlx.cartDecreaseQueue");
+    }
+
+    @Bean
+    public Queue dlqStockDecreaseQueue() {
+        return new Queue("dlx.stockDecreaseQueue");
     }
 
     @Bean
@@ -186,6 +205,21 @@ public class RabbitMQConfig {
             .bind(dlqCartDecreaseQueue)
             .to(dlxExchange)
             .with("dlx.cartDecreaseQueue");
+    }
+
+    @Bean
+    public Binding stockDecreaseBinding(Queue stockDecreaseQueue, DirectExchange stockDecreaseExchange) {
+        return BindingBuilder.bind(stockDecreaseQueue)
+            .to(stockDecreaseExchange)
+            .with("stockDecreaseRoutingKey");
+    }
+
+    @Bean
+    public Binding dlxStockDecreaseBinding(Queue dlqStockDecreaseQueue, DirectExchange dlxExchange) {
+        return BindingBuilder
+            .bind(dlqStockDecreaseQueue)
+            .to(dlxExchange)
+            .with("dlx.stockDecreaseQueue");
     }
 
     @Bean

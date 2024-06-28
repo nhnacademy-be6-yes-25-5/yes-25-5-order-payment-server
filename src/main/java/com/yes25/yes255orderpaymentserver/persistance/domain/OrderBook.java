@@ -27,7 +27,7 @@ public class OrderBook {
     private Long bookId;
 
     @Column(nullable = false)
-    private Integer orderProductQuantity;
+    private Integer orderBookQuantity;
 
     @Column(nullable = false)
     private BigDecimal price;
@@ -37,11 +37,11 @@ public class OrderBook {
     private Order order;
 
     @Builder
-    public OrderBook(Long orderBookId, Long bookId, Integer orderProductQuantity,
+    public OrderBook(Long orderBookId, Long bookId, Integer orderBookQuantity,
         BigDecimal price, Order order) {
         this.orderBookId = orderBookId;
         this.bookId = bookId;
-        this.orderProductQuantity = orderProductQuantity;
+        this.orderBookQuantity = orderBookQuantity;
         this.price = price;
         this.order = order;
     }

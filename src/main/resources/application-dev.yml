@@ -4,18 +4,7 @@ spring:
     port: 5672
     listener:
       simple:
-        retry:
-          enabled: true
-          initial-interval: 1000
-          max-attempts: 5
-          multiplier: 1.5
         default-requeue-rejected: false
-    template:
-      retry:
-        enabled: true
-        initial-interval: 1000
-        max-attempts: 3
-        multiplier: 1.5
     username: yes255
     password: yes255
 
@@ -55,6 +44,8 @@ logging:
     org.springframework.amqp.rabbit.listener: debug
     org.hibernate.orm.jdbc.bind: trace
     org.springframework.transaction.interceptor: trace
+  file:
+    path: ${user.dir}/logs/${spring.application.name}
 
 server:
   port: 8072
