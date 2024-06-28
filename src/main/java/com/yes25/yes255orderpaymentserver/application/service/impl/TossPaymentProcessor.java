@@ -7,6 +7,7 @@ import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymen
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.common.exception.FeignClientException;
 import com.yes25.yes255orderpaymentserver.common.exception.StockUnavailableException;
+import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
@@ -26,8 +27,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -113,9 +116,19 @@ public class TossPaymentProcessor implements PaymentProcessor {
     }
 
     private void sendPaymentDoneMessage(Payment payment, CreatePaymentRequest request) {
+        JwtUserDetails jwtUserDetails = (JwtUserDetails) SecurityContextHolder.getContext()
+            .getAuthentication().getPrincipal();
+        String authToken =
+            jwtUserDetails != null ? "Bearer " + jwtUserDetails.accessToken() : "";
+
+        MessagePostProcessor messagePostProcessor = message -> {
+            message.getMessageProperties().setHeader("Authorization", authToken);
+            return message;
+        };
+
         SuccessPaymentResponse response = SuccessPaymentResponse.of(payment, request);
 
-        rabbitTemplate.convertAndSend("payExchange", "payRoutingKey", response);
+        rabbitTemplate.convertAndSend("payExchange", "payRoutingKey", response, messagePostProcessor);
     }
 
     private Payment savePayment(JSONObject jsonObject) {

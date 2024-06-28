@@ -7,7 +7,7 @@ import lombok.Builder;
 @Builder
 public record UpdatePointMessage(BigDecimal usePoints, BigDecimal amount) {
 
-    public static UpdatePointMessage from(PreOrder preOrder, BigDecimal purePrice) {
+    public static UpdatePointMessage of(PreOrder preOrder, BigDecimal purePrice) {
         return UpdatePointMessage.builder()
             .usePoints(preOrder.getPoints())
             .amount(purePrice)

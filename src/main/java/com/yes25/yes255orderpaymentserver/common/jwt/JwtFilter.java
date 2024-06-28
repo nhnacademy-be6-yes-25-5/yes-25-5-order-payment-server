@@ -31,7 +31,7 @@ public class JwtFilter extends GenericFilterBean {
             Long userId = jwtProvider.getUserNameFromToken(token);
             String role = jwtProvider.getRolesFromToken(token);
 
-            JwtUserDetails jwtUserDetails = JwtUserDetails.of(userId, role);
+            JwtUserDetails jwtUserDetails = JwtUserDetails.of(userId, role, token);
 
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                 jwtUserDetails, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))

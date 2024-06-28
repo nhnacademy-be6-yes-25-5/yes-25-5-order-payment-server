@@ -2,10 +2,12 @@ package com.yes25.yes255orderpaymentserver.application.service.queue.consumer;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.UpdateUserCartQuantityRequest;
 import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
+import com.yes25.yes255orderpaymentserver.common.utils.AsyncSecurityContextUtils;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.UserAdaptor;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
@@ -18,12 +20,14 @@ import org.springframework.stereotype.Service;
 public class CartConsumer {
 
     private final UserAdaptor userAdaptor;
+    private final AsyncSecurityContextUtils securityContextUtils;
     private final MessageProducer messageProducer;
 
     @RabbitListener(queues = "cartDecreaseQueue")
     @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 2000))
-    public void receiveCartDecreaseQueue(List<UpdateUserCartQuantityRequest> requests) {
+    public void receiveCartDecreaseQueue(List<UpdateUserCartQuantityRequest> requests, Message message) {
         log.info("주문이 확정되어 장바구니 재고를 감소시킵니다. 요청 수 : {}", requests.size());
+        securityContextUtils.configureSecurityContext(message);
         requests.forEach(request ->
             log.info("책 ID : {}, 수량 : {}", request.bookId(), request.quantity()));
 
