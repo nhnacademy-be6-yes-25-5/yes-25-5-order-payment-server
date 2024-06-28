@@ -1,12 +1,8 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentRequest;
-import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
-import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
-import com.yes25.yes255orderpaymentserver.common.exception.FeignClientException;
-import com.yes25.yes255orderpaymentserver.common.exception.StockUnavailableException;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
@@ -50,12 +46,6 @@ public class TossPaymentProcessor implements PaymentProcessor {
 
     @Override
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) {
-        try {
-            checkAndDecreaseInStock(request);
-        } catch (FeignClientException e) {
-            throw new StockUnavailableException(e.getErrorStatus(), request.orderId());
-        }
-
         return processingPayment(request);
     }
 
@@ -107,12 +97,6 @@ public class TossPaymentProcessor implements PaymentProcessor {
         }
 
         return new CreatePaymentResponse(200);
-    }
-
-    private void checkAndDecreaseInStock(CreatePaymentRequest paymentRequest) {
-        StockRequest stockRequest = StockRequest.of(paymentRequest, OperationType.DECREASE);
-
-        bookAdaptor.updateStock(stockRequest);
     }
 
     private void sendPaymentDoneMessage(Payment payment, CreatePaymentRequest request) {
