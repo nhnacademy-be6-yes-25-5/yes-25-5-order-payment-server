@@ -16,6 +16,7 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderSt
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadAllOrderResponse;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -35,8 +36,14 @@ public class AdminOrderServiceImpl implements AdminOrderService {
 
     @Transactional(readOnly = true)
     @Override
-    public Page<ReadAllOrderResponse> getAllOrdersByPaging(Pageable pageable) {
-        Page<Order> orders = orderRepository.findAllByOrderByOrderCreatedAtDesc(pageable);
+    public Page<ReadAllOrderResponse> getAllOrdersByPaging(Pageable pageable, String role) {
+        Page<Order> orders;
+        if (Objects.isNull(role) || role.isEmpty()) {
+            orders = orderRepository.findAllByOrderByOrderCreatedAtDesc(pageable);
+        } else {
+            orders = orderRepository.findAllByUserRoleOrderByOrderCreatedAtDesc(role, pageable);
+        }
+
         List<ReadAllOrderResponse> responses = orders.stream().map(order -> {
             List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
             List<Long> bookIds = orderBooks.stream()
@@ -68,6 +75,6 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(request.orderStatusType().name())
             .orElseThrow(() -> new OrderStatusNotFoundException(request.orderStatusType().name()));
 
-        order.updateOrderStatus(orderStatus);
+        order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
     }
 }

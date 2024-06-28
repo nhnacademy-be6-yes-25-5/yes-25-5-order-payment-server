@@ -5,6 +5,7 @@ import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymen
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
+import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
@@ -46,9 +47,11 @@ public class OrderServiceImpl implements OrderService {
     private final BookAdaptor bookAdaptor;
 
     @Override
-    public void createOrder(PreOrder preOrder, BigDecimal purePrice, SuccessPaymentResponse response) {
+    public void createOrder(PreOrder preOrder, BigDecimal purePrice,
+        SuccessPaymentResponse response) {
         log.info("결제가 완료되어 주문을 확정하는 중입니다. 주문 ID : {}", preOrder.getPreOrderId());
-        OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(OrderStatusType.WAIT.name())
+        OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(
+                OrderStatusType.WAIT.name())
             .orElseThrow(() -> new EntityNotFoundException(
                 ErrorStatus.toErrorStatus("주문 상태를 찾을 수 없습니다.", 404, LocalDateTime.now())));
 
@@ -73,7 +76,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Page<ReadUserOrderAllResponse> findByUserId(Long userId,
         Pageable pageable) {
-        Page<Order> orders = orderRepository.findAllByCustomerIdOrderByOrderCreatedAtDesc(userId, pageable);
+        Page<Order> orders = orderRepository.findAllByCustomerIdOrderByOrderCreatedAtDesc(userId,
+            pageable);
 
         List<ReadUserOrderAllResponse> responses = orders.stream()
             .map(order -> {
@@ -90,7 +94,8 @@ public class OrderServiceImpl implements OrderService {
     public ReadUserOrderResponse findByOrderIdAndUserId(String orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new EntityNotFoundException(
-                ErrorStatus.toErrorStatus("해당하는 엔티티를 찾을 수 없습니다. : " + orderId, 404, LocalDateTime.now())
+                ErrorStatus.toErrorStatus("해당하는 엔티티를 찾을 수 없습니다. : " + orderId, 404,
+                    LocalDateTime.now())
             ));
 
         List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
@@ -131,5 +136,18 @@ public class OrderServiceImpl implements OrderService {
         return ReadOrderStatusResponse.fromEntity(order);
     }
 
+    @Override
+    public void updateOrderStatusToDone() {
+        LocalDateTime now = LocalDateTime.now();
+        List<Order> orders = orderRepository.findByOrderStatusOrderStatusNameAndUpdatedAtBefore(
+            OrderStatusType.DELIVERING.name(), now);
+        OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(
+                OrderStatusType.DONE.name())
+            .orElseThrow(() -> new OrderStatusNotFoundException(OrderStatusType.DONE.name()));
 
+        for (Order order : orders) {
+            order.updateOrderStatusAndUpdatedAt(orderStatus, now);
+            orderRepository.save(order);
+        }
+    }
 }

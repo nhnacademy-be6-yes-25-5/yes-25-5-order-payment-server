@@ -85,6 +85,7 @@ public class Order {
     @Column(nullable = false)
     private String userRole;
 
+    private LocalDateTime updatedAt;
     private String reference;
     private Long couponId;
     private BigDecimal points;
@@ -97,7 +98,7 @@ public class Order {
         String zipCode, LocalDateTime orderCreatedAt, LocalDate orderDeliveryAt, List<OrderBook> orderBooks,
         BigDecimal purePrice, String orderUserName, String orderUserEmail, String orderUserPhoneNumber,
         String receiveUserName, String receiveUserEmail, String receiveUserPhoneNumber,
-        String userRole, String reference, Long couponId, BigDecimal points) {
+        String userRole, LocalDateTime updatedAt, String reference, Long couponId, BigDecimal points) {
         this.orderId = orderId;
         this.customerId = customerId;
         this.orderStartedAt = orderStartedAt;
@@ -118,12 +119,14 @@ public class Order {
         this.receiveUserEmail = receiveUserEmail;
         this.receiveUserPhoneNumber = receiveUserPhoneNumber;
         this.userRole = userRole;
+        this.updatedAt = updatedAt;
         this.reference = reference;
         this.couponId = couponId;
         this.points = points;
     }
 
-    public void updateOrderStatus(OrderStatus orderStatus) {
+    public void updateOrderStatusAndUpdatedAt(OrderStatus orderStatus, LocalDateTime now) {
         this.orderStatus = orderStatus;
+        this.updatedAt = now;
     }
 }
