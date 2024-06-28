@@ -122,4 +122,8 @@ public class Order {
         this.couponId = couponId;
         this.points = points;
     }
+
+    public void updateOrderStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
+    }
 }

@@ -1,12 +1,10 @@
 spring:
   rabbitmq:
-    host: 133.186.153.195
+    host: localhost
     port: 5672
     listener:
       simple:
         default-requeue-rejected: false
-    username: yes255
-    password: yes255
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
