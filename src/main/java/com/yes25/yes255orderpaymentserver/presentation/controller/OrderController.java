@@ -6,11 +6,13 @@ import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.common.jwt.annotation.CurrentUser;
 import com.yes25.yes255orderpaymentserver.presentation.dto.ApiResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
+import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.UpdateOrderResponse;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -18,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -61,5 +64,12 @@ public class OrderController {
     @GetMapping("/status/{orderId}")
     public ReadOrderStatusResponse find(@PathVariable String orderId) {
         return ApiResponse.ok(orderService.findOrderStatusByOrderId(orderId));
+    }
+
+    @PutMapping("/{orderId}")
+    public UpdateOrderResponse update(@PathVariable String orderId,
+        @RequestBody UpdateOrderRequest request,
+        @CurrentUser JwtUserDetails jwtUserDetails) {
+        return ApiResponse.ok(orderService.updateOrderStatusByOrderId(orderId, request, jwtUserDetails.userId()));
     }
 }

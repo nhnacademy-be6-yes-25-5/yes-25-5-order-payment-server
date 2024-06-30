@@ -13,7 +13,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 
     Page<Order> findAllByOrderByOrderCreatedAtDesc(Pageable pageable);
 
-    List<Order> findByOrderStatusOrderStatusNameAndUpdatedAtBefore(String doneName, LocalDateTime now);
+    List<Order> findByOrderStatusOrderStatusNameAndDeliveryStartedAtBefore(String doneName, LocalDateTime now);
 
     Page<Order> findAllByUserRoleOrderByOrderCreatedAtDesc(String role, Pageable pageable);
 }

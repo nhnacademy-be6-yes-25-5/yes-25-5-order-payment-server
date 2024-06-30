@@ -3,6 +3,8 @@ package com.yes25.yes255orderpaymentserver.application.service.impl;
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadBookResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
+import com.yes25.yes255orderpaymentserver.common.exception.AccessDeniedException;
+import com.yes25.yes255orderpaymentserver.common.exception.ApplicationException;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
@@ -18,10 +20,12 @@ import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookReposi
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
+import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.UpdateOrderResponse;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -107,10 +111,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<ReadPaymentOrderResponse> findAllOrderByOrderId(String orderId) {
         Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new OrderNotFoundException(
-                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. 주문 ID : " + orderId,
-                    404, LocalDateTime.now())
-            ));
+            .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
         List<ReadBookResponse> responses = new ArrayList<>();
@@ -128,10 +129,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ReadOrderStatusResponse findOrderStatusByOrderId(String orderId) {
         Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new OrderNotFoundException(
-                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. 주문 ID : " + orderId,
-                    404, LocalDateTime.now())
-            ));
+            .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         return ReadOrderStatusResponse.fromEntity(order);
     }
@@ -139,7 +137,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void updateOrderStatusToDone() {
         LocalDateTime now = LocalDateTime.now();
-        List<Order> orders = orderRepository.findByOrderStatusOrderStatusNameAndUpdatedAtBefore(
+        List<Order> orders = orderRepository.findByOrderStatusOrderStatusNameAndDeliveryStartedAtBefore(
             OrderStatusType.DELIVERING.name(), now);
         OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(
                 OrderStatusType.DONE.name())
@@ -149,5 +147,21 @@ public class OrderServiceImpl implements OrderService {
             order.updateOrderStatusAndUpdatedAt(orderStatus, now);
             orderRepository.save(order);
         }
+    }
+
+    @Override
+    public UpdateOrderResponse updateOrderStatusByOrderId(String orderId,
+        UpdateOrderRequest request, Long userId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new OrderNotFoundException(orderId));
+        OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(request.orderStatusType().name())
+            .orElseThrow(() -> new OrderStatusNotFoundException(request.orderStatusType().name()));
+
+        if (!order.isCustomerIdEqualTo(userId)) {
+            throw new AccessDeniedException("주문 내역의 정보와 사용자가 일치하지 않습니다.");
+        }
+        order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
+
+        return UpdateOrderResponse.from("주문 상태가 성공적으로 변경되었습니다.");
     }
 }

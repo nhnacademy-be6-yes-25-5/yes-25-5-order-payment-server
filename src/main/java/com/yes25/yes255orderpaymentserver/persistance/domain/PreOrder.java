@@ -111,7 +111,6 @@ public class PreOrder {
             .orderId(preOrderId)
             .customerId(userId)
             .orderTotalAmount(orderTotalAmount)
-            .orderStartedAt(orderedDate)
             .orderDeliveryAt(deliveryDate)
             .orderStatus(orderStatus)
             .takeout(takeout)

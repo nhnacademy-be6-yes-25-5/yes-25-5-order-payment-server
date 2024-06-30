@@ -68,13 +68,11 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     @Override
     public void updateOrderStatusByOrderId(String orderId, UpdateOrderStatusRequest request) {
         Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new OrderNotFoundException(
-                ErrorStatus.toErrorStatus("주문을 찾을 수 없습니다. 주문 ID : " + orderId, 404, LocalDateTime.now())
-            ));
+            .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(request.orderStatusType().name())
             .orElseThrow(() -> new OrderStatusNotFoundException(request.orderStatusType().name()));
 
-        order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
+        order.updateOrderStatusAndUpdatedAtAndDeliveryStartedAt(orderStatus, LocalDateTime.now());
     }
 }
