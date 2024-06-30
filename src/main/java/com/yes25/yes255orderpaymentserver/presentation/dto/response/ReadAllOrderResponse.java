@@ -17,7 +17,8 @@ public record ReadAllOrderResponse(String orderId,
                                    LocalDateTime orderCreatedAt,
                                    LocalDate orderDeliveryAt,
                                    BigDecimal amount,
-                                   OrderStatusType orderStatusType) {
+                                   OrderStatusType orderStatusType,
+                                   String role) {
 
     public static ReadAllOrderResponse of(Order order, List<Long> bookIds, List<Integer> quantities, List<String> bookNames) {
         return ReadAllOrderResponse.builder()
@@ -30,6 +31,7 @@ public record ReadAllOrderResponse(String orderId,
             .orderDeliveryAt(order.getOrderDeliveryAt())
             .amount(order.getOrderTotalAmount())
             .orderStatusType(OrderStatusType.valueOf(order.getOrderStatus().getOrderStatusName()))
+            .role(order.getUserRole().toLowerCase())
             .build();
     }
 }

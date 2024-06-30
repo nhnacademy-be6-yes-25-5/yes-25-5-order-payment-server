@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 public interface AdminOrderService {
 
-    Page<ReadAllOrderResponse> getAllOrdersByPaging(Pageable pageable);
+    Page<ReadAllOrderResponse> getAllOrdersByPaging(Pageable pageable, String role);
 
     void updateOrderStatusByOrderId(String orderId, UpdateOrderStatusRequest request);
 }

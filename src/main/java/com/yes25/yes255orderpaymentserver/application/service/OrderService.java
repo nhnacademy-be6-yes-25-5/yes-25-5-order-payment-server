@@ -23,4 +23,6 @@ public interface OrderService {
     List<ReadPaymentOrderResponse> findAllOrderByOrderId(String orderId);
 
     ReadOrderStatusResponse findOrderStatusByOrderId(String orderId);
+
+    void updateOrderStatusToDone();
 }
