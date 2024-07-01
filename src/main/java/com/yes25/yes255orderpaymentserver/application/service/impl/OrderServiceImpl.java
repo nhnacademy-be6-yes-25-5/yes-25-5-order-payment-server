@@ -1,32 +1,36 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadBookResponse;
+import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.common.exception.AccessDeniedException;
-import com.yes25.yes255orderpaymentserver.common.exception.ApplicationException;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
+import com.yes25.yes255orderpaymentserver.persistance.repository.DeliveryRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDetailResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.UpdateOrderResponse;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,6 +52,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderStatusRepository orderStatusRepository;
     private final TakeoutRepository takeoutRepository;
     private final OrderBookRepository orderBookRepository;
+    private final DeliveryRepository deliveryRepository;
     private final BookAdaptor bookAdaptor;
 
     @Override
@@ -112,13 +117,7 @@ public class OrderServiceImpl implements OrderService {
     public List<ReadPaymentOrderResponse> findAllOrderByOrderId(String orderId) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new OrderNotFoundException(orderId));
-
-        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
-        List<ReadBookResponse> responses = new ArrayList<>();
-        for (OrderBook orderBook : orderBooks) {
-            ReadBookResponse response = bookAdaptor.findBookById(orderBook.getBookId());
-            responses.add(response);
-        }
+        List<ReadBookResponse> responses = getBookResponse(order);
 
         return responses.stream()
             .map(ReadPaymentOrderResponse::fromDto)
@@ -145,7 +144,8 @@ public class OrderServiceImpl implements OrderService {
 
         for (Order order : orders) {
             order.updateOrderStatusAndUpdatedAt(orderStatus, now);
-            orderRepository.save(order);
+            Delivery delivery = Delivery.toEntity(order);
+            deliveryRepository.save(delivery);
         }
     }
 
@@ -163,5 +163,33 @@ public class OrderServiceImpl implements OrderService {
         order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
 
         return UpdateOrderResponse.from("주문 상태가 성공적으로 변경되었습니다.");
+    }
+
+    @Override
+    public ReadOrderDetailResponse getByOrderIdAndUserId(String orderId, Long userId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new OrderNotFoundException(orderId));
+        List<ReadBookResponse> responses = getBookResponse(order);
+
+        List<Delivery> deliveries = deliveryRepository.findAllByOrderOrderByTimestampDesc(order);
+
+        return ReadOrderDetailResponse.of(order, responses, deliveries);
+    }
+
+    // todo. 3달치 모든 회원 순수금액 계산
+    @Override
+    public ReadPurePriceResponse getPurePriceByDate(LocalDate now) {
+        return null;
+    }
+
+    private List<ReadBookResponse> getBookResponse(Order order) {
+        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+        List<ReadBookResponse> responses = new ArrayList<>();
+        for (OrderBook orderBook : orderBooks) {
+            ReadBookResponse response = bookAdaptor.findBookById(orderBook.getBookId());
+            responses.add(response);
+        }
+
+        return responses;
     }
 }

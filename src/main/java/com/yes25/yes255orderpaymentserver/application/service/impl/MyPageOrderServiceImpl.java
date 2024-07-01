@@ -15,15 +15,18 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MyPageOrderServiceImpl implements MyPageOrderService {
 
     private final OrderRepository orderRepository;
     private final OrderBookRepository orderBookRepository;
     private final BookAdaptor bookAdaptor;
 
+    @Transactional(readOnly = true)
     @Override
     public Page<ReadMyOrderHistoryResponse> getMyOrdersByPaging(Pageable pageable, Long userId) {
         Page<Order> orders = orderRepository.findAllByCustomerIdOrderByOrderCreatedAtDesc(userId, pageable);

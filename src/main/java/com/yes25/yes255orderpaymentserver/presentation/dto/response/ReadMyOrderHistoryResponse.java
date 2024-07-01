@@ -24,6 +24,7 @@ public record ReadMyOrderHistoryResponse(
         List<String> bookNames) {
         return ReadMyOrderHistoryResponse.builder()
             .orderId(order.getOrderId())
+            .orderCreatedAt(order.getOrderCreatedAt())
             .orderTotalAmount(order.getOrderTotalAmount().intValue())
             .orderDeliveryAt(order.getOrderDeliveryAt())
             .deliveryStartedAt(order.getDeliveryStartedAt() != null ? order.getDeliveryStartedAt() : LocalDateTime.MIN)

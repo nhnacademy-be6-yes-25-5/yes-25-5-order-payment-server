@@ -8,12 +8,11 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.ApiResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDetailResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
-import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.UpdateOrderResponse;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -56,11 +55,6 @@ public class OrderController {
         return ApiResponse.ok(orderService.findByOrderIdAndUserId(orderId, userId));
     }
 
-    @GetMapping("/{orderId}")
-    public List<ReadPaymentOrderResponse> findAll(@PathVariable String orderId) {
-        return ApiResponse.ok(orderService.findAllOrderByOrderId(orderId));
-    }
-
     @GetMapping("/status/{orderId}")
     public ReadOrderStatusResponse find(@PathVariable String orderId) {
         return ApiResponse.ok(orderService.findOrderStatusByOrderId(orderId));
@@ -71,5 +65,11 @@ public class OrderController {
         @RequestBody UpdateOrderRequest request,
         @CurrentUser JwtUserDetails jwtUserDetails) {
         return ApiResponse.ok(orderService.updateOrderStatusByOrderId(orderId, request, jwtUserDetails.userId()));
+    }
+
+    @GetMapping("/{orderId}")
+    public ReadOrderDetailResponse find(@PathVariable String orderId,
+        @CurrentUser JwtUserDetails jwtUserDetails) {
+        return ApiResponse.ok(orderService.getByOrderIdAndUserId(orderId, jwtUserDetails.userId()));
     }
 }

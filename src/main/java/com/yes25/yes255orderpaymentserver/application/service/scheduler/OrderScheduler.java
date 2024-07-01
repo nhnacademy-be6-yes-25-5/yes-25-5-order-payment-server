@@ -11,7 +11,8 @@ public class OrderScheduler {
 
     private final OrderService orderService;
 
-    @Scheduled(cron = "0 0 0 * * ?")
+//    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "0 * * * * ?")
     public void updateOrderStatusScheduler() {
         orderService.updateOrderStatusToDone();
     }
