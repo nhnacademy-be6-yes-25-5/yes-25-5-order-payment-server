@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.persistance.domain;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -50,7 +51,7 @@ public class Order {
     @Column(nullable = false)
     private String zipCode;
 
-    private LocalDateTime orderStartedAt;
+    private LocalDateTime deliveryStartedAt;
 
     @Column(nullable = false)
     private LocalDateTime orderCreatedAt;
@@ -85,6 +86,9 @@ public class Order {
     @Column(nullable = false)
     private String userRole;
 
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Delivery> deliveries = new ArrayList<>();
+
     private LocalDateTime updatedAt;
     private String reference;
     private Long couponId;
@@ -92,7 +96,7 @@ public class Order {
 
 
     @Builder
-    public Order(String orderId, Long customerId, LocalDateTime orderStartedAt,
+    public Order(String orderId, Long customerId, LocalDateTime deliveryStartedAt,
         BigDecimal orderTotalAmount,
         Takeout takeout, OrderStatus orderStatus, String addressRaw, String addressDetail,
         String zipCode, LocalDateTime orderCreatedAt, LocalDate orderDeliveryAt, List<OrderBook> orderBooks,
@@ -101,7 +105,7 @@ public class Order {
         String userRole, LocalDateTime updatedAt, String reference, Long couponId, BigDecimal points) {
         this.orderId = orderId;
         this.customerId = customerId;
-        this.orderStartedAt = orderStartedAt;
+        this.deliveryStartedAt = deliveryStartedAt;
         this.orderTotalAmount = orderTotalAmount;
         this.takeout = takeout;
         this.orderStatus = orderStatus;
@@ -125,8 +129,18 @@ public class Order {
         this.points = points;
     }
 
+    public void updateOrderStatusAndUpdatedAtAndDeliveryStartedAt(OrderStatus orderStatus, LocalDateTime now) {
+        this.orderStatus = orderStatus;
+        this.updatedAt = now;
+        this.deliveryStartedAt = now;
+    }
+
     public void updateOrderStatusAndUpdatedAt(OrderStatus orderStatus, LocalDateTime now) {
         this.orderStatus = orderStatus;
         this.updatedAt = now;
+    }
+
+    public boolean isCustomerIdEqualTo(Long userId) {
+        return customerId.equals(userId);
     }
 }

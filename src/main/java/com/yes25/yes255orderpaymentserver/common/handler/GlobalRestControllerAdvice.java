@@ -1,6 +1,7 @@
 package com.yes25.yes255orderpaymentserver.common.handler;
 
 import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
+import com.yes25.yes255orderpaymentserver.common.exception.AccessDeniedException;
 import com.yes25.yes255orderpaymentserver.common.exception.ApplicationException;
 import com.yes25.yes255orderpaymentserver.common.exception.StockUnavailableException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
@@ -26,6 +27,13 @@ public class GlobalRestControllerAdvice {
     public ResponseEntity<ErrorStatus> handleStockUnavailableException(StockUnavailableException e) {
         ErrorStatus errorStatus = e.getErrorStatus();
         messageProducer.sendCancelMessage(e.getOrderId());
+
+        return new ResponseEntity<>(errorStatus, errorStatus.toHttpStatus());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorStatus> handleAccessDeniedException(AccessDeniedException e) {
+        ErrorStatus errorStatus = e.getErrorStatus();
 
         return new ResponseEntity<>(errorStatus, errorStatus.toHttpStatus());
     }

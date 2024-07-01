@@ -1,12 +1,17 @@
 package com.yes25.yes255orderpaymentserver.application.service;
 
+import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
+import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDetailResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.UpdateOrderResponse;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -25,4 +30,10 @@ public interface OrderService {
     ReadOrderStatusResponse findOrderStatusByOrderId(String orderId);
 
     void updateOrderStatusToDone();
+
+    UpdateOrderResponse updateOrderStatusByOrderId(String orderId, UpdateOrderRequest request, Long userId);
+
+    ReadOrderDetailResponse getByOrderIdAndUserId(String orderId, Long userId);
+
+    ReadPurePriceResponse getPurePriceByDate(LocalDate now);
 }

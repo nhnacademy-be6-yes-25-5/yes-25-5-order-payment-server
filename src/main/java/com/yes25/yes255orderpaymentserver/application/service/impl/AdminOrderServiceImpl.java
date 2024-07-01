@@ -6,9 +6,11 @@ import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundExceptio
 import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
+import com.yes25.yes255orderpaymentserver.persistance.repository.DeliveryRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
@@ -32,6 +34,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     private final OrderRepository orderRepository;
     private final OrderBookRepository orderBookRepository;
     private final OrderStatusRepository orderStatusRepository;
+    private final DeliveryRepository deliveryRepository;
     private final BookAdaptor bookAdaptor;
 
     @Transactional(readOnly = true)
@@ -68,13 +71,13 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     @Override
     public void updateOrderStatusByOrderId(String orderId, UpdateOrderStatusRequest request) {
         Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new OrderNotFoundException(
-                ErrorStatus.toErrorStatus("주문을 찾을 수 없습니다. 주문 ID : " + orderId, 404, LocalDateTime.now())
-            ));
-
+            .orElseThrow(() -> new OrderNotFoundException(orderId));
         OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(request.orderStatusType().name())
             .orElseThrow(() -> new OrderStatusNotFoundException(request.orderStatusType().name()));
 
-        order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
+        order.updateOrderStatusAndUpdatedAtAndDeliveryStartedAt(orderStatus, LocalDateTime.now());
+
+        Delivery delivery = request.toEntity(order);
+        deliveryRepository.save(delivery);
     }
 }
