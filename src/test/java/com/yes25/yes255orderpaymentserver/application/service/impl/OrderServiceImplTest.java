@@ -12,12 +12,14 @@ import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymen
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.TakeoutType;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
@@ -48,6 +50,9 @@ class OrderServiceImplTest {
     private OrderStatusRepository orderStatusRepository;
 
     @Mock
+    private PaymentRepository paymentRepository;
+
+    @Mock
     private TakeoutRepository takeoutRepository;
 
     @Mock
@@ -60,6 +65,7 @@ class OrderServiceImplTest {
     private OrderStatus orderStatus;
     private Takeout takeout;
     private Order order;
+    private Payment payment;
     private List<OrderBook> orderBooks;
     private SuccessPaymentResponse response;
 
@@ -127,6 +133,14 @@ class OrderServiceImplTest {
             .build();
 
         orderBooks = List.of(orderBook);
+
+        payment = Payment.builder()
+            .paymentId(1L)
+            .preOrderId("order-usdsa")
+            .paymentKey("dsadsad")
+            .paymentAmount(BigDecimal.valueOf(10000))
+            .paymentMethod("카드")
+            .build();
     }
 
     @DisplayName("주문을 성공적으로 확정하는지 확인한다.")
@@ -138,6 +152,7 @@ class OrderServiceImplTest {
         when(takeoutRepository.findByTakeoutName(anyString())).thenReturn(Optional.of(takeout));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderBookRepository.saveAll(anyList())).thenReturn(orderBooks);
+        when(paymentRepository.findByPreOrderId(anyString())).thenReturn(Optional.of(payment));
 
         // when
         orderService.createOrder(preOrder, purePrice, response);
