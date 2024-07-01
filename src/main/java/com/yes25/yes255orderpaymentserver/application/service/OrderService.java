@@ -4,6 +4,7 @@ import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePrice
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDeliveryResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDetailResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
@@ -33,7 +34,9 @@ public interface OrderService {
 
     UpdateOrderResponse updateOrderStatusByOrderId(String orderId, UpdateOrderRequest request, Long userId);
 
-    ReadOrderDetailResponse getByOrderIdAndUserId(String orderId, Long userId);
+    ReadOrderDeliveryResponse getByOrderIdAndUserId(String orderId, Long userId);
 
     ReadPurePriceResponse getPurePriceByDate(LocalDate now);
+
+    ReadOrderDetailResponse getOrderByOrderId(String orderId, Long userId);
 }

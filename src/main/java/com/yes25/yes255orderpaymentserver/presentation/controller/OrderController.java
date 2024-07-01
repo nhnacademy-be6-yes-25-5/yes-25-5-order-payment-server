@@ -8,6 +8,7 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.ApiResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDeliveryResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDetailResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
@@ -67,9 +68,15 @@ public class OrderController {
         return ApiResponse.ok(orderService.updateOrderStatusByOrderId(orderId, request, jwtUserDetails.userId()));
     }
 
-    @GetMapping("/{orderId}")
-    public ReadOrderDetailResponse find(@PathVariable String orderId,
+    @GetMapping("/{orderId}/delivery")
+    public ReadOrderDeliveryResponse find(@PathVariable String orderId,
         @CurrentUser JwtUserDetails jwtUserDetails) {
         return ApiResponse.ok(orderService.getByOrderIdAndUserId(orderId, jwtUserDetails.userId()));
+    }
+
+    @GetMapping("/{orderId}")
+    public ReadOrderDetailResponse getOrder(@PathVariable String orderId,
+        @CurrentUser JwtUserDetails jwtUserDetails) {
+        return ApiResponse.ok(orderService.getOrderByOrderId(orderId, jwtUserDetails.userId()));
     }
 }

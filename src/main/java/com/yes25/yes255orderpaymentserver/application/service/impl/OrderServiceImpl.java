@@ -4,16 +4,19 @@ import com.yes25.yes255orderpaymentserver.application.dto.response.ReadBookRespo
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
+import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.common.exception.AccessDeniedException;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
+import com.yes25.yes255orderpaymentserver.common.exception.PaymentNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
@@ -21,8 +24,10 @@ import com.yes25.yes255orderpaymentserver.persistance.repository.DeliveryReposit
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDeliveryResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDetailResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
@@ -54,6 +59,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderBookRepository orderBookRepository;
     private final DeliveryRepository deliveryRepository;
     private final BookAdaptor bookAdaptor;
+    private final PaymentRepository paymentRepository;
+    private final PaymentProcessor paymentProcessor;
 
     @Override
     public void createOrder(PreOrder preOrder, BigDecimal purePrice,
@@ -70,6 +77,10 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = preOrder.toEntity(orderStatus, takeout, purePrice);
         Order savedOrder = orderRepository.save(order);
+
+        Payment payment = paymentRepository.findByPreOrderId(savedOrder.getOrderId())
+            .orElseThrow(() -> new PaymentNotFoundException(savedOrder.getOrderId()));
+        payment.addOrder(savedOrder);
 
         List<OrderBook> orderBooks = new ArrayList<>();
         for (int i = 0; i < preOrder.getBookIds().size(); i++) {
@@ -117,7 +128,8 @@ public class OrderServiceImpl implements OrderService {
     public List<ReadPaymentOrderResponse> findAllOrderByOrderId(String orderId) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new OrderNotFoundException(orderId));
-        List<ReadBookResponse> responses = getBookResponse(order);
+        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+        List<ReadBookResponse> responses = getBookResponse(orderBooks);
 
         return responses.stream()
             .map(ReadPaymentOrderResponse::fromDto)
@@ -158,22 +170,33 @@ public class OrderServiceImpl implements OrderService {
             .orElseThrow(() -> new OrderStatusNotFoundException(request.orderStatusType().name()));
 
         if (!order.isCustomerIdEqualTo(userId)) {
-            throw new AccessDeniedException("주문 내역의 정보와 사용자가 일치하지 않습니다.");
+            throw new AccessDeniedException("주문 내역의 정보와 사용자가 일치하지 않습니다. 사용자 ID : " + userId);
         }
+
+        if (request.orderStatusType().name().equals(OrderStatusType.CANCEL.name())) {
+            if (!order.isWaitEqualTo()) {
+                throw new AccessDeniedException("결제 취소는 대기중일때만 가능합니다. 주문 ID : " + orderId);
+            }
+
+            log.info("사용자 요청으로 인해 결제를 취소합니다.");
+            paymentProcessor.cancelPayment(order.getPayment().getPaymentKey(), "사용자 요청", order.getPayment().getPaymentAmount().intValue(), orderId);
+        }
+
         order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
 
         return UpdateOrderResponse.from("주문 상태가 성공적으로 변경되었습니다.");
     }
 
     @Override
-    public ReadOrderDetailResponse getByOrderIdAndUserId(String orderId, Long userId) {
+    public ReadOrderDeliveryResponse getByOrderIdAndUserId(String orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new OrderNotFoundException(orderId));
-        List<ReadBookResponse> responses = getBookResponse(order);
+        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+        List<ReadBookResponse> responses = getBookResponse(orderBooks);
 
         List<Delivery> deliveries = deliveryRepository.findAllByOrderOrderByTimestampDesc(order);
 
-        return ReadOrderDetailResponse.of(order, responses, deliveries);
+        return ReadOrderDeliveryResponse.of(order, responses, deliveries);
     }
 
     // todo. 3달치 모든 회원 순수금액 계산
@@ -182,8 +205,21 @@ public class OrderServiceImpl implements OrderService {
         return null;
     }
 
-    private List<ReadBookResponse> getBookResponse(Order order) {
+    @Override
+    public ReadOrderDetailResponse getOrderByOrderId(String orderId, Long userId) {
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        if (!order.isCustomerIdEqualTo(userId)) {
+            throw new AccessDeniedException("주문 내역의 정보와 사용자가 일치하지 않습니다. 사용자 ID : " + userId);
+        }
         List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+        List<ReadBookResponse> responses = getBookResponse(orderBooks);
+
+        return ReadOrderDetailResponse.of(order, responses, orderBooks);
+    }
+
+    private List<ReadBookResponse> getBookResponse(List<OrderBook> orderBooks) {
         List<ReadBookResponse> responses = new ArrayList<>();
         for (OrderBook orderBook : orderBooks) {
             ReadBookResponse response = bookAdaptor.findBookById(orderBook.getBookId());
