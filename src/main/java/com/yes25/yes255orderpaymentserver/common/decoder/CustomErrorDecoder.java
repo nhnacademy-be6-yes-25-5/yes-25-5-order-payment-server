@@ -18,9 +18,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
     public Exception decode(String methodKey, Response response) {
         String responseBody = null;
         try {
-            if (response.body() != null) {
-                responseBody = new String(response.body().asInputStream().readAllBytes(), StandardCharsets.UTF_8);
-            }
+            responseBody = response.body() != null ? new String(response.body().asInputStream().readAllBytes(), StandardCharsets.UTF_8) : "알 수 없는 에러";
         } catch (IOException e) {
             log.error("응답 본문을 읽는 중 에러 발생", e);
         }
@@ -41,13 +39,12 @@ public class CustomErrorDecoder implements ErrorDecoder {
     }
 
     private void logResponseDetails(Response response, String responseBody) {
-        StringBuilder logMessage = new StringBuilder();
-        logMessage.append("클라이언트 요청에서 에러가 발생하였습니다. ")
-            .append("상태 코드: ").append(response.status())
-            .append(", 응답 본문: ").append(responseBody)
-            .append(", 헤더: ").append(response.headers())
-            .append(", 요청: ").append(response.request());
-        log.error(logMessage.toString());
+        String logMessage = "클라이언트 요청에서 에러가 발생하였습니다. "
+            + "상태 코드: " + response.status()
+            + ", 응답 본문: " + responseBody
+            + ", 헤더: " + response.headers()
+            + ", 요청: " + response.request();
+        log.error(logMessage);
     }
 
     private FeignClientException throwFeignClientException(Response response, String responseBody) {

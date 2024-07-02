@@ -126,7 +126,7 @@ public class PreOrder {
             .receiveUserEmail(receiveEmail)
             .receiveUserPhoneNumber(receivePhoneNumber)
             .couponId(couponId)
-            .points(points)
+            .points(points != null ? points : BigDecimal.ZERO)
             .purePrice(purePrice)
             .userRole(role)
             .build();

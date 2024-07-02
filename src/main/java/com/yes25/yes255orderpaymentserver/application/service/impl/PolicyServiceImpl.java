@@ -29,7 +29,7 @@ public class PolicyServiceImpl implements PolicyService {
 
     @Override
     public Page<ReadShippingPolicyResponse> findAllShippingPolicy(Pageable pageable) {
-        Page<ShippingPolicy> shippingPolicies = shippingPolicyRepository.findAll(pageable);
+        Page<ShippingPolicy> shippingPolicies = shippingPolicyRepository.findAllByShippingPolicyIsRefundPolicyFalse(pageable);
 
         List<ReadShippingPolicyResponse> responses = shippingPolicies.stream()
             .map(ReadShippingPolicyResponse::fromEntity)
@@ -40,7 +40,7 @@ public class PolicyServiceImpl implements PolicyService {
 
     @Override
     public ReadShippingPolicyResponse findFreeShippingPolicy() {
-        ShippingPolicy shippingPolicy = shippingPolicyRepository.findByShippingPolicyFee(BigDecimal.ZERO)
+        ShippingPolicy shippingPolicy = shippingPolicyRepository.findByShippingPolicyFeeAndShippingPolicyIsRefundPolicyFalse(BigDecimal.ZERO)
             .orElseThrow(() -> new PolicyNotFoundException(
                 ErrorStatus.toErrorStatus("무료 배송 정책을 찾을 수 없습니다.", 404, LocalDateTime.now())
             ));

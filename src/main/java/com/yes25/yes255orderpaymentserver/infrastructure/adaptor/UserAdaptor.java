@@ -2,6 +2,7 @@ package com.yes25.yes255orderpaymentserver.infrastructure.adaptor;
 
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.UpdatePointRequest;
+import com.yes25.yes255orderpaymentserver.application.dto.request.UpdateRefundRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.UpdateUserCartQuantityRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.response.UpdatePointResponse;
 import com.yes25.yes255orderpaymentserver.common.config.FeignClientConfig;
@@ -19,4 +20,7 @@ public interface UserAdaptor {
 
     @PutMapping("/cart-books/orders")
     void decreaseUserCartQuantity(List<UpdateUserCartQuantityRequest> requests);
+
+    @PatchMapping("/points/refund")
+    void updatePointByRefund(@RequestBody UpdateRefundRequest refundRequest);
 }

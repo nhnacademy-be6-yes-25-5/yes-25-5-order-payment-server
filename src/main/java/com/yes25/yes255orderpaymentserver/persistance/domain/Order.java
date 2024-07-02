@@ -88,6 +88,9 @@ public class Order {
     @Column(nullable = false)
     private String userRole;
 
+    @Column(nullable = false)
+    private BigDecimal points;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Delivery> deliveries = new ArrayList<>();
 
@@ -97,8 +100,6 @@ public class Order {
     private LocalDateTime updatedAt;
     private String reference;
     private Long couponId;
-    private BigDecimal points;
-
 
     @Builder
     public Order(String orderId, Long customerId, LocalDateTime deliveryStartedAt,

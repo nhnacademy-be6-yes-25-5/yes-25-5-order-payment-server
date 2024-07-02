@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
+import com.yes25.yes255orderpaymentserver.application.dto.request.UpdateRefundRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadBookResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
@@ -12,12 +13,14 @@ import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundEx
 import com.yes25.yes255orderpaymentserver.common.exception.PaymentNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
+import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.UserAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
+import com.yes25.yes255orderpaymentserver.persistance.domain.ShippingPolicy;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import com.yes25.yes255orderpaymentserver.persistance.repository.DeliveryRepository;
@@ -25,6 +28,7 @@ import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookReposi
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.ShippingPolicyRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDeliveryResponse;
@@ -61,6 +65,8 @@ public class OrderServiceImpl implements OrderService {
     private final BookAdaptor bookAdaptor;
     private final PaymentRepository paymentRepository;
     private final PaymentProcessor paymentProcessor;
+    private final ShippingPolicyRepository shippingPolicyRepository;
+    private final UserAdaptor userAdaptor;
 
     @Override
     public void createOrder(PreOrder preOrder, BigDecimal purePrice,
@@ -166,7 +172,8 @@ public class OrderServiceImpl implements OrderService {
         UpdateOrderRequest request, Long userId) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new OrderNotFoundException(orderId));
-        OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(request.orderStatusType().name())
+        OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(
+                request.orderStatusType().name())
             .orElseThrow(() -> new OrderStatusNotFoundException(request.orderStatusType().name()));
 
         if (!order.isCustomerIdEqualTo(userId)) {
@@ -174,17 +181,60 @@ public class OrderServiceImpl implements OrderService {
         }
 
         if (request.orderStatusType().name().equals(OrderStatusType.CANCEL.name())) {
-            if (!order.isWaitEqualTo()) {
-                throw new AccessDeniedException("결제 취소는 대기중일때만 가능합니다. 주문 ID : " + orderId);
-            }
+            handleCancelRequest(order, orderId);
+        }
 
-            log.info("사용자 요청으로 인해 결제를 취소합니다.");
-            paymentProcessor.cancelPayment(order.getPayment().getPaymentKey(), "사용자 요청", order.getPayment().getPaymentAmount().intValue(), orderId);
+        if (request.orderStatusType().name().equals(OrderStatusType.REFUND.name())) {
+            handleReturnRequest(order, orderId);
         }
 
         order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
 
         return UpdateOrderResponse.from("주문 상태가 성공적으로 변경되었습니다.");
+    }
+
+    private void handleReturnRequest(Order order, String orderId) {
+        if (order.getDeliveryStartedAt() != null) {
+            ShippingPolicy returnPolicy = shippingPolicyRepository.findByShippingPolicyIsRefundPolicyTrue()
+                .orElseThrow(() -> new EntityNotFoundException(
+                    ErrorStatus.toErrorStatus("반품 배송비 정책을 찾을 수 없습니다.", 404, LocalDateTime.now())));
+
+            BigDecimal returnAmount = calculateRefundAmount(order, returnPolicy);
+            UpdateRefundRequest refundRequest = UpdateRefundRequest.from(returnAmount);
+
+            // fixme. 포인트 업데이트 API 구현 시, 주석 해제하겠습니다.
+//            userAdaptor.updatePointByRefund(refundRequest);
+
+        } else {
+            throw new AccessDeniedException("배송이 시작되지 않은 주문은 반품할 수 없습니다. 주문 ID : " + orderId);
+        }
+    }
+
+    private BigDecimal calculateRefundAmount(Order order, ShippingPolicy refundPolicy) {
+        LocalDateTime deliveryDate = order.getDeliveryStartedAt();
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isBefore(deliveryDate.plusDays(10))) {
+            log.info("출고일로부터 10일 이내 반품입니다. 반품 택배비 차감 후 반품 처리됩니다.");
+        } else if (now.isBefore(deliveryDate.plusDays(30))) {
+            log.info("출고일로부터 30일 이내 반품입니다. 반품 택배비 차감 후 반품 처리됩니다.");
+        } else {
+            throw new AccessDeniedException("반품 가능 기간이 지났습니다. 주문 ID : " + order.getOrderId());
+        }
+
+        return order.getPayment().getPaymentAmount()
+            .subtract(refundPolicy.getShippingPolicyFee());
+    }
+
+    private void handleCancelRequest(Order order, String orderId) {
+        if (!order.isWaitEqualTo()) {
+            throw new AccessDeniedException("결제 취소는 대기중일때만 가능합니다. 주문 ID : " + orderId);
+        }
+
+        log.info("사용자 요청으로 인해 결제를 취소합니다.");
+        paymentProcessor.cancelPayment(order.getPayment().getPaymentKey(), "사용자 요청",
+            order.getPayment().getPaymentAmount().intValue(),
+            orderId);
     }
 
     @Override
