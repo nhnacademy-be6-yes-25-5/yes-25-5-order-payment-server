@@ -15,10 +15,14 @@ public class JwtAuthorizationRequestInterceptor implements RequestInterceptor {
 
     @Override
     public void apply(RequestTemplate template) {
+        String url = template.url();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof JwtUserDetails userDetails) {
-            template.header("Authorization", "Bearer " + userDetails.accessToken());
+        if (!url.matches(".*/payments/.*/cancel.*")) {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null
+                && authentication.getPrincipal() instanceof JwtUserDetails userDetails) {
+                template.header("Authorization", "Bearer " + userDetails.accessToken());
+            }
         }
     }
 

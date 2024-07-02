@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.math.BigDecimal;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,4 +29,17 @@ public class ShippingPolicy {
     @Column(nullable = false)
     private Boolean shippingPolicyIsMemberOnly;
 
+    @Column(nullable = false)
+    private Boolean shippingPolicyIsRefundPolicy;
+
+    @Builder
+    public ShippingPolicy(Long shippingPolicyId, BigDecimal shippingPolicyFee,
+        BigDecimal shippingPolicyMinAmount, Boolean shippingPolicyIsMemberOnly,
+        Boolean shippingPolicyIsRefundPolicy) {
+        this.shippingPolicyId = shippingPolicyId;
+        this.shippingPolicyFee = shippingPolicyFee;
+        this.shippingPolicyMinAmount = shippingPolicyMinAmount;
+        this.shippingPolicyIsMemberOnly = shippingPolicyIsMemberOnly;
+        this.shippingPolicyIsRefundPolicy = shippingPolicyIsRefundPolicy;
+    }
 }

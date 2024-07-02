@@ -9,18 +9,26 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
+import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
+import com.yes25.yes255orderpaymentserver.persistance.domain.ShippingPolicy;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.TakeoutType;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.ShippingPolicyRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
+import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.UpdateOrderResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -48,10 +56,19 @@ class OrderServiceImplTest {
     private OrderStatusRepository orderStatusRepository;
 
     @Mock
+    private PaymentRepository paymentRepository;
+
+    @Mock
     private TakeoutRepository takeoutRepository;
 
     @Mock
     private OrderBookRepository orderBookRepository;
+
+    @Mock
+    private ShippingPolicyRepository shippingPolicyRepository;
+
+    @Mock
+    private PaymentProcessor paymentProcessor;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -60,8 +77,10 @@ class OrderServiceImplTest {
     private OrderStatus orderStatus;
     private Takeout takeout;
     private Order order;
+    private Payment payment;
     private List<OrderBook> orderBooks;
     private SuccessPaymentResponse response;
+    private ShippingPolicy shippingPolicy;
 
     @BeforeEach
     void setUp() {
@@ -74,14 +93,6 @@ class OrderServiceImplTest {
             .takeoutId(1L)
             .takeoutDescription("없음")
             .takeoutName("NONE")
-            .build();
-
-        order = Order.builder()
-            .orderId("order")
-            .orderCreatedAt(LocalDateTime.now())
-            .orderDeliveryAt(LocalDate.now().plusDays(3))
-            .orderTotalAmount(BigDecimal.valueOf(10000))
-            .orderStatus(orderStatus)
             .build();
 
         preOrder = PreOrder.builder()
@@ -127,6 +138,33 @@ class OrderServiceImplTest {
             .build();
 
         orderBooks = List.of(orderBook);
+
+        payment = Payment.builder()
+            .paymentId(1L)
+            .preOrderId("order-1234")
+            .paymentKey("dsadsad")
+            .paymentAmount(BigDecimal.valueOf(10000))
+            .paymentMethod("카드")
+            .build();
+
+        order = Order.builder()
+            .orderId("order-1234")
+            .orderCreatedAt(LocalDateTime.now())
+            .orderDeliveryAt(LocalDate.now().plusDays(3))
+            .deliveryStartedAt(LocalDateTime.now().plusDays(1))
+            .customerId(1L)
+            .orderTotalAmount(BigDecimal.valueOf(10000))
+            .orderStatus(orderStatus)
+            .payment(payment)
+            .build();
+
+        shippingPolicy = ShippingPolicy.builder()
+            .shippingPolicyId(1L)
+            .shippingPolicyFee(BigDecimal.valueOf(3000))
+            .shippingPolicyIsMemberOnly(false)
+            .shippingPolicyIsRefundPolicy(true)
+            .shippingPolicyMinAmount(BigDecimal.ZERO)
+            .build();
     }
 
     @DisplayName("주문을 성공적으로 확정하는지 확인한다.")
@@ -138,6 +176,7 @@ class OrderServiceImplTest {
         when(takeoutRepository.findByTakeoutName(anyString())).thenReturn(Optional.of(takeout));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderBookRepository.saveAll(anyList())).thenReturn(orderBooks);
+        when(paymentRepository.findByPreOrderId(anyString())).thenReturn(Optional.of(payment));
 
         // when
         orderService.createOrder(preOrder, purePrice, response);
@@ -174,5 +213,44 @@ class OrderServiceImplTest {
 
         // then
         assertThat(readUserOrderResponse).isNotNull();
+    }
+
+    @DisplayName("대기중인 주문에 대해 결제 취소가 성공적으로 이루어지는지 확인한다.")
+    @Test
+    void updateOrderStatusByOrderIdWhenRequestIsCancel() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
+        String orderId = "order-1234";
+        Long userId = 1L;
+        UpdateOrderRequest updateOrderRequest = new UpdateOrderRequest(OrderStatusType.CANCEL);
+
+        // when
+        UpdateOrderResponse updateOrderResponse = orderService.updateOrderStatusByOrderId(orderId, updateOrderRequest, userId);
+
+        // then
+        assertThat(updateOrderResponse.message()).isEqualTo("주문 상태가 성공적으로 변경되었습니다.");
+    }
+
+    @DisplayName("완료된 주문에 대해 반품이 성공적으로 이루어지는지 확인한다.")
+    @Test
+    void updateOrderStatusByOrderIdWhenRequestIsReturn() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
+        when(shippingPolicyRepository.findByShippingPolicyIsRefundPolicyTrue()).thenReturn(Optional.of(shippingPolicy));
+        String orderId = "order-1234";
+        Long userId = 1L;
+        UpdateOrderRequest updateOrderRequest = new UpdateOrderRequest(OrderStatusType.REFUND);
+
+        // when
+        UpdateOrderResponse updateOrderResponse = orderService.updateOrderStatusByOrderId(orderId, updateOrderRequest, userId);
+
+        // then
+        assertThat(updateOrderResponse.message()).isEqualTo("주문 상태가 성공적으로 변경되었습니다.");
+    }
+
+    @Test
+    void getPurePriceByDate() {
     }
 }

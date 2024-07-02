@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.persistance.domain;
 
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,6 +9,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -86,14 +88,18 @@ public class Order {
     @Column(nullable = false)
     private String userRole;
 
+    @Column(nullable = false)
+    private BigDecimal points;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Delivery> deliveries = new ArrayList<>();
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Payment payment;
 
     private LocalDateTime updatedAt;
     private String reference;
     private Long couponId;
-    private BigDecimal points;
-
 
     @Builder
     public Order(String orderId, Long customerId, LocalDateTime deliveryStartedAt,
@@ -102,7 +108,7 @@ public class Order {
         String zipCode, LocalDateTime orderCreatedAt, LocalDate orderDeliveryAt, List<OrderBook> orderBooks,
         BigDecimal purePrice, String orderUserName, String orderUserEmail, String orderUserPhoneNumber,
         String receiveUserName, String receiveUserEmail, String receiveUserPhoneNumber,
-        String userRole, LocalDateTime updatedAt, String reference, Long couponId, BigDecimal points) {
+        String userRole, Payment payment, LocalDateTime updatedAt, String reference, Long couponId, BigDecimal points) {
         this.orderId = orderId;
         this.customerId = customerId;
         this.deliveryStartedAt = deliveryStartedAt;
@@ -123,6 +129,7 @@ public class Order {
         this.receiveUserEmail = receiveUserEmail;
         this.receiveUserPhoneNumber = receiveUserPhoneNumber;
         this.userRole = userRole;
+        this.payment = payment;
         this.updatedAt = updatedAt;
         this.reference = reference;
         this.couponId = couponId;
@@ -142,5 +149,9 @@ public class Order {
 
     public boolean isCustomerIdEqualTo(Long userId) {
         return customerId.equals(userId);
+    }
+
+    public boolean isWaitEqualTo() {
+        return orderStatus.getOrderStatusName().equals(OrderStatusType.WAIT.name());
     }
 }

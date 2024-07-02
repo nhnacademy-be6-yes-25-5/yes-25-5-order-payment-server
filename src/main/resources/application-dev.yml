@@ -7,14 +7,17 @@ spring:
         default-requeue-rejected: false
 
   datasource:
+    dbcp2:
+      validation-query: SELECT 1
+      initial-size: '20'
+      max-idle: '10'
+      min-idle: '1'
     driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://133.186.241.167:3306/be6_yes255_order
-#    username: be6_yes255
-#    password: ${YES25_5_MYSQL_PASSWORD}
-
     url: jdbc:mysql://localhost:3306/boradoo
     username: root
     password: 1234
+    type: org.apache.commons.dbcp2.BasicDataSource
+
   jpa:
     open-in-view: false
     show-sql: true
@@ -28,17 +31,20 @@ spring:
     hibernate:
       ddl-auto: update
     defer-datasource-initialization: true
+
   data:
     redis:
       host: 133.186.241.167
       port: 6379
       database: 34
       password: ${YES25_5_REDIS_PASSWORD}
+
   application:
     name: order-payment-server
 
 logging:
   level:
+    org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration: debug
     org.springframework.amqp.rabbit.listener: debug
     org.hibernate.orm.jdbc.bind: trace
     org.springframework.transaction.interceptor: trace
@@ -46,7 +52,7 @@ logging:
     path: ${user.dir}/logs/${spring.application.name}
 
 server:
-  port: 8072
+  port: 8071
 
 eureka:
   client:

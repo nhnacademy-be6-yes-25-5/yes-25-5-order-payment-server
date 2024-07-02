@@ -16,4 +16,10 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     List<Order> findByOrderStatusOrderStatusNameAndDeliveryStartedAtBefore(String doneName, LocalDateTime now);
 
     Page<Order> findAllByUserRoleOrderByOrderCreatedAtDesc(String role, Pageable pageable);
+
+    List<Order> findAllByOrderCreatedAtBetween(LocalDateTime localDateTime, LocalDateTime localDateTime1);
+
+    List<Order> findAllByCustomerIdAndOrderStatusOrderStatusName(Long orderUserId, String name);
+
+    List<Order> findAllByCustomerId(Long orderUserId);
 }
