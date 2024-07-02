@@ -249,4 +249,8 @@ class OrderServiceImplTest {
         // then
         assertThat(updateOrderResponse.message()).isEqualTo("주문 상태가 성공적으로 변경되었습니다.");
     }
+
+    @Test
+    void getPurePriceByDate() {
+    }
 }

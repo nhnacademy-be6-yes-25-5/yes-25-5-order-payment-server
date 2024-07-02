@@ -52,7 +52,7 @@ logging:
     path: ${user.dir}/logs/${spring.application.name}
 
 server:
-  port: 8072
+  port: 8071
 
 eureka:
   client:

@@ -36,7 +36,7 @@ public interface OrderService {
 
     ReadOrderDeliveryResponse getByOrderIdAndUserId(String orderId, Long userId);
 
-    ReadPurePriceResponse getPurePriceByDate(LocalDate now);
+    List<ReadPurePriceResponse> getPurePriceByDate(LocalDate now);
 
     ReadOrderDetailResponse getOrderByOrderId(String orderId, Long userId);
 }

@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.presentation.controller;
 
+import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
@@ -14,6 +15,8 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderSta
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.UpdateOrderResponse;
+import java.time.LocalDate;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequestMapping("/orders")
@@ -78,5 +82,10 @@ public class OrderController {
     public ReadOrderDetailResponse getOrder(@PathVariable String orderId,
         @CurrentUser JwtUserDetails jwtUserDetails) {
         return ApiResponse.ok(orderService.getOrderByOrderId(orderId, jwtUserDetails.userId()));
+    }
+
+    @GetMapping("/logs")
+    public List<ReadPurePriceResponse> getPurePrices(@RequestParam LocalDate date) {
+        return ApiResponse.ok(orderService.getPurePriceByDate(date));
     }
 }

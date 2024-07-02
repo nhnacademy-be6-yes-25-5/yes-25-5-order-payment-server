@@ -41,10 +41,12 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.response.UpdateOrderR
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -251,8 +253,35 @@ public class OrderServiceImpl implements OrderService {
 
     // todo. 3달치 모든 회원 순수금액 계산
     @Override
-    public ReadPurePriceResponse getPurePriceByDate(LocalDate now) {
-        return null;
+    public List<ReadPurePriceResponse> getPurePriceByDate(LocalDate now) {
+        LocalDate threeMonthsAgo = now.minusMonths(3);
+        List<Order> orders = orderRepository.findAllByOrderCreatedAtBetween(threeMonthsAgo.atStartOfDay(), now.atTime(LocalTime.MAX));
+        List<Long> orderUserIds = orders.stream()
+            .map(Order::getCustomerId)
+            .distinct()
+            .toList();
+
+        List<ReadPurePriceResponse> purePriceResponses = new ArrayList<>();
+
+        for (Long orderUserId : orderUserIds) {
+            List<Order> allOrders = orderRepository.findAllByCustomerId(orderUserId);
+            List<Order> cancelOrders = orderRepository.findAllByCustomerIdAndOrderStatusOrderStatusName(orderUserId, OrderStatusType.CANCEL.name());
+
+            BigDecimal totalPurPriceWithoutCancel = allOrders.stream()
+                .map(Order::getPurePrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            BigDecimal totalCancelAmount = cancelOrders.stream()
+                .map(Order::getOrderTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+            BigDecimal purePriceWithCancel = totalPurPriceWithoutCancel.subtract(totalCancelAmount);
+
+            ReadPurePriceResponse readPurePriceResponse = ReadPurePriceResponse.from(purePriceWithCancel, orderUserId);
+            purePriceResponses.add(readPurePriceResponse);
+        }
+
+        return purePriceResponses;
     }
 
     @Override
