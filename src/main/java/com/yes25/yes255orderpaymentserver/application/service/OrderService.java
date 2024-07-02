@@ -34,9 +34,11 @@ public interface OrderService {
 
     UpdateOrderResponse updateOrderStatusByOrderId(String orderId, UpdateOrderRequest request, Long userId);
 
-    ReadOrderDeliveryResponse getByOrderIdAndUserId(String orderId, Long userId);
+    ReadOrderDeliveryResponse getByOrderIdAndUserId(String orderId);
 
     List<ReadPurePriceResponse> getPurePriceByDate(LocalDate now);
 
     ReadOrderDetailResponse getOrderByOrderId(String orderId, Long userId);
+
+    ReadOrderDetailResponse getOrderByOrderIdAndEmail(String orderId, String email);
 }

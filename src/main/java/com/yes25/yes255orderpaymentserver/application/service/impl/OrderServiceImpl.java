@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -240,7 +239,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public ReadOrderDeliveryResponse getByOrderIdAndUserId(String orderId, Long userId) {
+    public ReadOrderDeliveryResponse getByOrderIdAndUserId(String orderId) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new OrderNotFoundException(orderId));
         List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
@@ -292,6 +291,17 @@ public class OrderServiceImpl implements OrderService {
         if (!order.isCustomerIdEqualTo(userId)) {
             throw new AccessDeniedException("주문 내역의 정보와 사용자가 일치하지 않습니다. 사용자 ID : " + userId);
         }
+        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+        List<ReadBookResponse> responses = getBookResponse(orderBooks);
+
+        return ReadOrderDetailResponse.of(order, responses, orderBooks);
+    }
+
+    @Override
+    public ReadOrderDetailResponse getOrderByOrderIdAndEmail(String orderId, String email) {
+        Order order = orderRepository.findByOrderIdAndOrderUserEmail(orderId, email)
+            .orElseThrow(() -> new OrderNotFoundException(orderId));
+
         List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
         List<ReadBookResponse> responses = getBookResponse(orderBooks);
 

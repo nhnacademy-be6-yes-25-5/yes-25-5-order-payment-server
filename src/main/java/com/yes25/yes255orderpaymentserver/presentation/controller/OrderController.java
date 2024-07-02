@@ -73,9 +73,8 @@ public class OrderController {
     }
 
     @GetMapping("/{orderId}/delivery")
-    public ReadOrderDeliveryResponse find(@PathVariable String orderId,
-        @CurrentUser JwtUserDetails jwtUserDetails) {
-        return ApiResponse.ok(orderService.getByOrderIdAndUserId(orderId, jwtUserDetails.userId()));
+    public ReadOrderDeliveryResponse getDelivery(@PathVariable String orderId) {
+        return ApiResponse.ok(orderService.getByOrderIdAndUserId(orderId));
     }
 
     @GetMapping("/{orderId}")
@@ -87,5 +86,10 @@ public class OrderController {
     @GetMapping("/logs")
     public List<ReadPurePriceResponse> getPurePrices(@RequestParam LocalDate date) {
         return ApiResponse.ok(orderService.getPurePriceByDate(date));
+    }
+
+    @GetMapping("/none/{orderId}")
+    public ReadOrderDetailResponse getOrderNoneMember(@PathVariable String orderId, @RequestParam String email) {
+        return ApiResponse.ok(orderService.getOrderByOrderIdAndEmail(orderId, email));
     }
 }
