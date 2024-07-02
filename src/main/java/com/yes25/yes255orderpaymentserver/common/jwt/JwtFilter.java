@@ -33,6 +33,11 @@ public class JwtFilter extends GenericFilterBean {
             return;
         }
 
+        if (path.startsWith("/orders/none") || path.matches(".*/orders/.*/delivery.*")) {
+            filterChain.doFilter(servletRequest, servletResponse);
+            return;
+        }
+
         String token = getToken(request);
 
         if (jwtProvider.isValidToken(token)) {

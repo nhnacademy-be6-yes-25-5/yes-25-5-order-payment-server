@@ -36,7 +36,8 @@ public record ReadOrderDetailResponse(
     Long couponId,
     BigDecimal points,
     List<String> bookNames,
-    List<Integer> quantities) {
+    List<Integer> quantities,
+    List<BigDecimal> bookPrices) {
 
     public static ReadOrderDetailResponse of(Order order, List<ReadBookResponse> responses,
         List<OrderBook> orderBooks) {
@@ -46,6 +47,10 @@ public record ReadOrderDetailResponse(
 
         List<Integer> quantities = orderBooks.stream()
             .map(OrderBook::getOrderBookQuantity)
+            .toList();
+
+        List<BigDecimal> bookPrices = orderBooks.stream()
+            .map(OrderBook::getPrice)
             .toList();
 
         Integer bookTotalPrice = responses.stream()
@@ -79,6 +84,7 @@ public record ReadOrderDetailResponse(
             .quantities(quantities)
             .shippingPrice(order.getTakeout().getTakeoutPrice().intValue())
             .bookTotalPrice(bookTotalPrice)
+            .bookPrices(bookPrices)
             .build();
     }
 }
