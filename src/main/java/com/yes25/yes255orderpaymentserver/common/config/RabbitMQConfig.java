@@ -69,6 +69,45 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue stockIncreaseQueue() {
+        return QueueBuilder.durable("stockIncreaseQueue")
+            .withArgument("x-dead-letter-exchange", "dlxExchange")
+            .withArgument("x-dead-letter-routing-key", "dlx.stockIncreaseQueue")
+            .build();
+    }
+
+    @Bean
+    public Queue pointReturnQueue() {
+        return QueueBuilder.durable("pointReturnQueue")
+            .withArgument("x-dead-letter-exchange", "dlxExchange")
+            .withArgument("x-dead-letter-routing-key", "dlx.pointReturnQueue")
+            .build();
+    }
+
+    @Bean
+    public Queue couponUnusedQueue() {
+        return QueueBuilder.durable("couponUnusedQueue")
+            .withArgument("x-dead-letter-exchange", "dlxExchange")
+            .withArgument("x-dead-letter-routing-key", "dlx.couponUnusedQueue")
+            .build();
+    }
+
+    @Bean
+    public Queue dlqStockIncreaseQueue() {
+        return new Queue("dlx.stockIncreaseQueue");
+    }
+
+    @Bean
+    public Queue dlqPointReturnQueue() {
+        return new Queue("dlx.pointReturnQueue");
+    }
+
+    @Bean
+    public Queue dlqCouponUnusedQueue() {
+        return new Queue("dlx.couponUnusedQueue");
+    }
+
+    @Bean
     public DirectExchange dlxExchange() {
         return new DirectExchange("dlxExchange");
     }
@@ -109,6 +148,21 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public DirectExchange stockIncreaseExchange() {
+        return new DirectExchange("stockIncreaseExchange");
+    }
+
+    @Bean
+    public DirectExchange pointReturnExchange() {
+        return new DirectExchange("pointReturnExchange");
+    }
+
+    @Bean
+    public DirectExchange couponUnusedExchange() {
+        return new DirectExchange("couponUnusedExchange");
+    }
+
+    @Bean
     public Queue dlqPreOrderQueue() {
         return new Queue("dlx.preOrderQueue");
     }
@@ -131,6 +185,27 @@ public class RabbitMQConfig {
     @Bean
     public Queue dlqStockDecreaseQueue() {
         return new Queue("dlx.stockDecreaseQueue");
+    }
+
+    @Bean
+    public Binding stockIncreaseBinding(Queue stockIncreaseQueue, DirectExchange stockIncreaseExchange) {
+        return BindingBuilder.bind(stockIncreaseQueue)
+            .to(stockIncreaseExchange)
+            .with("stockIncreaseRoutingKey");
+    }
+
+    @Bean
+    public Binding pointReturnBinding(Queue pointReturnQueue, DirectExchange pointReturnExchange) {
+        return BindingBuilder.bind(pointReturnQueue)
+            .to(pointReturnExchange)
+            .with("pointReturnRoutingKey");
+    }
+
+    @Bean
+    public Binding couponUnusedBinding(Queue couponUnusedQueue, DirectExchange couponUnusedExchange) {
+        return BindingBuilder.bind(couponUnusedQueue)
+            .to(couponUnusedExchange)
+            .with("couponUnusedRoutingKey");
     }
 
     @Bean
@@ -220,6 +295,30 @@ public class RabbitMQConfig {
             .bind(dlqStockDecreaseQueue)
             .to(dlxExchange)
             .with("dlx.stockDecreaseQueue");
+    }
+
+    @Bean
+    public Binding dlxStockIncreaseBinding(Queue dlqStockIncreaseQueue, DirectExchange dlxExchange) {
+        return BindingBuilder
+            .bind(dlqStockIncreaseQueue)
+            .to(dlxExchange)
+            .with("dlx.stockIncreaseQueue");
+    }
+
+    @Bean
+    public Binding dlxPointReturnBinding(Queue dlqPointReturnQueue, DirectExchange dlxExchange) {
+        return BindingBuilder
+            .bind(dlqPointReturnQueue)
+            .to(dlxExchange)
+            .with("dlx.pointReturnQueue");
+    }
+
+    @Bean
+    public Binding dlxCouponUnusedBinding(Queue dlqCouponUnusedQueue, DirectExchange dlxExchange) {
+        return BindingBuilder
+            .bind(dlqCouponUnusedQueue)
+            .to(dlxExchange)
+            .with("dlx.couponUnusedQueue");
     }
 
     @Bean

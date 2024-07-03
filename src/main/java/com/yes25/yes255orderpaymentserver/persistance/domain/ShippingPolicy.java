@@ -30,16 +30,16 @@ public class ShippingPolicy {
     private Boolean shippingPolicyIsMemberOnly;
 
     @Column(nullable = false)
-    private Boolean shippingPolicyIsRefundPolicy;
+    private Boolean shippingPolicyIsReturnPolicy;
 
     @Builder
     public ShippingPolicy(Long shippingPolicyId, BigDecimal shippingPolicyFee,
         BigDecimal shippingPolicyMinAmount, Boolean shippingPolicyIsMemberOnly,
-        Boolean shippingPolicyIsRefundPolicy) {
+        Boolean shippingPolicyIsReturnPolicy) {
         this.shippingPolicyId = shippingPolicyId;
         this.shippingPolicyFee = shippingPolicyFee;
         this.shippingPolicyMinAmount = shippingPolicyMinAmount;
         this.shippingPolicyIsMemberOnly = shippingPolicyIsMemberOnly;
-        this.shippingPolicyIsRefundPolicy = shippingPolicyIsRefundPolicy;
+        this.shippingPolicyIsReturnPolicy = shippingPolicyIsReturnPolicy;
     }
 }

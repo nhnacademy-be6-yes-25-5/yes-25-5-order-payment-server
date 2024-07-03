@@ -49,7 +49,7 @@ class CartConsumerTest {
         message = new Message(new byte[0]);
     }
 
-    @DisplayName("메세지를 받아 성공적으로 도서 서버에 재고 감소 요청을 보내는지 확인한다.")
+    @DisplayName("메세지를 받아 성공적으로 도서 서버에 장바구니 도서 재고 감소 요청을 보내는지 확인한다.")
     @Test
     void receiveCartDecreaseQueue() {
         // given

@@ -6,6 +6,7 @@ import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePrice
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
+import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
 import com.yes25.yes255orderpaymentserver.common.exception.AccessDeniedException;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
@@ -67,6 +68,7 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentRepository paymentRepository;
     private final PaymentProcessor paymentProcessor;
     private final ShippingPolicyRepository shippingPolicyRepository;
+    private final MessageProducer messageProducer;
     private final UserAdaptor userAdaptor;
 
     @Override
@@ -185,8 +187,12 @@ public class OrderServiceImpl implements OrderService {
             handleCancelRequest(order, orderId);
         }
 
-        if (request.orderStatusType().name().equals(OrderStatusType.REFUND.name())) {
+        if (request.orderStatusType().name().equals(OrderStatusType.RETURN.name())) {
             handleReturnRequest(order, orderId);
+        }
+
+        if (request.orderStatusType().name().equals(OrderStatusType.REFUND.name())) {
+            handleRefundRequest(order, orderId);
         }
 
         order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
@@ -194,9 +200,17 @@ public class OrderServiceImpl implements OrderService {
         return UpdateOrderResponse.from("주문 상태가 성공적으로 변경되었습니다.");
     }
 
+    private void handleRefundRequest(Order order, String orderId) {
+        if (!order.isReturnEqualTo()) {
+            throw new AccessDeniedException("환불은 반품이 완료되었을때만 가능합니다. 주문 ID : " + orderId);
+        }
+
+        processCancelPayment(order, orderId);
+    }
+
     private void handleReturnRequest(Order order, String orderId) {
         if (order.getDeliveryStartedAt() != null) {
-            ShippingPolicy returnPolicy = shippingPolicyRepository.findByShippingPolicyIsRefundPolicyTrue()
+            ShippingPolicy returnPolicy = shippingPolicyRepository.findByShippingPolicyIsReturnPolicyTrue()
                 .orElseThrow(() -> new EntityNotFoundException(
                     ErrorStatus.toErrorStatus("반품 배송비 정책을 찾을 수 없습니다.", 404, LocalDateTime.now())));
 
@@ -231,10 +245,7 @@ public class OrderServiceImpl implements OrderService {
             throw new AccessDeniedException("결제 취소는 대기중일때만 가능합니다. 주문 ID : " + orderId);
         }
 
-        log.info("사용자 요청으로 인해 결제를 취소합니다.");
-        paymentProcessor.cancelPayment(order.getPayment().getPaymentKey(), "사용자 요청",
-            order.getPayment().getPaymentAmount().intValue(),
-            orderId);
+        processCancelPayment(order, orderId);
     }
 
     @Override
@@ -252,7 +263,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<ReadPurePriceResponse> getPurePriceByDate(LocalDate now) {
         LocalDate threeMonthsAgo = now.minusMonths(3);
-        List<Order> orders = orderRepository.findAllByOrderCreatedAtBetween(threeMonthsAgo.atStartOfDay(), now.atTime(LocalTime.MAX));
+        List<Order> orders = orderRepository.findAllByOrderCreatedAtBetween(
+            threeMonthsAgo.atStartOfDay(), now.atTime(LocalTime.MAX));
         List<Long> orderUserIds = orders.stream()
             .map(Order::getCustomerId)
             .distinct()
@@ -262,7 +274,8 @@ public class OrderServiceImpl implements OrderService {
 
         for (Long orderUserId : orderUserIds) {
             List<Order> allOrders = orderRepository.findAllByCustomerId(orderUserId);
-            List<Order> cancelOrders = orderRepository.findAllByCustomerIdAndOrderStatusOrderStatusName(orderUserId, OrderStatusType.CANCEL.name());
+            List<Order> cancelOrders = orderRepository.findAllByCustomerIdAndOrderStatusOrderStatusName(
+                orderUserId, OrderStatusType.CANCEL.name());
 
             BigDecimal totalPurPriceWithoutCancel = allOrders.stream()
                 .map(Order::getPurePrice)
@@ -274,7 +287,8 @@ public class OrderServiceImpl implements OrderService {
 
             BigDecimal purePriceWithCancel = totalPurPriceWithoutCancel.subtract(totalCancelAmount);
 
-            ReadPurePriceResponse readPurePriceResponse = ReadPurePriceResponse.from(purePriceWithCancel, orderUserId);
+            ReadPurePriceResponse readPurePriceResponse = ReadPurePriceResponse.from(
+                purePriceWithCancel, orderUserId);
             purePriceResponses.add(readPurePriceResponse);
         }
 
@@ -304,6 +318,25 @@ public class OrderServiceImpl implements OrderService {
         List<ReadBookResponse> responses = getBookResponse(orderBooks);
 
         return ReadOrderDetailResponse.of(order, responses, orderBooks);
+    }
+
+    private void processCancelPayment(Order order, String orderId) {
+        log.info("사용자 요청으로 인해 환불을 진행합니다.");
+        paymentProcessor.cancelPayment(order.getPayment().getPaymentKey(), "사용자 요청",
+            order.getPayment().getPaymentAmount().intValue(),
+            orderId);
+
+        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+        List<Long> bookIds = orderBooks.stream()
+            .map(OrderBook::getBookId)
+            .toList();
+
+        List<Integer> quantities = orderBooks.stream()
+            .map(OrderBook::getOrderBookQuantity)
+            .toList();
+
+        messageProducer.sendOrderCancelMessageByUser(bookIds, quantities,
+            order.getCouponId(), order.getPoints(), order.getPurePrice());
     }
 
     private List<ReadBookResponse> getBookResponse(List<OrderBook> orderBooks) {
