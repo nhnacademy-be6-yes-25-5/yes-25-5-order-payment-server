@@ -26,7 +26,7 @@ public class GlobalRestControllerAdvice {
     @ExceptionHandler(StockUnavailableException.class)
     public ResponseEntity<ErrorStatus> handleStockUnavailableException(StockUnavailableException e) {
         ErrorStatus errorStatus = e.getErrorStatus();
-        messageProducer.sendCancelMessage(e.getOrderId());
+        messageProducer.sendOrderCancelMessage(e.getOrderId());
 
         return new ResponseEntity<>(errorStatus, errorStatus.toHttpStatus());
     }

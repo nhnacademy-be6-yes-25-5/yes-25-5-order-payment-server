@@ -4,12 +4,13 @@ import java.math.BigDecimal;
 import lombok.Builder;
 
 @Builder
-public record UpdatePointRequest(BigDecimal usePoints, BigDecimal amount) {
+public record UpdatePointRequest(BigDecimal usePoints, BigDecimal amount, String operationType) {
 
     public static UpdatePointRequest from(UpdatePointMessage updatePointMessage) {
         return UpdatePointRequest.builder()
             .usePoints(updatePointMessage.usePoints())
             .amount(updatePointMessage.amount())
+            .operationType(updatePointMessage.operationType().toLowerCase())
             .build();
     }
 }

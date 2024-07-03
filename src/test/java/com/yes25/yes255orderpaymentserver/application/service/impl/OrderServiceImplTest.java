@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
+import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.UserAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
@@ -73,6 +74,9 @@ class OrderServiceImplTest {
 
     @Mock
     private PaymentProcessor paymentProcessor;
+
+    @Mock
+    private MessageProducer messageProducer;
 
     @InjectMocks
     private OrderServiceImpl orderService;
