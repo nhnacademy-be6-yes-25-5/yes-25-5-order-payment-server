@@ -154,4 +154,8 @@ public class Order {
     public boolean isWaitEqualTo() {
         return orderStatus.getOrderStatusName().equals(OrderStatusType.WAIT.name());
     }
+
+    public boolean isReturnEqualTo() {
+        return orderStatus.getOrderStatusName().equals(OrderStatusType.RETURN.name());
+    }
 }

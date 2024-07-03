@@ -9,9 +9,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ShippingPolicyRepository extends JpaRepository<ShippingPolicy, Long> {
 
-    Optional<ShippingPolicy> findByShippingPolicyFeeAndShippingPolicyIsRefundPolicyFalse(BigDecimal zero);
+    Optional<ShippingPolicy> findByShippingPolicyFeeAndShippingPolicyIsReturnPolicyFalse(BigDecimal zero);
 
-    Page<ShippingPolicy> findAllByShippingPolicyIsRefundPolicyFalse(Pageable pageable);
+    Page<ShippingPolicy> findAllByShippingPolicyIsReturnPolicyFalse(Pageable pageable);
 
-    Optional<ShippingPolicy> findByShippingPolicyIsRefundPolicyTrue();
+    Optional<ShippingPolicy> findByShippingPolicyIsReturnPolicyTrue();
 }

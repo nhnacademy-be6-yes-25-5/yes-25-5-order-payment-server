@@ -170,7 +170,7 @@ class OrderServiceImplTest {
             .shippingPolicyId(1L)
             .shippingPolicyFee(BigDecimal.valueOf(3000))
             .shippingPolicyIsMemberOnly(false)
-            .shippingPolicyIsRefundPolicy(true)
+            .shippingPolicyIsReturnPolicy(true)
             .shippingPolicyMinAmount(BigDecimal.ZERO)
             .build();
     }
@@ -180,7 +180,8 @@ class OrderServiceImplTest {
     void createOrder() {
         // given
         BigDecimal purePrice = BigDecimal.valueOf(30000);
-        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(
+            orderStatus));
         when(takeoutRepository.findByTakeoutName(anyString())).thenReturn(Optional.of(takeout));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderBookRepository.saveAll(anyList())).thenReturn(orderBooks);
@@ -228,7 +229,8 @@ class OrderServiceImplTest {
     void updateOrderStatusByOrderIdWhenRequestIsCancel() {
         // given
         when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
-        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(
+            orderStatus));
         String orderId = "order-1234";
         Long userId = 1L;
         UpdateOrderRequest updateOrderRequest = new UpdateOrderRequest(OrderStatusType.CANCEL);
@@ -245,11 +247,12 @@ class OrderServiceImplTest {
     void updateOrderStatusByOrderIdWhenRequestIsReturn() {
         // given
         when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
-        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
-        when(shippingPolicyRepository.findByShippingPolicyIsRefundPolicyTrue()).thenReturn(Optional.of(shippingPolicy));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(
+            orderStatus));
+        when(shippingPolicyRepository.findByShippingPolicyIsReturnPolicyTrue()).thenReturn(Optional.of(shippingPolicy));
         String orderId = "order-1234";
         Long userId = 1L;
-        UpdateOrderRequest updateOrderRequest = new UpdateOrderRequest(OrderStatusType.REFUND);
+        UpdateOrderRequest updateOrderRequest = new UpdateOrderRequest(OrderStatusType.RETURN);
 
         // when
         UpdateOrderResponse updateOrderResponse = orderService.updateOrderStatusByOrderId(orderId, updateOrderRequest, userId);
