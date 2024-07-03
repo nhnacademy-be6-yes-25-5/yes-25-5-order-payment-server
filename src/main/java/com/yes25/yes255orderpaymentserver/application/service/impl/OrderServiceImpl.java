@@ -203,7 +203,6 @@ public class OrderServiceImpl implements OrderService {
             BigDecimal returnAmount = calculateRefundAmount(order, returnPolicy);
             UpdateRefundRequest refundRequest = UpdateRefundRequest.from(returnAmount);
 
-            // fixme. 포인트 업데이트 API 구현 시, 주석 해제하겠습니다.
             userAdaptor.updatePointByRefund(refundRequest);
 
         } else {
@@ -250,7 +249,6 @@ public class OrderServiceImpl implements OrderService {
         return ReadOrderDeliveryResponse.of(order, responses, deliveries);
     }
 
-    // todo. 3달치 모든 회원 순수금액 계산
     @Override
     public List<ReadPurePriceResponse> getPurePriceByDate(LocalDate now) {
         LocalDate threeMonthsAgo = now.minusMonths(3);
