@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
+import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.UserAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
@@ -60,6 +61,9 @@ class OrderServiceImplTest {
 
     @Mock
     private TakeoutRepository takeoutRepository;
+
+    @Mock
+    private UserAdaptor userAdaptor;
 
     @Mock
     private OrderBookRepository orderBookRepository;
