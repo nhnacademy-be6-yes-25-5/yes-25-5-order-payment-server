@@ -4,6 +4,9 @@ import com.yes25.yes255orderpaymentserver.common.exception.JwtException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtProvider;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
+import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.AuthAdaptor;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.JwtAuthResponse;
+import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Objects;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Component;
 public class AsyncSecurityContextUtils {
 
     private final JwtProvider jwtProvider;
+    private final AuthAdaptor authAdaptor;
 
     public void configureSecurityContext(Message message) {
         MessageProperties properties = message.getMessageProperties();
@@ -32,13 +36,15 @@ public class AsyncSecurityContextUtils {
         }
 
         String token = getToken(authToken);
-        Long userId = jwtProvider.getUserNameFromToken(token);
-        String role = jwtProvider.getRolesFromToken(token);
+        String uuid = jwtProvider.getUserNameFromToken(token);
+        JwtAuthResponse jwtAuthResponse = authAdaptor.getUserInfoByUUID(uuid);
 
-        JwtUserDetails jwtUserDetails = JwtUserDetails.of(userId, role, token);
+        JwtUserDetails jwtUserDetails = JwtUserDetails.of(jwtAuthResponse.customerId(),
+            jwtAuthResponse.role(), token);
 
         UsernamePasswordAuthenticationToken newAuthToken = new UsernamePasswordAuthenticationToken(
-            jwtUserDetails, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+            jwtUserDetails, null,
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + jwtAuthResponse.role()))
         );
 
         SecurityContextHolder.getContext().setAuthentication(newAuthToken);

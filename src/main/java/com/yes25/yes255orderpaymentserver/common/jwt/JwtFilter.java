@@ -2,11 +2,14 @@ package com.yes25.yes255orderpaymentserver.common.jwt;
 
 import com.yes25.yes255orderpaymentserver.common.exception.JwtException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
+import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.AuthAdaptor;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.JwtAuthResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -22,6 +25,7 @@ import org.springframework.web.filter.GenericFilterBean;
 @Component
 public class JwtFilter extends GenericFilterBean {
     private final JwtProvider jwtProvider;
+    private final AuthAdaptor authAdaptor;
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
@@ -44,20 +48,19 @@ public class JwtFilter extends GenericFilterBean {
             return;
         }
 
-        String token = getToken(request);
+        String token = getToken((HttpServletRequest) servletRequest);
+        String uuid = jwtProvider.getUserNameFromToken(token);
+        JwtAuthResponse jwtAuthResponse = authAdaptor.getUserInfoByUUID(uuid);
 
-        if (jwtProvider.isValidToken(token)) {
-            Long userId = jwtProvider.getUserNameFromToken(token);
-            String role = jwtProvider.getRolesFromToken(token);
+        JwtUserDetails jwtUserDetails = JwtUserDetails.of(jwtAuthResponse.customerId(),
+            jwtAuthResponse.role(), token);
 
-            JwtUserDetails jwtUserDetails = JwtUserDetails.of(userId, role, token);
+        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+            jwtUserDetails, null,
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + jwtAuthResponse.role()))
+        );
 
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                jwtUserDetails, null, Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(authToken);
-        }
+        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(servletRequest, servletResponse);
     }
