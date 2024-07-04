@@ -29,3 +29,4 @@ payment:
 api:
   books-users: http://localhost:8061
   coupon: http://localhost:8081
+  auth: http://localhost:8050
