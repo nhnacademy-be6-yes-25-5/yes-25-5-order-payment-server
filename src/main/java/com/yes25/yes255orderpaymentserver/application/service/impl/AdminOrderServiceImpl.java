@@ -1,10 +1,9 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
-import com.yes25.yes255orderpaymentserver.application.dto.request.ReadBookNameResponse;
+import com.yes25.yes255orderpaymentserver.application.dto.request.ReadBookInfoResponse;
 import com.yes25.yes255orderpaymentserver.application.service.AdminOrderService;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
-import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
@@ -57,9 +56,9 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                 .map(OrderBook::getOrderBookQuantity)
                 .toList();
 
-            List<ReadBookNameResponse> bookNameResponses = bookAdaptor.getAllByBookIds(bookIds);
+            List<ReadBookInfoResponse> bookNameResponses = bookAdaptor.getAllByBookIds(bookIds);
             List<String> bookNames = bookNameResponses.stream()
-                .map(ReadBookNameResponse::bookName)
+                .map(ReadBookInfoResponse::bookName)
                 .toList();
 
             return ReadAllOrderResponse.of(order, bookIds, quantities, bookNames);

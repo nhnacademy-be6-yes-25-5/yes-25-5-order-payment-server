@@ -49,21 +49,12 @@ public class JwtProvider {
         }
     }
 
-    public Long getUserNameFromToken(String token) {
-        return Long.valueOf((Integer) Jwts.parserBuilder()
+    public String getUserNameFromToken(String token) {
+        return Jwts.parserBuilder()
             .setSigningKey(secretKey)
             .build()
             .parseClaimsJws(token)
             .getBody()
-            .get("customerId"));
-    }
-
-    public String getRolesFromToken(String token) {
-        return (String) Jwts.parserBuilder()
-            .setSigningKey(secretKey)
-            .build()
-            .parseClaimsJws(token)
-            .getBody()
-            .get("userRole");
+            .getSubject();
     }
 }

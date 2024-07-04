@@ -68,6 +68,7 @@ jwt:
 api:
   books-users: ${BOOK_USER_SERVER}
   coupon: ${COUPON_SERVER}
+  auth : ${AUTH_SERVER}
 
 payment:
   secret: ${PAYMENT_SECRET}

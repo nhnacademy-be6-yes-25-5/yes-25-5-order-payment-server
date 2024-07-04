@@ -1,6 +1,6 @@
 package com.yes25.yes255orderpaymentserver.infrastructure.adaptor;
 
-import com.yes25.yes255orderpaymentserver.application.dto.request.ReadBookNameResponse;
+import com.yes25.yes255orderpaymentserver.application.dto.request.ReadBookInfoResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadBookResponse;
 import com.yes25.yes255orderpaymentserver.common.config.FeignClientConfig;
@@ -22,5 +22,5 @@ public interface BookAdaptor {
     ReadBookResponse findBookById(@PathVariable Long bookId);
 
     @GetMapping("/orders")
-    List<ReadBookNameResponse> getAllByBookIds(@RequestParam List<Long> bookIdList);
+    List<ReadBookInfoResponse> getAllByBookIds(@RequestParam List<Long> bookIdList);
 }

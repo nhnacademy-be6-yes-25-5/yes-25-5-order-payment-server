@@ -1,7 +1,7 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 
-import com.yes25.yes255orderpaymentserver.application.dto.request.ReadBookNameResponse;
+import com.yes25.yes255orderpaymentserver.application.dto.request.ReadBookInfoResponse;
 import com.yes25.yes255orderpaymentserver.application.service.MyPageOrderService;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
@@ -41,9 +41,9 @@ public class MyPageOrderServiceImpl implements MyPageOrderService {
                 .map(OrderBook::getOrderBookQuantity)
                 .toList();
 
-            List<ReadBookNameResponse> bookNameResponses = bookAdaptor.getAllByBookIds(bookIds);
+            List<ReadBookInfoResponse> bookNameResponses = bookAdaptor.getAllByBookIds(bookIds);
             List<String> bookNames = bookNameResponses.stream()
-                .map(ReadBookNameResponse::bookName)
+                .map(ReadBookInfoResponse::bookName)
                 .toList();
 
             return ReadMyOrderHistoryResponse.of(order, bookIds, quantities, bookNames);
