@@ -74,6 +74,7 @@ jobs:
               -e EUREKA_SERVER_PORT=${EUREKA_SERVER_PORT} \
               -e BOOK_USER_SERVER=${BOOK_USER_SERVER} \
               -e COUPON_SERVER=${COUPON_SERVER} \
+              -e AUTH_SERVER=${AUTH_SERVER} \
               -e JWT_SECRET=${JWT_SECRET} \
               -e RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD} \
               orders-payments-app
