@@ -58,8 +58,7 @@ class CouponConsumerTest {
         couponConsumer.receiveCouponUpdateRequestInUse(useRequest, message);
 
         // then
-        verify(couponAdaptor, times(1)).updateCouponStatus(useRequest.couponId(),
-            useRequest.operationType());
+        verify(couponAdaptor, times(1)).updateCouponStatus(useRequest);
     }
 
     @DisplayName("쿠폰 사용 취소 요청을 보내는지 확인한다.")
@@ -72,8 +71,7 @@ class CouponConsumerTest {
         couponConsumer.receiveCouponUpdateRequestInRollback(rollbackRequest, message);
 
         // then
-        verify(couponAdaptor, times(1)).updateCouponStatus(rollbackRequest.couponId(),
-            rollbackRequest.operationType());
+        verify(couponAdaptor, times(1)).updateCouponStatus(rollbackRequest);
     }
 
     @DisplayName("쿠폰 사용이나 롤백 도중 예외가 발생할 경우, 리커버가 실행되는지 확인한다.")

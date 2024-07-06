@@ -53,7 +53,7 @@ public class JwtFilter extends GenericFilterBean {
         JwtAuthResponse jwtAuthResponse = authAdaptor.getUserInfoByUUID(uuid);
 
         JwtUserDetails jwtUserDetails = JwtUserDetails.of(jwtAuthResponse.customerId(),
-            jwtAuthResponse.role(), token);
+            jwtAuthResponse.role(), token, jwtAuthResponse.refreshJwt());
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
             jwtUserDetails, null,

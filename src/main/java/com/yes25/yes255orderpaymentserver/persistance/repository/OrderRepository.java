@@ -25,4 +25,8 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     List<Order> findAllByCustomerId(Long orderUserId);
 
     Optional<Order> findByOrderIdAndOrderUserEmail(String orderId, String email);
+
+    Boolean existsByCustomerId(Long userId);
+
+    Page<Order> findAllByOrderStatus_OrderStatusName(String name, Pageable pageable);
 }
