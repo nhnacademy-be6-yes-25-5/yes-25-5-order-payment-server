@@ -3,6 +3,8 @@ package com.yes25.yes255orderpaymentserver.presentation.dto.response;
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadBookResponse;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Refund;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.CancelStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,10 +39,22 @@ public record ReadOrderDetailResponse(
     BigDecimal points,
     List<String> bookNames,
     List<Integer> quantities,
-    List<BigDecimal> bookPrices) {
+    List<BigDecimal> bookPrices,
+    CancelStatus cancelStatus) {
 
     public static ReadOrderDetailResponse of(Order order, List<ReadBookResponse> responses,
         List<OrderBook> orderBooks) {
+        return buildResponse(order, responses, orderBooks, CancelStatus.NONE);
+    }
+
+    public static ReadOrderDetailResponse of(Order order, List<ReadBookResponse> responses,
+        List<OrderBook> orderBooks, Refund refund) {
+        return buildResponse(order, responses, orderBooks,
+            CancelStatus.valueOf(refund.getRefundStatus().getRefundStatusName()));
+    }
+
+    private static ReadOrderDetailResponse buildResponse(Order order, List<ReadBookResponse> responses,
+        List<OrderBook> orderBooks, CancelStatus cancelStatus) {
         List<String> bookNames = responses.stream()
             .map(ReadBookResponse::bookName)
             .toList();
@@ -85,6 +99,7 @@ public record ReadOrderDetailResponse(
             .shippingPrice(order.getTakeout().getTakeoutPrice().intValue())
             .bookTotalPrice(bookTotalPrice)
             .bookPrices(bookPrices)
+            .cancelStatus(cancelStatus)
             .build();
     }
 }
