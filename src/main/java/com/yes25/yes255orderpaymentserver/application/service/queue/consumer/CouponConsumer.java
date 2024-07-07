@@ -28,7 +28,7 @@ public class CouponConsumer {
     public void receiveCouponUpdateRequestInUse(UpdateCouponRequest updateCouponRequest, Message message) {
         log.info("주문이 확정되어 쿠폰을 사용 처리 합니다. 요청 내용 : {}", updateCouponRequest);
         securityContextUtils.configureSecurityContext(message);
-        couponAdaptor.updateCouponStatus(updateCouponRequest.couponId(), updateCouponRequest.operationType());
+        couponAdaptor.updateCouponStatus(updateCouponRequest);
     }
 
     @RabbitListener(queues = "couponUnusedQueue")
@@ -36,7 +36,7 @@ public class CouponConsumer {
     public void receiveCouponUpdateRequestInRollback(UpdateCouponRequest updateCouponRequest, Message message) {
         log.info("결제가 취소되어 쿠폰 사용을 롤백합니다. 요청 내용 : {}", updateCouponRequest);
         securityContextUtils.configureSecurityContext(message);
-        couponAdaptor.updateCouponStatus(updateCouponRequest.couponId(), updateCouponRequest.operationType());
+        couponAdaptor.updateCouponStatus(updateCouponRequest);
     }
 
     @Recover

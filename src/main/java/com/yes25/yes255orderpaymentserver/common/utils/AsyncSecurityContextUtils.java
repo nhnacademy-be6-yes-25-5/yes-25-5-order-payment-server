@@ -6,7 +6,6 @@ import com.yes25.yes255orderpaymentserver.common.jwt.JwtProvider;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.AuthAdaptor;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.JwtAuthResponse;
-import jakarta.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Objects;
@@ -40,7 +39,7 @@ public class AsyncSecurityContextUtils {
         JwtAuthResponse jwtAuthResponse = authAdaptor.getUserInfoByUUID(uuid);
 
         JwtUserDetails jwtUserDetails = JwtUserDetails.of(jwtAuthResponse.customerId(),
-            jwtAuthResponse.role(), token);
+            jwtAuthResponse.role(), token, jwtAuthResponse.refreshJwt());
 
         UsernamePasswordAuthenticationToken newAuthToken = new UsernamePasswordAuthenticationToken(
             jwtUserDetails, null,

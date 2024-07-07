@@ -20,40 +20,39 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 @RequiredArgsConstructor
 @Component
-public class JwtFilter extends GenericFilterBean {
+public class JwtFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
     private final AuthAdaptor authAdaptor;
-
     @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
-        FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+        FilterChain filterChain) throws ServletException, IOException {
         String path = request.getServletPath();
 
         if (path.equals("/orders/logs")) {
-            filterChain.doFilter(servletRequest, servletResponse);
+            filterChain.doFilter(request, response);
             return;
         }
 
-        if (path.startsWith("/orders/none")) {
-            filterChain.doFilter(servletRequest, servletResponse);
+        if (path.startsWith("/orders/none") || path.startsWith("/swagger") || path.contains("/v3")) {
+            filterChain.doFilter(request, response);
             return;
         }
 
         if (path.matches(".*/orders/.*/delivery.*") && StringUtils.isEmpty(request.getHeader("Authorization"))) {
-            filterChain.doFilter(servletRequest, servletResponse);
+            filterChain.doFilter(request, response);
             return;
         }
 
-        String token = getToken((HttpServletRequest) servletRequest);
+        String token = getToken(request);
         String uuid = jwtProvider.getUserNameFromToken(token);
         JwtAuthResponse jwtAuthResponse = authAdaptor.getUserInfoByUUID(uuid);
 
         JwtUserDetails jwtUserDetails = JwtUserDetails.of(jwtAuthResponse.customerId(),
-            jwtAuthResponse.role(), token);
+            jwtAuthResponse.role(), token, jwtAuthResponse.refreshJwt());
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
             jwtUserDetails, null,
@@ -62,7 +61,7 @@ public class JwtFilter extends GenericFilterBean {
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-        filterChain.doFilter(servletRequest, servletResponse);
+        filterChain.doFilter(request, response);
     }
 
     private String getToken(HttpServletRequest request) {

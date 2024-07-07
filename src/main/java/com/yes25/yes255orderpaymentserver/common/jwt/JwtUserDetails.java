@@ -9,9 +9,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 @Builder
-public record JwtUserDetails(Long userId, List<GrantedAuthority> roles, String accessToken) implements UserDetails {
+public record JwtUserDetails(Long userId, List<GrantedAuthority> roles, String accessToken, String refreshToken) implements UserDetails {
 
-    public static JwtUserDetails of(Long userId, String role, String token) {
+    public static JwtUserDetails of(Long userId, String role, String token, String refreshToken) {
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add((new SimpleGrantedAuthority("ROLE_" + role)));
 
@@ -19,6 +19,7 @@ public record JwtUserDetails(Long userId, List<GrantedAuthority> roles, String a
             .userId(userId)
             .roles(authorities)
             .accessToken(token)
+            .refreshToken(refreshToken)
             .build();
     }
 

@@ -41,4 +41,6 @@ public interface OrderService {
     ReadOrderDetailResponse getOrderByOrderId(String orderId, Long userId);
 
     ReadOrderDetailResponse getOrderByOrderIdAndEmail(String orderId, String email);
+
+    Boolean existOrderHistoryByUserId(Long userId);
 }

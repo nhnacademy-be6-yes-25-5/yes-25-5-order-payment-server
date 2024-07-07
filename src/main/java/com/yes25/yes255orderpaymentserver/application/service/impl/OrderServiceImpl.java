@@ -15,20 +15,25 @@ import com.yes25.yes255orderpaymentserver.common.exception.PaymentNotFoundExcept
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.UserAdaptor;
+import com.yes25.yes255orderpaymentserver.persistance.RefundStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Refund;
 import com.yes25.yes255orderpaymentserver.persistance.domain.ShippingPolicy;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.CancelStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import com.yes25.yes255orderpaymentserver.persistance.repository.DeliveryRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.RefundRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.RefundStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.ShippingPolicyRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
@@ -64,11 +69,15 @@ public class OrderServiceImpl implements OrderService {
     private final TakeoutRepository takeoutRepository;
     private final OrderBookRepository orderBookRepository;
     private final DeliveryRepository deliveryRepository;
-    private final BookAdaptor bookAdaptor;
     private final PaymentRepository paymentRepository;
     private final PaymentProcessor paymentProcessor;
     private final ShippingPolicyRepository shippingPolicyRepository;
+    private final RefundRepository refundRepository;
+    private final RefundStatusRepository refundStatusRepository;
+
     private final MessageProducer messageProducer;
+
+    private final BookAdaptor bookAdaptor;
     private final UserAdaptor userAdaptor;
 
     @Override
@@ -185,17 +194,17 @@ public class OrderServiceImpl implements OrderService {
 
         if (request.orderStatusType().name().equals(OrderStatusType.CANCEL.name())) {
             handleCancelRequest(order, orderId);
+            order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
         }
 
         if (request.orderStatusType().name().equals(OrderStatusType.RETURN.name())) {
             handleReturnRequest(order, orderId);
+            order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
         }
 
         if (request.orderStatusType().name().equals(OrderStatusType.REFUND.name())) {
             handleRefundRequest(order, orderId);
         }
-
-        order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
 
         return UpdateOrderResponse.from("주문 상태가 성공적으로 변경되었습니다.");
     }
@@ -205,7 +214,13 @@ public class OrderServiceImpl implements OrderService {
             throw new AccessDeniedException("환불은 반품이 완료되었을때만 가능합니다. 주문 ID : " + orderId);
         }
 
-        processCancelPayment(order, orderId);
+        RefundStatus refundStatus = refundStatusRepository.findByRefundStatusName(CancelStatus.WAIT.name())
+            .orElseThrow(() -> new EntityNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 환불 상태를 찾을 수 없습니다.", 404, LocalDateTime.now())
+            ));
+
+        Refund refund = Refund.toEntity(order, refundStatus);
+        refundRepository.save(refund);
     }
 
     private void handleReturnRequest(Order order, String orderId) {
@@ -260,6 +275,11 @@ public class OrderServiceImpl implements OrderService {
         return ReadOrderDeliveryResponse.of(order, responses, deliveries);
     }
 
+    /**
+     * 3개월치 순수 주문금액을 계산하는 메소드입니다. orders 테이블 내 순수 주문 금액은 취소 금액을 제외한 순수 금액입니다.
+     * 주문한 이력이 있는 회원의 취소를 제외한 순수 주문 금액을 더하고, 이를 취소한 금액만큼 뺍니다.
+     * @param now 현재 날찌
+     * */
     @Override
     public List<ReadPurePriceResponse> getPurePriceByDate(LocalDate now) {
         LocalDate threeMonthsAgo = now.minusMonths(3);
@@ -318,6 +338,11 @@ public class OrderServiceImpl implements OrderService {
         List<ReadBookResponse> responses = getBookResponse(orderBooks);
 
         return ReadOrderDetailResponse.of(order, responses, orderBooks);
+    }
+
+    @Override
+    public Boolean existOrderHistoryByUserId(Long userId) {
+        return orderRepository.existsByCustomerId(userId);
     }
 
     private void processCancelPayment(Order order, String orderId) {
