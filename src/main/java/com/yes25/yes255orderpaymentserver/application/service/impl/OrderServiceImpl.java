@@ -323,10 +323,8 @@ public class OrderServiceImpl implements OrderService {
         if (!order.isCustomerIdEqualTo(userId)) {
             throw new AccessDeniedException("주문 내역의 정보와 사용자가 일치하지 않습니다. 사용자 ID : " + userId);
         }
-        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
-        List<ReadBookResponse> responses = getBookResponse(orderBooks);
 
-        return ReadOrderDetailResponse.of(order, responses, orderBooks);
+        return getOrderDetailResponse(order);
     }
 
     @Override
@@ -334,15 +332,27 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderRepository.findByOrderIdAndOrderUserEmail(orderId, email)
             .orElseThrow(() -> new OrderNotFoundException(orderId));
 
-        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
-        List<ReadBookResponse> responses = getBookResponse(orderBooks);
-
-        return ReadOrderDetailResponse.of(order, responses, orderBooks);
+        return getOrderDetailResponse(order);
     }
 
     @Override
     public Boolean existOrderHistoryByUserId(Long userId) {
         return orderRepository.existsByCustomerId(userId);
+    }
+
+    private ReadOrderDetailResponse getOrderDetailResponse(Order order) {
+        List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+        List<ReadBookResponse> responses = getBookResponse(orderBooks);
+
+        if (refundRepository.existsByOrder(order)) {
+            Refund refund = refundRepository.findByOrder_OrderId(order.getOrderId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                    ErrorStatus.toErrorStatus("해당하는 환불 정보를 찾을 수 없습니다. 주문 ID : " + order.getOrderId(), 404, LocalDateTime.now())
+                ));
+            return ReadOrderDetailResponse.of(order, responses, orderBooks, refund);
+        }
+
+        return ReadOrderDetailResponse.of(order, responses, orderBooks);
     }
 
     private void processCancelPayment(Order order, String orderId) {

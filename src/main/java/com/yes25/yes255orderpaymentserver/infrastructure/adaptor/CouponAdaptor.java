@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "couponAdaptor", url = "${api.books-users}", configuration = FeignClientConfig.class)
+@FeignClient(name = "couponAdaptor", url = "${api.books-users}/users", configuration = FeignClientConfig.class)
 public interface CouponAdaptor {
 
     @PatchMapping("/user-coupons")
