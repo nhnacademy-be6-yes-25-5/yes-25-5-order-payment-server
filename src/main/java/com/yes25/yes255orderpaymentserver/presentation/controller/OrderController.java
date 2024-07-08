@@ -161,7 +161,7 @@ public class OrderController {
         @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     @GetMapping("/exist")
-    public ResponseEntity<Boolean> getOrderHistory(@CurrentUser JwtUserDetails jwtUserDetails) {
-        return ResponseEntity.ok(orderService.existOrderHistoryByUserId(jwtUserDetails.userId()));
+    public ResponseEntity<Boolean> getOrderHistory(@CurrentUser JwtUserDetails jwtUserDetails, @RequestParam Long bookId) {
+        return ResponseEntity.ok(orderService.existOrderHistoryByUserIdAndBookId(jwtUserDetails.userId(), bookId));
     }
 }

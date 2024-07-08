@@ -336,8 +336,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Boolean existOrderHistoryByUserId(Long userId) {
-        return orderRepository.existsByCustomerId(userId);
+    public Boolean existOrderHistoryByUserIdAndBookId(Long userId, Long bookId) {
+        List<Order> orders = orderRepository.findAllByCustomerId(userId);
+        for (Order order : orders) {
+            for (OrderBook orderBook : order.getOrderBooks()) {
+                if (orderBook.getBookId().equals(bookId)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private ReadOrderDetailResponse getOrderDetailResponse(Order order) {
