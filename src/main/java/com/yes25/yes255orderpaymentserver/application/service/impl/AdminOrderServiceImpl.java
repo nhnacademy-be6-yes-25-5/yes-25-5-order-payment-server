@@ -141,7 +141,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
             log.info("주문이 관리자에 의해 거부되었습니다.");
         }
 
-        RefundStatus refundStatus = refundStatusRepository.findByRefundStatusName(CancelStatus.WAIT.name())
+        RefundStatus refundStatus = refundStatusRepository.findByRefundStatusName(request.status().name())
             .orElseThrow(() -> new EntityNotFoundException(
                 ErrorStatus.toErrorStatus("해당하는 환불 상태를 찾을 수 없습니다.", 404, LocalDateTime.now())
             ));
