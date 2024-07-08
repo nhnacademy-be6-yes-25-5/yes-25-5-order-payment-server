@@ -133,8 +133,8 @@ public class AdminOrderServiceImpl implements AdminOrderService {
                     LocalDateTime.now())));
 
         if (request.status().equals(CancelStatus.ACCESS)) {
-//            paymentProcessor.cancelPayment(refund.getOrder().getPayment().getPaymentKey(), "고객 요청",
-//                refund.getOrder().getPayment().getPaymentAmount().intValue(), refund.getOrder().getOrderId());
+            paymentProcessor.cancelPayment(refund.getOrder().getPayment().getPaymentKey(), "고객 요청",
+                refund.getOrder().getPayment().getPaymentAmount().intValue(), refund.getOrder().getOrderId());
 
             log.info("주문이 관리자에 의해 성공적으로 환불되었습니다.");
         } else {
