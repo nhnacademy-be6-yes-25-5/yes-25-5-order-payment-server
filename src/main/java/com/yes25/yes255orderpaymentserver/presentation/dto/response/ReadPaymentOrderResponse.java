@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.presentation.dto.response;
 
+import com.yes25.yes255orderpaymentserver.application.dto.request.ReadBookInfoResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadBookResponse;
 import lombok.Builder;
 
