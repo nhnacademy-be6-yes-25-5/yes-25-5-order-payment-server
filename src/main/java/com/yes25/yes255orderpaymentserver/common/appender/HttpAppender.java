@@ -49,7 +49,6 @@ public class HttpAppender extends AppenderBase<ILoggingEvent> {
                 @Override
                 public void onFailure(Call call, IOException e) {
                     addError("Failed to send log event", e);
-                    // 필요시 실패한 로그를 파일에 저장하거나 재시도 로직 추가
                 }
 
                 @Override
