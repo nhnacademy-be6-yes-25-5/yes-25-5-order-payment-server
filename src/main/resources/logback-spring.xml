@@ -13,6 +13,18 @@
     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
+    <!-- HTTP Appender 설정 -->
+    <appender name="HTTP" class="com.yes25.yes255orderpaymentserver.common.appender.HttpAppender">
+        <url>https://api-logcrash.cloud.toast.com/v2/log</url>
+        <projectName>Xyx7DoyszcG66ULx</projectName>
+        <projectVersion>1.0.0</projectVersion>
+        <logVersion>v2</logVersion>
+        <logSource>http</logSource>
+        <logType>log</logType>
+        <host>${logHost}</host>
+        <secretKey>JsGDL5oTWPImKY8nag9igsUAdnUOvLMI</secretKey>
+    </appender>
+
     <!-- 모든 레벨의 로그를 기록하는 appender 정의 -->
     <appender name="ALL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${APP_NAME}-all.log</file>

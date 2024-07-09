@@ -68,3 +68,5 @@ api:
 
 payment:
   secret: ${PAYMENT_SECRET}
+
+logHost: localhost

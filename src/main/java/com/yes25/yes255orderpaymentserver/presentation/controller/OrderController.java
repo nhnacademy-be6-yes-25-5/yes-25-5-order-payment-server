@@ -49,8 +49,9 @@ public class OrderController {
         @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     @PostMapping
-    public ResponseEntity<CreateOrderResponse> create(@RequestBody CreateOrderRequest request) {
-        return ResponseEntity.ok(preOrderService.savePreOrder(request));
+    public ResponseEntity<CreateOrderResponse> create(@RequestBody CreateOrderRequest request,
+        @CurrentUser JwtUserDetails jwtUserDetails) {
+        return ResponseEntity.ok(preOrderService.savePreOrder(request, jwtUserDetails.userId()));
     }
 
     @Operation(summary = "사용자 주문 내역 조회", description = "사용자의 모든 주문 내역을 조회합니다.")

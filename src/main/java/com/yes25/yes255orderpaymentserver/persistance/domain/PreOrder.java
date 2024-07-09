@@ -77,13 +77,13 @@ public class PreOrder implements Serializable {
         this.role = role;
     }
 
-    public static PreOrder from(CreateOrderRequest request) {
+    public static PreOrder from(CreateOrderRequest request, Long userId) {
         return PreOrder.builder()
             .preOrderId(request.orderId())
             .bookIds(request.productIds())
             .quantities(request.quantities())
             .prices(request.prices())
-            .userId(request.userId())
+            .userId(userId)
             .orderTotalAmount(request.orderTotalAmount())
             .takeoutType(request.takeoutType())
             .addressRaw(request.addressRaw())

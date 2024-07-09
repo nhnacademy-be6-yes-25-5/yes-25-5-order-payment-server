@@ -73,3 +73,5 @@ management:
     web:
       exposure:
         include: health, info
+
+logHost: 133.186.153.195

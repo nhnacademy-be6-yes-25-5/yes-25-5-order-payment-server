@@ -7,8 +7,6 @@ import com.yes25.yes255orderpaymentserver.application.dto.request.UpdateUserCart
 import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
-import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
-import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderResponse;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,15 +23,6 @@ import org.springframework.stereotype.Service;
 public class MessageProducer {
 
     private final RabbitTemplate rabbitTemplate;
-
-    public CreateOrderResponse sendCreateOrder(CreateOrderRequest request) {
-        PreOrder preOrder = PreOrder.from(request);
-        sendPreOrder(preOrder);
-
-        log.info("가주문이 발행되었습니다. : {}", preOrder);
-
-        return CreateOrderResponse.fromRequest(preOrder);
-    }
 
     public void sendPreOrder(PreOrder preOrder) {
         rabbitTemplate.convertAndSend("preOrderExchange", "preOrderRoutingKey", preOrder);

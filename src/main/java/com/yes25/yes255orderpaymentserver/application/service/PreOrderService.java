@@ -6,7 +6,7 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderR
 
 public interface PreOrderService {
 
-    CreateOrderResponse savePreOrder(CreateOrderRequest request);
+    CreateOrderResponse savePreOrder(CreateOrderRequest request, Long userId);
 
     PreOrder getPreOrder(String orderId);
 }
