@@ -35,10 +35,6 @@ public class MessageProducer {
         return CreateOrderResponse.fromRequest(preOrder);
     }
 
-    public void sendOrderCancelMessage(String orderId) {
-        rabbitTemplate.convertAndSend("cancelExchange", "cancelRoutingKey", orderId);
-    }
-
     public void sendPreOrder(PreOrder preOrder) {
         rabbitTemplate.convertAndSend("preOrderExchange", "preOrderRoutingKey", preOrder);
     }

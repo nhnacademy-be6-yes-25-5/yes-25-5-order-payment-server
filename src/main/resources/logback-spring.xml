@@ -7,7 +7,7 @@
 
     <!-- 기본 로그 경로와 애플리케이션 이름 속성 설정 -->
     <property name="LOG_PATH" value="${LOG_PATH:-/app/logs}"/>
-    <property name="APP_NAME" value="${springAppName:-authority-server}"/>
+    <property name="APP_NAME" value="${springAppName:-orders-payments-server}"/>
 
     <!-- Spring Boot의 기본 로그백 설정 파일 포함 -->
     <include resource="org/springframework/boot/logging/logback/defaults.xml" />
