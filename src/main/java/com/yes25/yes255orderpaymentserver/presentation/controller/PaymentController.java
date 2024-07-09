@@ -45,4 +45,15 @@ public class PaymentController {
     public ResponseEntity<List<ReadPaymentOrderResponse>> findAll(@PathVariable String orderId) {
         return ResponseEntity.ok(orderService.findAllOrderByOrderId(orderId));
     }
+
+    @Operation(summary = "0원 결제 확인", description = "0원 결제를 확인하고 결제 정보를 생성합니다.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "결제 확인 성공"),
+        @ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
+        @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+    })
+    @PostMapping("/confirm/zero")
+    public ResponseEntity<CreatePaymentResponse> confirmPaymentByZero(@RequestBody CreatePaymentRequest request) {
+        return ResponseEntity.ok(paymentService.createPaymentByZeroAmount(request));
+    }
 }

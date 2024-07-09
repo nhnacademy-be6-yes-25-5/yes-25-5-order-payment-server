@@ -58,6 +58,17 @@ public class TossPaymentProcessor implements PaymentProcessor {
         tossAdaptor.cancelPayment(paymentKey, request, authorization, orderId);
     }
 
+    @Override
+    public CreatePaymentResponse createPaymentByZeroAmount(CreatePaymentRequest request) {
+        Payment payment = request.toEntity();
+        paymentRepository.save(payment);
+
+        log.info("결제가 성공적으로 이루어졌습니다. {}", payment);
+        sendPaymentDoneMessage(payment, request);
+
+        return new CreatePaymentResponse(200);
+    }
+
     private CreatePaymentResponse processingPayment(CreatePaymentRequest request) {
         String widgetSecretKey = paymentSecretKey;
         Base64.Encoder encoder = Base64.getEncoder();
