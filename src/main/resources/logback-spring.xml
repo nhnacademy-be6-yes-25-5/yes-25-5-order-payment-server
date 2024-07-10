@@ -1,31 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-
-    <!-- Spring 애플리케이션 이름과 로그 경로를 가져오는 속성 정의 -->
+    <script/>
+    <!--  Spring 애플리케이션 이름과 로그 경로를 가져오는 속성 정의  -->
     <springProperty scope="context" name="springAppName" source="spring.application.name"/>
     <springProperty scope="context" name="logPath" source="logging.file.path"/>
-
-    <!-- 기본 로그 경로와 애플리케이션 이름 속성 설정 -->
+    <!--  기본 로그 경로와 애플리케이션 이름 속성 설정  -->
     <property name="LOG_PATH" value="${LOG_PATH:-/app/logs}"/>
     <property name="APP_NAME" value="${springAppName:-orders-payments-server}"/>
-
-    <!-- Spring Boot의 기본 로그백 설정 파일 포함 -->
-    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
-    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
-
-    <!-- HTTP Appender 설정 -->
+    <!--  Spring Boot의 기본 로그백 설정 파일 포함  -->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+    <!--  HTTP Appender 추가  -->
     <appender name="HTTP" class="com.yes25.yes255orderpaymentserver.common.appender.HttpAppender">
-        <url>https://api-logcrash.cloud.toast.com/v2/log</url>
+        <url>https://api-logncrash.cloud.toast.com/v2/log</url>
         <projectName>Xyx7DoyszcG66ULx</projectName>
         <projectVersion>1.0.0</projectVersion>
         <logVersion>v2</logVersion>
         <logSource>http</logSource>
         <logType>log</logType>
-        <host>${logHost}</host>
+        <host>${PLATFORM}</host>
+        <CharsetName>UTF-8</CharsetName>
+        <category>${APP_NAME}</category>
+        <logLevel>%level</logLevel>
+        <Platform>${PLATFORM}</Platform>
         <secretKey>JsGDL5oTWPImKY8nag9igsUAdnUOvLMI</secretKey>
     </appender>
 
-    <!-- 모든 레벨의 로그를 기록하는 appender 정의 -->
+    <!--  기존의 파일 appender 설정 유지  -->
     <appender name="ALL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${APP_NAME}-all.log</file>
         <encoder>
@@ -38,7 +38,7 @@
         </rollingPolicy>
     </appender>
 
-    <!-- INFO 레벨 로그를 기록하는 appender 정의 -->
+    <!--  INFO 레벨 파일 appender 설정  -->
     <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${APP_NAME}-info.log</file>
         <encoder>
@@ -49,7 +49,7 @@
             <maxHistory>30</maxHistory>
             <totalSizeCap>3GB</totalSizeCap>
         </rollingPolicy>
-        <!-- INFO 레벨 필터 추가 -->
+        <!--  INFO 레벨 필터 추가  -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>INFO</level>
             <onMatch>ACCEPT</onMatch>
@@ -57,7 +57,7 @@
         </filter>
     </appender>
 
-    <!-- WARN 레벨 로그를 기록하는 appender 정의 -->
+    <!--  WARN 레벨 파일 appender 설정  -->
     <appender name="WARN_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${APP_NAME}-warn.log</file>
         <encoder>
@@ -68,7 +68,7 @@
             <maxHistory>30</maxHistory>
             <totalSizeCap>3GB</totalSizeCap>
         </rollingPolicy>
-        <!-- WARN 레벨 필터 추가 -->
+        <!--  WARN 레벨 필터 추가  -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>WARN</level>
             <onMatch>ACCEPT</onMatch>
@@ -76,7 +76,7 @@
         </filter>
     </appender>
 
-    <!-- ERROR 레벨 로그를 기록하는 appender 정의 -->
+    <!--  ERROR 레벨 파일 appender 설정  -->
     <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${APP_NAME}-error.log</file>
         <encoder>
@@ -87,7 +87,7 @@
             <maxHistory>30</maxHistory>
             <totalSizeCap>3GB</totalSizeCap>
         </rollingPolicy>
-        <!-- ERROR 레벨 필터 추가 -->
+        <!--  ERROR 레벨 필터 추가  -->
         <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>ERROR</level>
             <onMatch>ACCEPT</onMatch>
@@ -95,17 +95,21 @@
         </filter>
     </appender>
 
-    <!-- root 로거 설정 -->
+    <!--  root 로거 설정  -->
     <root level="info">
-        <!-- 콘솔에 로그 출력 -->
         <appender-ref ref="CONSOLE"/>
-        <!-- 모든 레벨 로그 파일에 기록 -->
         <appender-ref ref="ALL_FILE"/>
-        <!-- INFO 레벨 로그 파일에 기록 -->
         <appender-ref ref="INFO_FILE"/>
-        <!-- WARN 레벨 로그 파일에 기록 -->
         <appender-ref ref="WARN_FILE"/>
-        <!-- ERROR 레벨 로그 파일에 기록 -->
         <appender-ref ref="ERROR_FILE"/>
+        <appender-ref ref="HTTP"/>
     </root>
+
+    <!--  Profile-specific configuration inclusion  -->
+    <springProfile name="dev">
+        <property name="PLATFORM" value="Yes25_5_orders_payments_dev"/>
+    </springProfile>
+    <springProfile name="prod">
+        <property name="PLATFORM" value="Yes25_5_orders_payments"/>
+    </springProfile>
 </configuration>
