@@ -1,4 +1,8 @@
 spring:
+  config:
+    activate:
+      on-profile: prod
+
   rabbitmq:
     host: 133.186.241.167
     port: 5672
