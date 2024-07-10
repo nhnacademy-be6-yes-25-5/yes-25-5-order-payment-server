@@ -37,11 +37,31 @@ public class HttpAppender extends AppenderBase<ILoggingEvent> {
                 .url(url)
                 .post(body)
                 .build();
-            client.newCall(request).execute();
+
+            addInfo("Sending log event: " + json);
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    addError("Failed to send log event", e);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (!response.isSuccessful()) {
+                        addError("Failed to send log event, response code: " + response.code());
+                    } else {
+                        addInfo("Log event sent successfully");
+                    }
+                    response.close();
+                }
+            });
+
         } catch (IOException e) {
             addError("Failed to send log event", e);
         }
     }
+
 
     // Getters and setters for configuration
     public void setUrl(String url) {
