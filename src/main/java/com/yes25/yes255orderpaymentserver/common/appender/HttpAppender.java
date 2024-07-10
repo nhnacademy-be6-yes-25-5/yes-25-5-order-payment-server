@@ -6,12 +6,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 public class HttpAppender extends AppenderBase<ILoggingEvent> {
 
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
-    private final OkHttpClient client;
+    private final OkHttpClient client = new OkHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private String url;
@@ -22,21 +21,15 @@ public class HttpAppender extends AppenderBase<ILoggingEvent> {
     private String logType;
     private String host;
     private String secretKey;
-
-    public HttpAppender() {
-        this.client = new OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .writeTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .build();
-    }
+    private String platform;
 
     @Override
     protected void append(ILoggingEvent eventObject) {
         try {
+            String logLevel = eventObject.getLevel().toString();
             LogEvent logEvent = new LogEvent(
                 projectName, projectVersion, logVersion, eventObject.getFormattedMessage(),
-                logSource, logType, host, secretKey
+                logSource, logType, host, secretKey, logLevel, platform
             );
             String json = objectMapper.writeValueAsString(logEvent);
             RequestBody body = RequestBody.create(json, JSON);
@@ -44,27 +37,13 @@ public class HttpAppender extends AppenderBase<ILoggingEvent> {
                 .url(url)
                 .post(body)
                 .build();
-
-            client.newCall(request).enqueue(new Callback() {
-                @Override
-                public void onFailure(Call call, IOException e) {
-                    addError("Failed to send log event", e);
-                }
-
-                @Override
-                public void onResponse(Call call, Response response) throws IOException {
-                    if (!response.isSuccessful()) {
-                        addError("Failed to send log event, response code: " + response.code());
-                    }
-                    response.close();
-                }
-            });
-
+            client.newCall(request).execute();
         } catch (IOException e) {
             addError("Failed to send log event", e);
         }
     }
 
+    // Getters and setters for configuration
     public void setUrl(String url) {
         this.url = url;
     }
@@ -97,6 +76,10 @@ public class HttpAppender extends AppenderBase<ILoggingEvent> {
         this.secretKey = secretKey;
     }
 
+    public void setPlatform(String platform) {
+        this.platform = platform;
+    }
+
     static class LogEvent {
         public String projectName;
         public String projectVersion;
@@ -106,9 +89,12 @@ public class HttpAppender extends AppenderBase<ILoggingEvent> {
         public String logType;
         public String host;
         public String secretKey;
+        public String logLevel;
+        public String platform;
 
         public LogEvent(String projectName, String projectVersion, String logVersion, String body,
-            String logSource, String logType, String host, String secretKey) {
+            String logSource, String logType, String host, String secretKey,
+            String logLevel, String platform) {
             this.projectName = projectName;
             this.projectVersion = projectVersion;
             this.logVersion = logVersion;
@@ -117,6 +103,8 @@ public class HttpAppender extends AppenderBase<ILoggingEvent> {
             this.logType = logType;
             this.host = host;
             this.secretKey = secretKey;
+            this.logLevel = logLevel;
+            this.platform = platform;
         }
     }
 }

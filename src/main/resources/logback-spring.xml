@@ -107,9 +107,9 @@
 
     <!--  Profile-specific configuration inclusion  -->
     <springProfile name="dev">
-        <property name="PLATFORM" value="Yes25_5_coupon_dev"/>
+        <property name="PLATFORM" value="Yes25_5_orders_payments_dev"/>
     </springProfile>
     <springProfile name="prod">
-        <property name="PLATFORM" value="Yes25_5_coupon"/>
+        <property name="PLATFORM" value="Yes25_5_orders_payments"/>
     </springProfile>
 </configuration>
