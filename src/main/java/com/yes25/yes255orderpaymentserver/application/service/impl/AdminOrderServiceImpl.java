@@ -2,7 +2,6 @@ package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.ReadBookInfoResponse;
 import com.yes25.yes255orderpaymentserver.application.service.AdminOrderService;
-import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
@@ -16,9 +15,7 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Refund;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.CancelStatus;
-import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import com.yes25.yes255orderpaymentserver.persistance.repository.DeliveryRepository;
-import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.RefundRepository;
@@ -28,7 +25,6 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderSt
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CancelOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadAllOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadAllUserOrderCancelStatusResponse;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
@@ -47,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class AdminOrderServiceImpl implements AdminOrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderBookRepository orderBookRepository;
     private final OrderStatusRepository orderStatusRepository;
     private final DeliveryRepository deliveryRepository;
     private final RefundRepository refundRepository;
@@ -68,7 +63,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         }
 
         List<ReadAllOrderResponse> responses = orders.stream().map(order -> {
-            List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
+            List<OrderBook> orderBooks = order.getOrderBooks();
             List<Long> bookIds = orderBooks.stream()
                 .map(OrderBook::getBookId)
                 .toList();
@@ -109,7 +104,7 @@ public class AdminOrderServiceImpl implements AdminOrderService {
         Page<Refund> refunds = refundRepository.findAllByRefundStatus_RefundStatusName(CancelStatus.WAIT.name(), pageable);
 
         List<ReadAllUserOrderCancelStatusResponse> responses = refunds.stream().map(refund -> {
-            List<OrderBook> orderBooks = orderBookRepository.findByOrder(refund.getOrder());
+            List<OrderBook> orderBooks = refund.getOrder().getOrderBooks();
             List<Long> bookIds = orderBooks.stream()
                 .map(OrderBook::getBookId)
                 .toList();

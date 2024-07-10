@@ -6,7 +6,6 @@ import com.yes25.yes255orderpaymentserver.application.service.MyPageOrderService
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
-import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadMyOrderHistoryResponse;
 import java.util.List;
@@ -23,21 +22,20 @@ import org.springframework.transaction.annotation.Transactional;
 public class MyPageOrderServiceImpl implements MyPageOrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderBookRepository orderBookRepository;
     private final BookAdaptor bookAdaptor;
 
     @Transactional(readOnly = true)
     @Override
     public Page<ReadMyOrderHistoryResponse> getMyOrdersByPaging(Pageable pageable, Long userId) {
         Page<Order> orders = orderRepository.findAllByCustomerIdOrderByOrderCreatedAtDesc(userId, pageable);
+        List<Order> orderList = orders.getContent();
 
-        List<ReadMyOrderHistoryResponse> responses = orders.stream().map(order -> {
-            List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
-            List<Long> bookIds = orderBooks.stream()
+        List<ReadMyOrderHistoryResponse> responses = orderList.stream().map(order -> {
+            List<OrderBook> orderBooksForOrder = order.getOrderBooks();
+            List<Long> bookIds = orderBooksForOrder.stream()
                 .map(OrderBook::getBookId)
                 .toList();
-
-            List<Integer> quantities = orderBooks.stream()
+            List<Integer> quantities = orderBooksForOrder.stream()
                 .map(OrderBook::getOrderBookQuantity)
                 .toList();
 
