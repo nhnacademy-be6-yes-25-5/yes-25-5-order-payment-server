@@ -2,7 +2,7 @@ package com.yes25.yes255orderpaymentserver.presentation.controller;
 
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
-import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
+import com.yes25.yes255orderpaymentserver.application.service.PreOrderService;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.common.jwt.annotation.CurrentUser;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class OrderController {
 
-    private final MessageProducer messageProducer;
+    private final PreOrderService preOrderService;
     private final OrderService orderService;
 
     @Operation(summary = "주문 생성", description = "새로운 주문을 생성합니다.")
@@ -49,8 +49,9 @@ public class OrderController {
         @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     @PostMapping
-    public ResponseEntity<CreateOrderResponse> create(@RequestBody CreateOrderRequest request) {
-        return ResponseEntity.ok(messageProducer.sendCreateOrder(request));
+    public ResponseEntity<CreateOrderResponse> create(@RequestBody CreateOrderRequest request,
+        @CurrentUser JwtUserDetails jwtUserDetails) {
+        return ResponseEntity.ok(preOrderService.savePreOrder(request, jwtUserDetails.userId()));
     }
 
     @Operation(summary = "사용자 주문 내역 조회", description = "사용자의 모든 주문 내역을 조회합니다.")

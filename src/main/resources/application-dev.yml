@@ -35,13 +35,6 @@ spring:
       ddl-auto: update
     defer-datasource-initialization: true
 
-  data:
-    redis:
-      host: 133.186.241.167
-      port: 6379
-      database: 34
-      password: ${YES25_5_REDIS_PASSWORD}
-
   application:
     name: order-payment-server
 
@@ -75,3 +68,5 @@ api:
 
 payment:
   secret: ${PAYMENT_SECRET}
+
+logHost: localhost

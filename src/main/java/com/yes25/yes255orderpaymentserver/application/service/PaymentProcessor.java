@@ -9,4 +9,6 @@ public interface PaymentProcessor {
 
     void cancelPayment(String paymentKey, String cancelReason, Integer paymentAmount,
         String orderId);
+
+    CreatePaymentResponse createPaymentByZeroAmount(CreatePaymentRequest request);
 }

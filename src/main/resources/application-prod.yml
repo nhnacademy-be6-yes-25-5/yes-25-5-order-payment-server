@@ -38,12 +38,7 @@ spring:
     hibernate:
       ddl-auto: none
     defer-datasource-initialization: true
-  data:
-    redis:
-      host: 133.186.241.167
-      port: 6379
-      database: 34
-      password: ${YES25_5_REDIS_PASSWORD}
+
   application:
     name: order-payment-server
 logging:
@@ -78,3 +73,5 @@ management:
     web:
       exposure:
         include: health, info
+
+logHost: 133.186.153.195

@@ -2,6 +2,7 @@ package com.yes25.yes255orderpaymentserver.persistance.domain;
 
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.TakeoutType;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,7 +14,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PreOrder {
+public class PreOrder implements Serializable {
 
     private String preOrderId;
     private List<Long> bookIds;
@@ -76,13 +77,13 @@ public class PreOrder {
         this.role = role;
     }
 
-    public static PreOrder from(CreateOrderRequest request) {
+    public static PreOrder from(CreateOrderRequest request, Long userId) {
         return PreOrder.builder()
             .preOrderId(request.orderId())
             .bookIds(request.productIds())
             .quantities(request.quantities())
             .prices(request.prices())
-            .userId(request.userId())
+            .userId(userId)
             .orderTotalAmount(request.orderTotalAmount())
             .takeoutType(request.takeoutType())
             .addressRaw(request.addressRaw())
