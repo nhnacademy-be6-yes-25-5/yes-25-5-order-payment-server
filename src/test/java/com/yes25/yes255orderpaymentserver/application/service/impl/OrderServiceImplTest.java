@@ -1,33 +1,57 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.yes25.yes255orderpaymentserver.application.dto.response.ReadBookResponse;
+import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
+import com.yes25.yes255orderpaymentserver.common.exception.AccessDeniedException;
+import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
+import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
+import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
+import com.yes25.yes255orderpaymentserver.common.exception.PaymentNotFoundException;
+import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.UserAdaptor;
+import com.yes25.yes255orderpaymentserver.persistance.RefundStatus;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Refund;
 import com.yes25.yes255orderpaymentserver.persistance.domain.ShippingPolicy;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.CancelStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.TakeoutType;
+import com.yes25.yes255orderpaymentserver.persistance.repository.DeliveryRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.RefundRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.RefundStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.ShippingPolicyRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDeliveryResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDetailResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.UpdateOrderResponse;
@@ -78,6 +102,18 @@ class OrderServiceImplTest {
     @Mock
     private MessageProducer messageProducer;
 
+    @Mock
+    private DeliveryRepository deliveryRepository;
+
+    @Mock
+    private BookAdaptor bookAdaptor;
+
+    @Mock
+    private RefundRepository refundRepository;
+
+    @Mock
+    private RefundStatusRepository refundStatusRepository;
+
     @InjectMocks
     private OrderServiceImpl orderService;
 
@@ -89,6 +125,9 @@ class OrderServiceImplTest {
     private List<OrderBook> orderBooks;
     private SuccessPaymentResponse response;
     private ShippingPolicy shippingPolicy;
+    private ReadBookResponse readBookResponse;
+    private Delivery delivery;
+    private Refund refund;
 
     @BeforeEach
     void setUp() {
@@ -101,6 +140,7 @@ class OrderServiceImplTest {
             .takeoutId(1L)
             .takeoutDescription("없음")
             .takeoutName("NONE")
+            .takeoutPrice(BigDecimal.valueOf(10000))
             .build();
 
         preOrder = PreOrder.builder()
@@ -164,6 +204,9 @@ class OrderServiceImplTest {
             .orderTotalAmount(BigDecimal.valueOf(10000))
             .orderStatus(orderStatus)
             .payment(payment)
+            .purePrice(BigDecimal.valueOf(30000))
+            .takeout(takeout)
+            .orderBooks(orderBooks)
             .build();
 
         shippingPolicy = ShippingPolicy.builder()
@@ -173,6 +216,31 @@ class OrderServiceImplTest {
             .shippingPolicyIsReturnPolicy(true)
             .shippingPolicyMinAmount(BigDecimal.ZERO)
             .build();
+
+        readBookResponse = ReadBookResponse.builder()
+            .bookAuthor("asd")
+            .bookImage("asd")
+            .bookPrice(BigDecimal.valueOf(10000))
+            .bookQuantity(1000)
+            .bookName("zxc")
+            .build();
+
+        delivery = Delivery.builder()
+            .order(order)
+            .deliveryStatus("WAIT")
+            .timestamp(LocalDateTime.now())
+            .deliveryId(1L)
+            .build();
+
+        refund = Refund.builder()
+            .order(order)
+            .refundId(1L)
+            .refundStatus(RefundStatus.builder()
+                .refundStatusId(1L)
+                .refundStatusName("WAIT")
+                .build())
+            .requestedAt(LocalDate.now())
+            .build();
     }
 
     @DisplayName("주문을 성공적으로 확정하는지 확인한다.")
@@ -180,8 +248,7 @@ class OrderServiceImplTest {
     void createOrder() {
         // given
         BigDecimal purePrice = BigDecimal.valueOf(30000);
-        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(
-            orderStatus));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
         when(takeoutRepository.findByTakeoutName(anyString())).thenReturn(Optional.of(takeout));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderBookRepository.saveAll(anyList())).thenReturn(orderBooks);
@@ -229,8 +296,7 @@ class OrderServiceImplTest {
     void updateOrderStatusByOrderIdWhenRequestIsCancel() {
         // given
         when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
-        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(
-            orderStatus));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
         String orderId = "order-1234";
         Long userId = 1L;
         UpdateOrderRequest updateOrderRequest = new UpdateOrderRequest(OrderStatusType.CANCEL);
@@ -247,8 +313,7 @@ class OrderServiceImplTest {
     void updateOrderStatusByOrderIdWhenRequestIsReturn() {
         // given
         when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
-        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(
-            orderStatus));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
         when(shippingPolicyRepository.findByShippingPolicyIsReturnPolicyTrue()).thenReturn(Optional.of(shippingPolicy));
         String orderId = "order-1234";
         Long userId = 1L;
@@ -261,7 +326,260 @@ class OrderServiceImplTest {
         assertThat(updateOrderResponse.message()).isEqualTo("주문 상태가 성공적으로 변경되었습니다.");
     }
 
+    @DisplayName("3개월치 순수 주문금액을 계산하는지 확인한다.")
     @Test
     void getPurePriceByDate() {
+        // given
+        LocalDate now = LocalDate.now();
+        List<Order> orders = List.of(order);
+        when(orderRepository.findAllByOrderCreatedAtBetween(any(LocalDateTime.class), any(LocalDateTime.class))).thenReturn(orders);
+        when(orderRepository.findAllByCustomerId(anyLong())).thenReturn(orders);
+        when(orderRepository.findAllByCustomerIdAndOrderStatusOrderStatusName(anyLong(), anyString())).thenReturn(orders);
+
+        // when
+        List<ReadPurePriceResponse> responses = orderService.getPurePriceByDate(now);
+
+        // then
+        assertThat(responses).isNotNull();
+    }
+
+    @DisplayName("주문 ID로 상세 조회에 성공하는지 확인한다.")
+    @Test
+    void findAllOrderByOrderId() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(orderBookRepository.findByOrder(any(Order.class))).thenReturn(orderBooks);
+        when(bookAdaptor.findBookById(anyLong())).thenReturn(readBookResponse);
+
+        // when
+        List<ReadPaymentOrderResponse> responses = orderService.findAllOrderByOrderId("order");
+
+        // then
+        assertThat(responses).isNotNull();
+    }
+
+    @DisplayName("주문 상태 조회에 성공하는지 확인한다.")
+    @Test
+    void findOrderStatusByOrderId() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+
+        // when
+        ReadOrderStatusResponse response = orderService.findOrderStatusByOrderId("order");
+
+        // then
+        assertThat(response).isNotNull();
+    }
+
+    @DisplayName("주문 상태를 '완료'로 갱신하는지 확인한다.")
+    @Test
+    void updateOrderStatusToDone() {
+        // given
+        List<Order> orders = List.of(order);
+        when(orderRepository.findByOrderStatusOrderStatusNameAndDeliveryStartedAtBefore(anyString(), any(LocalDateTime.class))).thenReturn(orders);
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
+
+        // when
+        orderService.updateOrderStatusToDone();
+
+        // then
+        verify(orderRepository, times(1)).findByOrderStatusOrderStatusNameAndDeliveryStartedAtBefore(anyString(), any(LocalDateTime.class));
+    }
+
+    @DisplayName("주문 상세 조회가 성공하는지 확인한다.")
+    @Test
+    void getByOrderIdAndUserId() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(orderBookRepository.findByOrder(any(Order.class))).thenReturn(orderBooks);
+        when(bookAdaptor.findBookById(anyLong())).thenReturn(readBookResponse);
+        when(deliveryRepository.findAllByOrderOrderByTimestampDesc(any())).thenReturn(List.of());
+
+        // when
+        ReadOrderDeliveryResponse response = orderService.getByOrderIdAndUserId("order");
+
+        // then
+        assertThat(response).isNotNull();
+    }
+
+    @DisplayName("유저 ID와 주문 ID로 주문 상세 조회에 성공하는지 확인한다.")
+    @Test
+    void getOrderByOrderId() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+
+        // when
+        ReadOrderDetailResponse response = orderService.getOrderByOrderId("order", 1L);
+
+        // then
+        assertThat(response).isNotNull();
+    }
+
+    @DisplayName("유저 ID와 주문 ID로 주문 상세 조회할 때, 환불 정보가 있는지 확인한다.")
+    @Test
+    void getOrderByOrderIdHasRefund() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(refundRepository.existsByOrder(any(Order.class))).thenReturn(true);
+        when(refundRepository.findByOrder_OrderId(anyString())).thenReturn(Optional.of(refund));
+
+        // when
+        ReadOrderDetailResponse response = orderService.getOrderByOrderId("order", 1L);
+
+        // then
+        assertThat(response).isNotNull();
+    }
+
+    @DisplayName("유저 ID와 주문 ID로 주문 상세 조회할 때, 주문은 했는데 환불 정보가 없다면 예외를 발생시키는지 확인한다.")
+    @Test
+    void getOrderByOrderIdHasNotRefund() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(refundRepository.existsByOrder(any(Order.class))).thenReturn(true);
+        when(refundRepository.findByOrder_OrderId(anyString())).thenReturn(Optional.empty());
+
+        // when && then
+        assertThrows(EntityNotFoundException.class, () -> orderService.getOrderByOrderId("order", 1L));
+    }
+
+
+
+    @DisplayName("이메일과 주문 ID로 주문 상세 조회에 성공하는지 확인한다.")
+    @Test
+    void getOrderByOrderIdAndEmail() {
+        // given
+        when(orderRepository.findByOrderIdAndOrderUserEmail(anyString(), anyString())).thenReturn(Optional.of(order));
+
+        // when
+        ReadOrderDetailResponse response = orderService.getOrderByOrderIdAndEmail("order", "email");
+
+        // then
+        assertThat(response).isNotNull();
+    }
+
+    @DisplayName("유저 ID와 책 ID로 주문 이력이 있는지 확인한다.")
+    @Test
+    void existOrderHistoryByUserIdAndBookId() {
+        // given
+        List<Order> orders = List.of(order);
+        when(orderRepository.findAllByCustomerId(anyLong())).thenReturn(orders);
+
+        // when
+        Boolean exists = orderService.existOrderHistoryByUserIdAndBookId(1L, 1L);
+
+        // then
+        assertThat(exists).isTrue();
+    }
+
+    @DisplayName("주문 상태를 갱신할 때 주문을 찾지 못하면 예외를 던진다.")
+    @Test
+    void updateOrderStatusByOrderId_OrderNotFound() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.empty());
+        UpdateOrderRequest request = mock(UpdateOrderRequest.class);
+
+        // when & then
+        assertThrows(OrderNotFoundException.class, () -> orderService.updateOrderStatusByOrderId("order-1234", request, 1L));
+    }
+
+    @DisplayName("주문 상태를 갱신할 때 주문 상태를 찾지 못하면 예외를 던진다.")
+    @Test
+    void updateOrderStatusByOrderId_OrderStatusNotFound() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.empty());
+        UpdateOrderRequest request = new UpdateOrderRequest(OrderStatusType.CANCEL);
+
+        // when & then
+        assertThrows(OrderStatusNotFoundException.class, () -> orderService.updateOrderStatusByOrderId("order-1234", request, 1L));
+    }
+
+    @DisplayName("주문을 취소할 때 결제가 완료되지 않으면 예외를 던진다.")
+    @Test
+    void handleCancelRequest_FailedPayment() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
+        doThrow(new PaymentNotFoundException("order-1234")).when(paymentProcessor).cancelPayment(anyString(), anyString(), anyInt(), anyString());
+        UpdateOrderRequest request = new UpdateOrderRequest(OrderStatusType.CANCEL);
+
+        // when & then
+        assertThrows(PaymentNotFoundException.class, () -> orderService.updateOrderStatusByOrderId("order-1234", request, 1L));
+    }
+
+    @DisplayName("반품 요청 시 배송이 시작되지 않았으면 예외를 던진다.")
+    @Test
+    void handleReturnRequest_NoDeliveryStarted() {
+        // given
+        order = Order.builder()
+            .orderId("order-1234")
+            .orderCreatedAt(LocalDateTime.now())
+            .orderDeliveryAt(LocalDate.now().plusDays(3))
+            .customerId(1L)
+            .orderTotalAmount(BigDecimal.valueOf(10000))
+            .orderStatus(orderStatus)
+            .payment(payment)
+            .purePrice(BigDecimal.valueOf(30000))
+            .takeout(takeout)
+            .orderBooks(orderBooks)
+            .build();
+
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
+        UpdateOrderRequest request = new UpdateOrderRequest(OrderStatusType.RETURN);
+
+        // when & then
+        assertThrows(AccessDeniedException.class, () -> orderService.updateOrderStatusByOrderId("order-1234", request, 1L));
+    }
+
+    @DisplayName("환불 요청을 보내는지 확인한다.")
+    @Test
+    void handleRefundRequest() {
+        // given
+        orderStatus = OrderStatus.builder()
+            .orderStatusId(1L)
+            .orderStatusName(OrderStatusType.REFUND.name())
+            .build();
+
+        order = Order.builder()
+            .orderId("order-1234")
+            .orderCreatedAt(LocalDateTime.now())
+            .orderDeliveryAt(LocalDate.now().plusDays(3))
+            .customerId(1L)
+            .orderTotalAmount(BigDecimal.valueOf(10000))
+            .orderStatus(OrderStatus.builder().orderStatusName("RETURN").build())
+            .payment(payment)
+            .purePrice(BigDecimal.valueOf(30000))
+            .takeout(takeout)
+            .orderBooks(orderBooks)
+            .build();
+
+        RefundStatus refundStatus = RefundStatus.builder()
+            .refundStatusId(1L)
+            .refundStatusName("WAIT")
+            .build();
+
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
+        when(refundStatusRepository.findByRefundStatusName(any())).thenReturn(Optional.of(refundStatus));
+        UpdateOrderRequest request = new UpdateOrderRequest(OrderStatusType.REFUND);
+
+        // when
+        UpdateOrderResponse updateOrderResponse = orderService.updateOrderStatusByOrderId("order", request, 1L);
+
+        // then
+        assertThat(updateOrderResponse).isNotNull();
+    }
+
+    @DisplayName("환불 요청 시 반품이 완료되지 않았으면 예외를 던진다.")
+    @Test
+    void handleRefundRequest_NotReturned() {
+        // given
+        when(orderRepository.findById(anyString())).thenReturn(Optional.of(order));
+        when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.of(orderStatus));
+        UpdateOrderRequest request = new UpdateOrderRequest(OrderStatusType.REFUND);
+
+        // when & then
+        assertThrows(AccessDeniedException.class, () -> orderService.updateOrderStatusByOrderId("order-1234", request, 1L));
     }
 }

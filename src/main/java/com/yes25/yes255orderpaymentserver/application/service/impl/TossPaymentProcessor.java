@@ -4,7 +4,6 @@ import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentR
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
-import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
@@ -38,7 +37,6 @@ public class TossPaymentProcessor implements PaymentProcessor {
 
     private final RabbitTemplate rabbitTemplate;
     private final PaymentRepository paymentRepository;
-    private final BookAdaptor bookAdaptor;
     private final TossAdaptor tossAdaptor;
 
     @Value("${payment.secret}")
