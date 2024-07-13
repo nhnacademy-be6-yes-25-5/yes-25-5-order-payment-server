@@ -27,8 +27,8 @@ jobs:
       - name: Run Maven tests in Docker
         run: |
           docker run --rm orders-payments-app mvn clean verify sonar:sonar \
-          -Dsonar.projectKey=yes25-5-order-payment \
-          -Dsonar.projectName='yes25-5-order-payment' \
+          -Dsonar.projectKey=yes25-5-orders-payments \
+          -Dsonar.projectName='yes25-5-orders-payments' \
           -Dsonar.host.url=${{ secrets.SONAR_HOST_URL }} \
           -Dsonar.token=${{ secrets.SONAR_TOKEN }}
 
