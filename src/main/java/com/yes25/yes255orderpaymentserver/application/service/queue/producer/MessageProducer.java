@@ -29,19 +29,17 @@ public class MessageProducer {
     }
 
     /**
+     * 주문이 확정될 때, 발행되는 메세지입니다.
      * @param preOrder 가주문
      * @param purePrice 취소 금액을 제외한 순수 주문 금액
      * @param authToken 비동기 스레드에서 jwt 사용을 위한 인증 토큰
      * */
     public void sendOrderDone(PreOrder preOrder, BigDecimal purePrice, String authToken) {
-        StockRequest stockRequest = StockRequest.of(preOrder.getBookIds(),
-            preOrder.getQuantities(), OperationType.DECREASE);
         UpdatePointMessage updatePointMessage = UpdatePointMessage.of(preOrder.getPoints(), purePrice, OperationType.USE);
         List<UpdateUserCartQuantityRequest> userCartQuantityRequests = createUserCartQuantityRequests(
             preOrder.getBookIds(), preOrder.getQuantities());
         UpdateCouponRequest updateCouponRequest = UpdateCouponRequest.from(preOrder.getCouponId(), OperationType.USE);
 
-        sendMessage("stockDecreaseExchange", "stockDecreaseRoutingKey", stockRequest, authToken);
         sendMessage("pointUsedExchange", "pointUsedRoutingKey", updatePointMessage, authToken);
         sendMessage("couponUsedExchange", "couponUsedRoutingKey", updateCouponRequest, authToken);
         sendMessage("cartDecreaseExchange", "cartDecreaseRoutingKey", userCartQuantityRequests, authToken);

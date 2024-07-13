@@ -365,7 +365,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void processCancelPayment(Order order, String orderId) {
-        log.info("사용자 요청으로 인해 환불을 진행합니다.");
+        log.info("사용자 요청으로 인해 결제 취소를 진행합니다.");
         paymentProcessor.cancelPayment(order.getPayment().getPaymentKey(), "사용자 요청",
             order.getPayment().getPaymentAmount().intValue(),
             orderId);

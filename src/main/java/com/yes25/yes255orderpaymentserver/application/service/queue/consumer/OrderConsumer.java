@@ -1,5 +1,7 @@
 package com.yes25.yes255orderpaymentserver.application.service.queue.consumer;
 
+import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
+import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
@@ -16,7 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
@@ -27,7 +28,6 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class OrderConsumer {
 
-    private final RabbitTemplate rabbitTemplate;
     private final OrderService orderService;
     private final PreOrderService preOrderService;
     private final MessageProducer messageProducer;
@@ -38,7 +38,7 @@ public class OrderConsumer {
      *                          적립은 타 서버 완료 시 확인이 가능합니다. 현재는 주석처리 하였습니다.
      */
     @RabbitListener(queues = "payQueue")
-    @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 2000))
+    @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 2000), retryFor = PaymentException.class)
     public void receivePayment(SuccessPaymentResponse response, Message message) {
         MessageProperties properties = message.getMessageProperties();
         String authToken = (String) properties.getHeaders().get("Authorization");
@@ -56,24 +56,19 @@ public class OrderConsumer {
                     LocalDateTime.now()), response.paymentKey(), response.orderId(), response.paymentAmount());
         }
 
-//        if (!preOrder.getPreOrderId().equals(response.orderId())) {
-//            log.error("주문 정보가 일치하지 않습니다.");
-//            messageProducer.sendPreOrder(preOrder);
-//
-//            throw new PaymentException(
-//                ErrorStatus.toErrorStatus("결제 큐에서 해당하는 주문를 찾을 수 없습니다.", 404,
-//                    LocalDateTime.now()), response.paymentKey(), response.orderId(), response.paymentAmount());
-//        }
-
         BigDecimal purePrice = preOrder.calculatePurePrice();
         orderService.createOrder(preOrder, purePrice, response);
         messageProducer.sendOrderDone(preOrder, purePrice, authToken);
     }
 
     @Recover
-    public void recover(PaymentException e, SuccessPaymentResponse response) {
-        log.error("최대 재시도 횟수 초과. 결제 취소 요청을 보냅니다. 주문 ID : {}", e.getOrderId());
+    public void recover(PaymentException e, SuccessPaymentResponse response, Message message) {
+        log.error("최대 재시도 횟수 초과. 재고 증가와 결제 취소 요청을 보냅니다. 주문 ID : {}", e.getOrderId());
+        StockRequest stockRequest = StockRequest.of(response.bookIdList(), response.quantityList(), OperationType.INCREASE);
+        MessageProperties properties = message.getMessageProperties();
+        String authToken = (String) properties.getHeaders().get("Authorization");
 
+        messageProducer.sendMessage("stockDecreaseExchange", "stockDecreaseRoutingKey", stockRequest, authToken);
         paymentService.cancelPayment(e.getPaymentKey(), "결제 처리 중 예상치 못한 예외 발생", e.getPaymentAmount(), e.getOrderId());
     }
 }
