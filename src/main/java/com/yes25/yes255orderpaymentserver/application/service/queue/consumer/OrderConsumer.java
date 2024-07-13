@@ -38,7 +38,7 @@ public class OrderConsumer {
      *                          적립은 타 서버 완료 시 확인이 가능합니다. 현재는 주석처리 하였습니다.
      */
     @RabbitListener(queues = "payQueue")
-    @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 2000), retryFor = PaymentException.class)
+    @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 2000), retryFor = Exception.class)
     public void receivePayment(SuccessPaymentResponse response, Message message) {
         MessageProperties properties = message.getMessageProperties();
         String authToken = (String) properties.getHeaders().get("Authorization");
@@ -62,13 +62,13 @@ public class OrderConsumer {
     }
 
     @Recover
-    public void recover(PaymentException e, SuccessPaymentResponse response, Message message) {
-        log.error("최대 재시도 횟수 초과. 재고 증가와 결제 취소 요청을 보냅니다. 주문 ID : {}", e.getOrderId());
+    public void recover(Exception e, SuccessPaymentResponse response, Message message) {
+        log.error("최대 재시도 횟수 초과. 재고 증가와 결제 취소 요청을 보냅니다. 주문 ID : {}", response.orderId());
         StockRequest stockRequest = StockRequest.of(response.bookIdList(), response.quantityList(), OperationType.INCREASE);
         MessageProperties properties = message.getMessageProperties();
         String authToken = (String) properties.getHeaders().get("Authorization");
 
         messageProducer.sendMessage("stockDecreaseExchange", "stockDecreaseRoutingKey", stockRequest, authToken);
-        paymentService.cancelPayment(e.getPaymentKey(), "결제 처리 중 예상치 못한 예외 발생", e.getPaymentAmount(), e.getOrderId());
+        paymentService.cancelPayment(response.paymentKey(), "결제 처리 중 예상치 못한 예외 발생", response.paymentAmount(), response.orderId());
     }
 }
