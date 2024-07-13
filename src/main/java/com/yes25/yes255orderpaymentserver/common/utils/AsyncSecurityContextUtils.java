@@ -58,6 +58,4 @@ public class AsyncSecurityContextUtils {
             ErrorStatus.toErrorStatus("헤더에서 토큰을 찾을 수 없습니다.", 401, LocalDateTime.now())
         );
     }
-
-
 }

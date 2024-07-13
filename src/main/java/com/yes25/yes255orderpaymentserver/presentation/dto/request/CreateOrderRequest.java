@@ -27,6 +27,7 @@ public record CreateOrderRequest(String orderId,
                                  String receivePhoneNumber,
                                  Long couponId,
                                  BigDecimal points,
-                                 String role) {
+                                 String role,
+                                 String cartId) {
 
 }

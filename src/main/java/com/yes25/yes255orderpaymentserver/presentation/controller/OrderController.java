@@ -53,6 +53,10 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<CreateOrderResponse> create(@RequestBody CreateOrderRequest request,
         @CurrentUser JwtUserDetails jwtUserDetails) {
+        if (Objects.isNull(jwtUserDetails)) {
+            return ResponseEntity.ok(preOrderService.savePreOrder(request, null));
+        }
+
         return ResponseEntity.ok()
             .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
             .body(preOrderService.savePreOrder(request, jwtUserDetails.userId()));

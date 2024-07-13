@@ -50,6 +50,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -366,9 +367,12 @@ public class OrderServiceImpl implements OrderService {
 
     private void processCancelPayment(Order order, String orderId) {
         log.info("사용자 요청으로 인해 결제 취소를 진행합니다.");
-        paymentProcessor.cancelPayment(order.getPayment().getPaymentKey(), "사용자 요청",
-            order.getPayment().getPaymentAmount().intValue(),
-            orderId);
+
+        if (order.getPayment().getPaymentAmount().compareTo(BigDecimal.ZERO) != 0) {
+            paymentProcessor.cancelPayment(order.getPayment().getPaymentKey(), "사용자 요청",
+                order.getPayment().getPaymentAmount().intValue(),
+                orderId);
+        }
 
         List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
         List<Long> bookIds = orderBooks.stream()

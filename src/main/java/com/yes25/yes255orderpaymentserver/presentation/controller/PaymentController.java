@@ -54,6 +54,10 @@ public class PaymentController {
     @GetMapping("/{orderId}")
     public ResponseEntity<List<ReadPaymentOrderResponse>> findAll(@PathVariable String orderId,
     @CurrentUser JwtUserDetails jwtUserDetails) {
+        if (Objects.isNull(jwtUserDetails)) {
+            return ResponseEntity.ok(orderService.findAllOrderByOrderId(orderId));
+        }
+
         return ResponseEntity.ok()
             .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
             .body(orderService.findAllOrderByOrderId(orderId));

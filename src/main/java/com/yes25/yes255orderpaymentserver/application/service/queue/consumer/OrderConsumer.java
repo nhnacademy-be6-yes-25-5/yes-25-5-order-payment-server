@@ -44,7 +44,7 @@ public class OrderConsumer {
         String authToken = (String) properties.getHeaders().get("Authorization");
 
         if (Objects.isNull(authToken)) {
-            log.error("인증 헤더가 비어있습니다.");
+            log.error("인증 헤더가 비어있습니다. 비회원으로 처리합니다.");
         }
 
         PreOrder preOrder = preOrderService.getPreOrder(response.orderId());
@@ -58,7 +58,7 @@ public class OrderConsumer {
 
         BigDecimal purePrice = preOrder.calculatePurePrice();
         orderService.createOrder(preOrder, purePrice, response);
-        messageProducer.sendOrderDone(preOrder, purePrice, authToken);
+        messageProducer.sendOrderDone(preOrder, purePrice, authToken, preOrder.getCartId());
     }
 
     @Recover

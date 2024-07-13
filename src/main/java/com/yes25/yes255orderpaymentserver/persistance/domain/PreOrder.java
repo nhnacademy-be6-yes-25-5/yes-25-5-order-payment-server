@@ -41,6 +41,7 @@ public class PreOrder implements Serializable {
     private String receivePhoneNumber;
     private Long couponId;
     private String role;
+    private String cartId;
 
     @Builder
     public PreOrder(String preOrderId, List<Long> bookIds, List<Integer> quantities,
@@ -49,7 +50,7 @@ public class PreOrder implements Serializable {
         String reference, LocalDateTime orderedDate, LocalDate deliveryDate, String orderUserName,
         String orderUserEmail, String orderUserPhoneNumber, String receiveName, String receiveEmail,
         String receivePhoneNumber, Long couponId, BigDecimal points, BigDecimal takeoutPrice,
-        BigDecimal shippingFee, String role) {
+        BigDecimal shippingFee, String role, String cartId) {
         this.preOrderId = preOrderId;
         this.bookIds = bookIds;
         this.quantities = quantities;
@@ -75,6 +76,7 @@ public class PreOrder implements Serializable {
         this.takeoutPrice = takeoutPrice;
         this.shippingFee = shippingFee;
         this.role = role;
+        this.cartId = cartId;
     }
 
     public static PreOrder from(CreateOrderRequest request, Long userId) {
@@ -104,6 +106,7 @@ public class PreOrder implements Serializable {
             .takeoutPrice(request.takeoutPrice())
             .shippingFee(request.shippingFee())
             .role(request.role())
+            .cartId(request.cartId())
             .build();
     }
 

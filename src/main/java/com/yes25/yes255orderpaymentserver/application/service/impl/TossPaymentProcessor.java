@@ -28,6 +28,7 @@ import org.json.simple.parser.JSONParser;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -123,13 +124,24 @@ public class TossPaymentProcessor implements PaymentProcessor {
     }
 
     private void sendPaymentDoneMessage(Payment payment, CreatePaymentRequest request) {
-        JwtUserDetails jwtUserDetails = (JwtUserDetails) SecurityContextHolder.getContext()
-            .getAuthentication().getPrincipal();
-        String authToken =
-            jwtUserDetails != null ? "Bearer " + jwtUserDetails.accessToken() : "";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authToken;
+
+        if (authentication != null) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof JwtUserDetails jwtUserDetails) {
+                authToken = "Bearer " + jwtUserDetails.accessToken();
+            } else {
+                authToken = null;
+            }
+        } else {
+            authToken = null;
+        }
 
         MessagePostProcessor messagePostProcessor = message -> {
-            message.getMessageProperties().setHeader("Authorization", authToken);
+            if (authToken != null) {
+                message.getMessageProperties().setHeader("Authorization", authToken);
+            }
             return message;
         };
 
