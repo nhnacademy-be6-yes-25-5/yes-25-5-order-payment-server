@@ -10,6 +10,7 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.MessagePostProcessor;
@@ -29,33 +30,44 @@ public class MessageProducer {
     }
 
     /**
-     * @param preOrder 가주문
+     * 주문이 확정될 때, 발행되는 메세지입니다.
+     *
+     * @param preOrder  가주문
      * @param purePrice 취소 금액을 제외한 순수 주문 금액
      * @param authToken 비동기 스레드에서 jwt 사용을 위한 인증 토큰
-     * */
-    public void sendOrderDone(PreOrder preOrder, BigDecimal purePrice, String authToken) {
-        StockRequest stockRequest = StockRequest.of(preOrder.getBookIds(),
-            preOrder.getQuantities(), OperationType.DECREASE);
-        UpdatePointMessage updatePointMessage = UpdatePointMessage.of(preOrder.getPoints(), purePrice, OperationType.USE);
+     * @param cartId 장바구니 ID
+     */
+    public void sendOrderDone(PreOrder preOrder, BigDecimal purePrice, String authToken,
+        String cartId) {
+        if (Objects.nonNull(authToken)) {
+            UpdatePointMessage updatePointMessage = UpdatePointMessage.of(preOrder.getPoints(),
+                purePrice, OperationType.USE);
+            UpdateCouponRequest updateCouponRequest = UpdateCouponRequest.from(
+                preOrder.getCouponId(), OperationType.USE);
+
+            sendMessage("pointUsedExchange", "pointUsedRoutingKey", updatePointMessage, authToken);
+            sendMessage("couponUsedExchange", "couponUsedRoutingKey", updateCouponRequest,
+                authToken);
+
+            log.info("쿠폰 사용, 포인트 차감 및 적립 메세지가 발행되었습니다.");
+        }
+
         List<UpdateUserCartQuantityRequest> userCartQuantityRequests = createUserCartQuantityRequests(
-            preOrder.getBookIds(), preOrder.getQuantities());
-        UpdateCouponRequest updateCouponRequest = UpdateCouponRequest.from(preOrder.getCouponId(), OperationType.USE);
+            preOrder.getBookIds(), preOrder.getQuantities(), cartId);
 
-        sendMessage("stockDecreaseExchange", "stockDecreaseRoutingKey", stockRequest, authToken);
-        sendMessage("pointUsedExchange", "pointUsedRoutingKey", updatePointMessage, authToken);
-        sendMessage("couponUsedExchange", "couponUsedRoutingKey", updateCouponRequest, authToken);
-        sendMessage("cartDecreaseExchange", "cartDecreaseRoutingKey", userCartQuantityRequests, authToken);
+        sendMessage("cartDecreaseExchange", "cartDecreaseRoutingKey", userCartQuantityRequests,
+            authToken);
 
-        log.info("상품 재고 감소, 장바구니 재고 감소, 쿠폰 사용, 포인트 차감 및 적립 메세지가 발행되었습니다.");
+        log.info("장바구니 재고 감소 메세지가 발행되었습니다.");
     }
 
     private List<UpdateUserCartQuantityRequest> createUserCartQuantityRequests(List<Long> bookIds,
-        List<Integer> quantities) {
+        List<Integer> quantities, String cartId) {
 
         List<UpdateUserCartQuantityRequest> requests = new ArrayList<>();
         for (int i = 0; i < bookIds.size(); i++) {
             UpdateUserCartQuantityRequest request = UpdateUserCartQuantityRequest.of(
-                bookIds.get(i), quantities.get(i));
+                bookIds.get(i), quantities.get(i), cartId);
             requests.add(request);
         }
 
@@ -77,15 +89,19 @@ public class MessageProducer {
         String authToken =
             jwtUserDetails != null ? "Bearer " + jwtUserDetails.accessToken() : "";
 
+        if (Objects.nonNull(couponId)) {
+            UpdateCouponRequest updateCouponRequest = UpdateCouponRequest.from(couponId, OperationType.ROLLBACK);
+            sendMessage("couponUnusedExchange", "couponUnusedRoutingKey", updateCouponRequest, authToken);
+            log.info("사용자 요청에 의해 결제가 취소 쿠폰 롤백 메세지가 발행되었습니다.");
+        }
+
         StockRequest stockRequest = StockRequest.of(bookIds, quantities, OperationType.INCREASE);
         UpdatePointMessage updatePointMessage = UpdatePointMessage.of(points, purePrice, OperationType.ROLLBACK);
-        UpdateCouponRequest updateCouponRequest = UpdateCouponRequest.from(couponId, OperationType.ROLLBACK);
 
         sendMessage("stockIncreaseExchange", "stockIncreaseRoutingKey", stockRequest, authToken);
         sendMessage("pointReturnExchange", "pointReturnRoutingKey", updatePointMessage, authToken);
-        sendMessage("couponUnusedExchange", "couponUnusedRoutingKey", updateCouponRequest, authToken);
 
-        log.info("사용자 요청에 의해 결제가 취소 되어 상품 재고 롤백, 쿠폰 롤백, 포인트 차감 및 적립 메세지가 발행되었습니다.");
+        log.info("사용자 요청에 의해 결제가 취소 되어 상품 재고 롤백, 포인트 차감 및 적립 메세지가 발행되었습니다.");
     }
 
     public <T> void sendDlxMessage(String dlxExchange, String routingKey, T message) {

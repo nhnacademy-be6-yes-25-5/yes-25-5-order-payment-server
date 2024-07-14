@@ -3,6 +3,7 @@ package com.yes25.yes255orderpaymentserver.presentation.controller;
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.application.service.PreOrderService;
+import com.yes25.yes255orderpaymentserver.common.jwt.HeaderUtils;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.common.jwt.annotation.CurrentUser;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
@@ -21,6 +22,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -51,7 +53,13 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<CreateOrderResponse> create(@RequestBody CreateOrderRequest request,
         @CurrentUser JwtUserDetails jwtUserDetails) {
-        return ResponseEntity.ok(preOrderService.savePreOrder(request, jwtUserDetails.userId()));
+        if (Objects.isNull(jwtUserDetails)) {
+            return ResponseEntity.ok(preOrderService.savePreOrder(request, null));
+        }
+
+        return ResponseEntity.ok()
+            .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
+            .body(preOrderService.savePreOrder(request, jwtUserDetails.userId()));
     }
 
     @Operation(summary = "사용자 주문 내역 조회", description = "사용자의 모든 주문 내역을 조회합니다.")
@@ -63,7 +71,9 @@ public class OrderController {
     @GetMapping("/users")
     public ResponseEntity<Page<ReadUserOrderAllResponse>> findAllOrderByUserId(Pageable pageable, @CurrentUser JwtUserDetails jwtUserDetails) {
         Long userId = jwtUserDetails.userId();
-        return ResponseEntity.ok(orderService.findByUserId(userId, pageable));
+        return ResponseEntity.ok()
+            .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
+            .body(orderService.findByUserId(userId, pageable));
     }
 
     @Operation(summary = "특정 주문 조회", description = "주문 ID로 특정 주문을 조회합니다.")
@@ -75,7 +85,9 @@ public class OrderController {
     @GetMapping("/{orderId}/users")
     public ResponseEntity<ReadUserOrderResponse> findByOrderIdAndUserId(@PathVariable String orderId, @CurrentUser JwtUserDetails jwtUserDetails) {
         Long userId = jwtUserDetails.userId();
-        return ResponseEntity.ok(orderService.findByOrderIdAndUserId(orderId, userId));
+        return ResponseEntity.ok()
+            .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
+            .body(orderService.findByOrderIdAndUserId(orderId, userId));
     }
 
     @Operation(summary = "주문 상태 조회", description = "주문 ID로 주문 상태를 조회합니다.")
@@ -85,8 +97,15 @@ public class OrderController {
         @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     @GetMapping("/status/{orderId}")
-    public ResponseEntity<ReadOrderStatusResponse> find(@PathVariable String orderId) {
-        return ResponseEntity.ok(orderService.findOrderStatusByOrderId(orderId));
+    public ResponseEntity<ReadOrderStatusResponse> find(@PathVariable String orderId,
+        @CurrentUser JwtUserDetails jwtUserDetails) {
+        if (Objects.isNull(jwtUserDetails)) {
+            return ResponseEntity.ok(orderService.findOrderStatusByOrderId(orderId));
+        }
+
+        return ResponseEntity.ok()
+            .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
+            .body(orderService.findOrderStatusByOrderId(orderId));
     }
 
     @Operation(summary = "주문 업데이트", description = "주문 ID로 주문 상태를 업데이트합니다.")
@@ -98,7 +117,9 @@ public class OrderController {
     })
     @PutMapping("/{orderId}")
     public ResponseEntity<UpdateOrderResponse> update(@PathVariable String orderId, @RequestBody UpdateOrderRequest request, @CurrentUser JwtUserDetails jwtUserDetails) {
-        return ResponseEntity.ok(orderService.updateOrderStatusByOrderId(orderId, request, jwtUserDetails.userId()));
+        return ResponseEntity.ok()
+            .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
+            .body(orderService.updateOrderStatusByOrderId(orderId, request, jwtUserDetails.userId()));
     }
 
     @Operation(summary = "주문 배송 정보 조회", description = "주문 ID로 배송 정보를 조회합니다.")
@@ -130,8 +151,11 @@ public class OrderController {
         @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     @GetMapping("/logs")
-    public ResponseEntity<List<ReadPurePriceResponse>> getPurePrices(@RequestParam LocalDate date) {
-        return ResponseEntity.ok(orderService.getPurePriceByDate(date));
+    public ResponseEntity<List<ReadPurePriceResponse>> getPurePrices(@RequestParam LocalDate date,
+        @CurrentUser JwtUserDetails jwtUserDetails) {
+        return ResponseEntity.ok()
+            .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
+            .body(orderService.getPurePriceByDate(date));
     }
 
     @Operation(summary = "비회원 주문 조회", description = "비회원의 주문 ID와 이메일로 주문 정보를 조회합니다.")
@@ -141,7 +165,8 @@ public class OrderController {
         @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     @GetMapping("/none/{orderId}")
-    public ResponseEntity<ReadOrderDetailResponse> getOrderNoneMember(@PathVariable String orderId, @RequestParam String email) {
+    public ResponseEntity<ReadOrderDetailResponse> getOrderNoneMember(@PathVariable String orderId,
+        @RequestParam String email) {
         return ResponseEntity.ok(orderService.getOrderByOrderIdAndEmail(orderId, email));
     }
 
@@ -151,9 +176,12 @@ public class OrderController {
         @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
     })
     @PutMapping("/delivery/done")
-    public ResponseEntity<Void> updateAllOrderStatusInDone() {
+    public ResponseEntity<Void> updateAllOrderStatusInDone(@CurrentUser JwtUserDetails jwtUserDetails) {
         orderService.updateOrderStatusToDone();
-        return ResponseEntity.noContent().build();
+
+        return ResponseEntity.noContent()
+            .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
+            .build();
     }
 
     @Operation(summary = "주문 내역 존재 여부 확인", description = "사용자의 주문 내역 존재 여부를 확인합니다.")
@@ -163,6 +191,8 @@ public class OrderController {
     })
     @GetMapping("/exist")
     public ResponseEntity<Boolean> getOrderHistory(@CurrentUser JwtUserDetails jwtUserDetails, @RequestParam Long bookId) {
-        return ResponseEntity.ok(orderService.existOrderHistoryByUserIdAndBookId(jwtUserDetails.userId(), bookId));
+        return ResponseEntity.ok()
+            .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
+            .body(orderService.existOrderHistoryByUserIdAndBookId(jwtUserDetails.userId(), bookId));
     }
 }

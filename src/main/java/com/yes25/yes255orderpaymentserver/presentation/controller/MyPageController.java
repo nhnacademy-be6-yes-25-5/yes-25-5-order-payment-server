@@ -1,6 +1,7 @@
 package com.yes25.yes255orderpaymentserver.presentation.controller;
 
 import com.yes25.yes255orderpaymentserver.application.service.MyPageOrderService;
+import com.yes25.yes255orderpaymentserver.common.jwt.HeaderUtils;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.common.jwt.annotation.CurrentUser;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadMyOrderHistoryResponse;
@@ -31,6 +32,8 @@ public class MyPageController {
     })
     @GetMapping("/mypage")
     public ResponseEntity<Page<ReadMyOrderHistoryResponse>> getMyOrders(Pageable pageable, @CurrentUser JwtUserDetails jwtUserDetails) {
-        return ResponseEntity.ok(myPageOrderService.getMyOrdersByPaging(pageable, jwtUserDetails.userId()));
+        return ResponseEntity.ok()
+            .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
+            .body(myPageOrderService.getMyOrdersByPaging(pageable, jwtUserDetails.userId()));
     }
 }

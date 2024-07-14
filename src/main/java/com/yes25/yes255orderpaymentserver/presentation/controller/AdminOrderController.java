@@ -40,8 +40,11 @@ public class AdminOrderController {
     })
     @GetMapping("/admin")
     public ResponseEntity<Page<ReadAllOrderResponse>> getAllOrders(Pageable pageable,
-        @RequestParam(required = false) String role) {
-        return ResponseEntity.ok(adminOrderService.getAllOrdersByPaging(pageable, role));
+        @RequestParam(required = false) String role,
+        @CurrentUser JwtUserDetails jwtUserDetails) {
+        return ResponseEntity.ok()
+            .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
+            .body(adminOrderService.getAllOrdersByPaging(pageable, role));
     }
 
     @Operation(summary = "주문 상태 업데이트", description = "주문 ID로 주문 상태를 업데이트합니다.")

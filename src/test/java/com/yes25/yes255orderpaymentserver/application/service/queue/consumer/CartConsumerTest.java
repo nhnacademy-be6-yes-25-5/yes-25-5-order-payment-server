@@ -42,8 +42,8 @@ class CartConsumerTest {
     @BeforeEach
     void setUp() {
         requests = List.of(
-            UpdateUserCartQuantityRequest.of(1L, 2),
-            UpdateUserCartQuantityRequest.of(2L, 3)
+            UpdateUserCartQuantityRequest.of(1L, 2, "cartId"),
+            UpdateUserCartQuantityRequest.of(2L, 3, "cartId")
         );
 
         message = new Message(new byte[0]);
@@ -52,11 +52,8 @@ class CartConsumerTest {
     @DisplayName("메세지를 받아 성공적으로 도서 서버에 장바구니 도서 재고 감소 요청을 보내는지 확인한다.")
     @Test
     void receiveCartDecreaseQueue() {
-        // given
-        doNothing().when(securityContextUtils).configureSecurityContext(any(Message.class));
-
-        // when
-        cartConsumer.receiveCartDecreaseQueue(requests, message);
+        // given && when
+        cartConsumer.receiveCartDecreaseQueue(requests);
 
         // then
         verify(userAdaptor, times(1)).decreaseUserCartQuantity(requests);

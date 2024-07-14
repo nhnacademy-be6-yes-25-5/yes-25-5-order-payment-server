@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentRequest;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
+import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
@@ -37,6 +38,9 @@ class TossPaymentProcessorTest {
 
     @Mock
     private RabbitTemplate rabbitTemplate;
+
+    @Mock
+    private BookAdaptor bookAdaptor;
 
     @Mock
     private PaymentRepository paymentRepository;

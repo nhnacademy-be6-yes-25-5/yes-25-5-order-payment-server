@@ -1,9 +1,12 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentRequest;
+import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
+import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
+import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
@@ -25,6 +28,7 @@ import org.json.simple.parser.JSONParser;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,12 +42,15 @@ public class TossPaymentProcessor implements PaymentProcessor {
     private final RabbitTemplate rabbitTemplate;
     private final PaymentRepository paymentRepository;
     private final TossAdaptor tossAdaptor;
+    private final BookAdaptor bookAdaptor;
 
     @Value("${payment.secret}")
     private String paymentSecretKey;
 
     @Override
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) {
+        checkBookStock(request);
+
         return processingPayment(request);
     }
 
@@ -58,6 +65,8 @@ public class TossPaymentProcessor implements PaymentProcessor {
 
     @Override
     public CreatePaymentResponse createPaymentByZeroAmount(CreatePaymentRequest request) {
+        checkBookStock(request);
+
         Payment payment = request.toEntity();
         paymentRepository.save(payment);
 
@@ -108,14 +117,31 @@ public class TossPaymentProcessor implements PaymentProcessor {
         return new CreatePaymentResponse(200);
     }
 
+    private void checkBookStock(CreatePaymentRequest request) {
+        StockRequest stockRequest = StockRequest.of(request.bookIds(),
+            request.quantities(), OperationType.DECREASE);
+        bookAdaptor.updateStock(stockRequest);
+    }
+
     private void sendPaymentDoneMessage(Payment payment, CreatePaymentRequest request) {
-        JwtUserDetails jwtUserDetails = (JwtUserDetails) SecurityContextHolder.getContext()
-            .getAuthentication().getPrincipal();
-        String authToken =
-            jwtUserDetails != null ? "Bearer " + jwtUserDetails.accessToken() : "";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String authToken;
+
+        if (authentication != null) {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof JwtUserDetails jwtUserDetails) {
+                authToken = "Bearer " + jwtUserDetails.accessToken();
+            } else {
+                authToken = null;
+            }
+        } else {
+            authToken = null;
+        }
 
         MessagePostProcessor messagePostProcessor = message -> {
-            message.getMessageProperties().setHeader("Authorization", authToken);
+            if (authToken != null) {
+                message.getMessageProperties().setHeader("Authorization", authToken);
+            }
             return message;
         };
 
