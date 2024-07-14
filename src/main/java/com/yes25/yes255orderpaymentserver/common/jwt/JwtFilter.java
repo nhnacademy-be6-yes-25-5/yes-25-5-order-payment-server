@@ -32,7 +32,7 @@ public class JwtFilter extends OncePerRequestFilter {
         FilterChain filterChain) throws ServletException, IOException {
         String path = request.getServletPath();
 
-        if (path.startsWith("/payments") && StringUtils.isEmpty(request.getHeader("Authorization"))) {
+        if ((path.startsWith("/payments") || path.startsWith("/policies")) && StringUtils.isEmpty(request.getHeader("Authorization"))) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -42,7 +42,7 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (path.equals("/orders/logs") || path.startsWith("/orders/none") || path.startsWith("/swagger") || path.contains("/v3") || path.startsWith("/policies")) {
+        if (path.equals("/orders/logs") || path.startsWith("/orders/none") || path.startsWith("/swagger") || path.contains("/v3")) {
             filterChain.doFilter(request, response);
             return;
         }
