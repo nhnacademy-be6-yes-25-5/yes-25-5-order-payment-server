@@ -63,15 +63,10 @@ eureka:
   instance:
     hostname: ${EUREKA_SERVER_HOSTNAME}
 
-jwt:
-  secret: ${JWT_SECRET}
 api:
   books-users: ${BOOK_USER_SERVER}
   coupon: ${COUPON_SERVER}
   auth : http://133.186.153.195:8050
-
-payment:
-  secret: ${PAYMENT_SECRET}
 
 management:
   endpoints:

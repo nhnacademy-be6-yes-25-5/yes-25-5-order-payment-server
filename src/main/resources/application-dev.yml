@@ -63,15 +63,9 @@ eureka:
     serviceUrl:
       defaultZone: http://127.0.0.1:8761/eureka/
 
-jwt:
-  secret: ${JWT_SECRET}
-
 api:
   books-users: http://127.0.0.1:8061
   coupon: http://127.0.0.1:8081
   auth : http://127.0.0.1:8050
-
-payment:
-  secret: ${PAYMENT_SECRET}
 
 logHost: localhost
