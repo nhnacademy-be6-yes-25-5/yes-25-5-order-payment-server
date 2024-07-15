@@ -13,7 +13,6 @@ nhn:
   cloud:
     secure:
       url: https://api-keymanager.nhncloudservice.com/keymanager/v1.0/appkey/2SxwmBzUfnqJaA2A
-      mysql: a8924de0e1444ac38698160ebacad5e5
 
 payment:
   secret: ${PAYMENT_SECRET}

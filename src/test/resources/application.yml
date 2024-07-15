@@ -21,10 +21,15 @@ eureka:
     registerWithEureka: false
 
 jwt:
-  secret: this-is-secret-key-yeah-ho-hu-yea-yes-hi-bye
+  secret: e665cfbd55854ea5bd66bac1607e016c
 
 payment:
-  secret: this-is-secret-key-yeah
+  secret: da24787c30d9427fbcc02b28b244301b
+
+nhn:
+  cloud:
+    secure:
+      url: https://api-keymanager.nhncloudservice.com/keymanager/v1.0/appkey/2SxwmBzUfnqJaA2A
 
 api:
   books-users: http://localhost:8061
