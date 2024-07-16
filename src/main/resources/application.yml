@@ -15,7 +15,7 @@ nhn:
       url: https://api-keymanager.nhncloudservice.com/keymanager/v1.0/appkey/2SxwmBzUfnqJaA2A
 
 payment:
-  secret: da24787c30d9427fbcc02b28b244301b
+  secret: ${PAYMENT_SECRET}
 
 jwt:
-  secret: e665cfbd55854ea5bd66bac1607e016c
+  secret: ${JWT_SECRET}
