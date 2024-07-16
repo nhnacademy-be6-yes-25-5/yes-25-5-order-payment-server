@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import javax.crypto.SecretKey;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +35,11 @@ public class JwtProvider {
     @PostConstruct
     public void init() {
         KeyManagerResponse response = keyManagerAdaptor.getSecret(secretKeyId);
-        this.secretKey = Keys.hmacShaKeyFor(response.body().secret().getBytes(StandardCharsets.UTF_8));
+
+        if (Objects.nonNull(response)) {
+            this.secretKey = Keys.hmacShaKeyFor(
+                response.body().secret().getBytes(StandardCharsets.UTF_8));
+        }
     }
 
     public boolean isValidToken(String token) {

@@ -24,6 +24,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
@@ -56,7 +57,10 @@ public class TossPaymentProcessor implements PaymentProcessor {
     @PostConstruct
     public void init() {
         KeyManagerResponse response = keyManagerAdaptor.getSecret(secretKeyId);
-        paymentSecretKey = response.body().secret();
+
+        if (Objects.nonNull(response)) {
+            paymentSecretKey = response.body().secret();
+        }
     }
 
     @Override
