@@ -58,7 +58,7 @@ public class TossPaymentProcessor implements PaymentProcessor {
     public void init() {
         KeyManagerResponse response = keyManagerAdaptor.getSecret(secretKeyId);
 
-        if (Objects.nonNull(response)) {
+        if (Objects.nonNull(response.body())) {
             paymentSecretKey = response.body().secret();
         }
     }

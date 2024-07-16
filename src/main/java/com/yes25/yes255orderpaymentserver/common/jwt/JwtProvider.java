@@ -36,7 +36,7 @@ public class JwtProvider {
     public void init() {
         KeyManagerResponse response = keyManagerAdaptor.getSecret(secretKeyId);
 
-        if (Objects.nonNull(response)) {
+        if (Objects.nonNull(response.body())) {
             this.secretKey = Keys.hmacShaKeyFor(
                 response.body().secret().getBytes(StandardCharsets.UTF_8));
         }
