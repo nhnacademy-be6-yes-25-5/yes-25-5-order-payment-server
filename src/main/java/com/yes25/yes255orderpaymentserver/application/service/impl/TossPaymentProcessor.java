@@ -7,11 +7,14 @@ import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymen
 import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
+import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.KeyManagerAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.KeyManagerResponse;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -21,6 +24,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
@@ -43,9 +47,21 @@ public class TossPaymentProcessor implements PaymentProcessor {
     private final PaymentRepository paymentRepository;
     private final TossAdaptor tossAdaptor;
     private final BookAdaptor bookAdaptor;
+    private final KeyManagerAdaptor keyManagerAdaptor;
+
+    private String paymentSecretKey;
 
     @Value("${payment.secret}")
-    private String paymentSecretKey;
+    private String secretKeyId;
+
+    @PostConstruct
+    public void init() {
+        KeyManagerResponse response = keyManagerAdaptor.getSecret(secretKeyId);
+
+        if (Objects.nonNull(response.body())) {
+            paymentSecretKey = response.body().secret();
+        }
+    }
 
     @Override
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) {

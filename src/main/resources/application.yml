@@ -8,3 +8,14 @@ spring:
       port: 6379
       database: 18
       password: "*N2vya7H@muDTwdNMR!"
+
+nhn:
+  cloud:
+    secure:
+      url: https://api-keymanager.nhncloudservice.com/keymanager/v1.0/appkey/2SxwmBzUfnqJaA2A
+
+payment:
+  secret: ${PAYMENT_SECRET}
+
+jwt:
+  secret: ${JWT_SECRET}
