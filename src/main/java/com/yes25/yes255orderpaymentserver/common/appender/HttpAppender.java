@@ -3,6 +3,7 @@ package com.yes25.yes255orderpaymentserver.common.appender;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.AppenderBase;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.NoArgsConstructor;
 import okhttp3.*;
 
 import java.io.IOException;
@@ -100,6 +101,7 @@ public class HttpAppender extends AppenderBase<ILoggingEvent> {
         this.platform = platform;
     }
 
+    @NoArgsConstructor
     static class LogEvent {
         public String projectName;
         public String projectVersion;
