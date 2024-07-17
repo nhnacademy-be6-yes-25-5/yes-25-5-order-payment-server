@@ -4,7 +4,9 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.TakeoutTyp
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import lombok.Builder;
 
+@Builder
 public record CreateOrderRequest(String orderId,
                                  List<Long> productIds,
                                  List<Integer> quantities,
