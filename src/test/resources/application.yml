@@ -13,6 +13,7 @@ logging:
   level:
     org.hibernate.SQL: debug
     org.springframework.transaction.interceptor: trace
+    root: info
 
 eureka:
   client:
