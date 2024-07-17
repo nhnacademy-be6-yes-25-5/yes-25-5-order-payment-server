@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
-public class Takeout extends Time{
+public class Takeout {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
