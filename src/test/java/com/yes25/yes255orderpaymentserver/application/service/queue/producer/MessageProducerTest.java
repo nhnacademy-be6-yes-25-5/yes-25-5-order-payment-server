@@ -86,7 +86,7 @@ class MessageProducerTest {
         messageProducer.sendOrderCancelMessageByUser(bookIds, quantities, List.of(couponId), points, purePrice);
 
         // then
-        verify(rabbitTemplate).convertAndSend(eq("couponUnusedExchange"), eq("couponUnusedRoutingKey"), any(UpdateCouponRequest.class), messagePostProcessorCaptor.capture());
+        verify(rabbitTemplate).convertAndSend(eq("couponUnusedExchange"), eq("couponUnusedRoutingKey"), anyList(), messagePostProcessorCaptor.capture());
         verify(rabbitTemplate).convertAndSend(eq("stockIncreaseExchange"), eq("stockIncreaseRoutingKey"), any(StockRequest.class), any(MessagePostProcessor.class));
         verify(rabbitTemplate).convertAndSend(eq("pointReturnExchange"), eq("pointReturnRoutingKey"), any(UpdatePointMessage.class), any(MessagePostProcessor.class));
     }
