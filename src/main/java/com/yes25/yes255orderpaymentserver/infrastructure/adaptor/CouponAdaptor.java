@@ -2,6 +2,7 @@ package com.yes25.yes255orderpaymentserver.infrastructure.adaptor;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.UpdateCouponRequest;
 import com.yes25.yes255orderpaymentserver.common.config.FeignClientConfig;
+import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,5 +11,5 @@ import org.springframework.web.bind.annotation.RequestBody;
 public interface CouponAdaptor {
 
     @PatchMapping("/user-coupons")
-    void updateCouponStatus(@RequestBody UpdateCouponRequest updateCouponRequest);
+    void updateCouponStatus(@RequestBody List<UpdateCouponRequest> updateCouponRequest);
 }
