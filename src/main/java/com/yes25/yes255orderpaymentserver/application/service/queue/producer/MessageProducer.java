@@ -25,10 +25,6 @@ public class MessageProducer {
 
     private final RabbitTemplate rabbitTemplate;
 
-    public void sendPreOrder(PreOrder preOrder) {
-        rabbitTemplate.convertAndSend("preOrderExchange", "preOrderRoutingKey", preOrder);
-    }
-
     /**
      * 주문이 확정될 때, 발행되는 메세지입니다.
      *
