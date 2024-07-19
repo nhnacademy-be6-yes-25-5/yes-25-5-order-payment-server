@@ -50,7 +50,6 @@ class MessageProducerTest {
         String cartId = "cartId";
 
         when(preOrder.getPoints()).thenReturn(new BigDecimal("100"));
-        when(preOrder.getCouponId()).thenReturn(1L);
         when(preOrder.getBookIds()).thenReturn(List.of(1L, 2L));
         when(preOrder.getQuantities()).thenReturn(List.of(1, 2));
 
@@ -59,7 +58,7 @@ class MessageProducerTest {
 
         // then
         verify(rabbitTemplate).convertAndSend(eq("pointUsedExchange"), eq("pointUsedRoutingKey"), any(UpdatePointMessage.class), messagePostProcessorCaptor.capture());
-        verify(rabbitTemplate).convertAndSend(eq("couponUsedExchange"), eq("couponUsedRoutingKey"), any(UpdateCouponRequest.class), any(MessagePostProcessor.class));
+        verify(rabbitTemplate).convertAndSend(eq("couponUsedExchange"), eq("couponUsedRoutingKey"), anyList(), any(MessagePostProcessor.class));
         verify(rabbitTemplate).convertAndSend(eq("cartDecreaseExchange"), eq("cartDecreaseRoutingKey"), anyList(), any(MessagePostProcessor.class));
     }
 
@@ -84,10 +83,10 @@ class MessageProducerTest {
         when(jwtUserDetails.accessToken()).thenReturn("accessToken");
 
         // when
-        messageProducer.sendOrderCancelMessageByUser(bookIds, quantities, couponId, points, purePrice);
+        messageProducer.sendOrderCancelMessageByUser(bookIds, quantities, List.of(couponId), points, purePrice);
 
         // then
-        verify(rabbitTemplate).convertAndSend(eq("couponUnusedExchange"), eq("couponUnusedRoutingKey"), any(UpdateCouponRequest.class), messagePostProcessorCaptor.capture());
+        verify(rabbitTemplate).convertAndSend(eq("couponUnusedExchange"), eq("couponUnusedRoutingKey"), anyList(), messagePostProcessorCaptor.capture());
         verify(rabbitTemplate).convertAndSend(eq("stockIncreaseExchange"), eq("stockIncreaseRoutingKey"), any(StockRequest.class), any(MessagePostProcessor.class));
         verify(rabbitTemplate).convertAndSend(eq("pointReturnExchange"), eq("pointReturnRoutingKey"), any(UpdatePointMessage.class), any(MessagePostProcessor.class));
     }

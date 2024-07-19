@@ -29,6 +29,7 @@ import com.yes25.yes255orderpaymentserver.persistance.RefundStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
+import com.yes25.yes255orderpaymentserver.persistance.domain.OrderCoupon;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
@@ -40,6 +41,7 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatu
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.TakeoutType;
 import com.yes25.yes255orderpaymentserver.persistance.repository.DeliveryRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.OrderCouponRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
@@ -114,6 +116,9 @@ class OrderServiceImplTest {
     @Mock
     private RefundStatusRepository refundStatusRepository;
 
+    @Mock
+    private OrderCouponRepository orderCouponRepository;
+
     @InjectMocks
     private OrderServiceImpl orderService;
 
@@ -128,6 +133,7 @@ class OrderServiceImplTest {
     private ReadBookResponse readBookResponse;
     private Delivery delivery;
     private Refund refund;
+    private OrderCoupon orderCoupon;
 
     @BeforeEach
     void setUp() {
@@ -167,7 +173,7 @@ class OrderServiceImplTest {
             .receiveName("Jane Doe")
             .receiveEmail("jane.doe@example.com")
             .receivePhoneNumber("098-765-4321")
-            .couponId(1L)
+            .couponIds(List.of(1L))
             .build();
 
         response = SuccessPaymentResponse.builder()
@@ -240,6 +246,11 @@ class OrderServiceImplTest {
                 .refundStatusName("WAIT")
                 .build())
             .requestedAt(LocalDate.now())
+            .build();
+
+        orderCoupon = OrderCoupon.builder()
+            .userCouponId(1L)
+            .order(order)
             .build();
     }
 

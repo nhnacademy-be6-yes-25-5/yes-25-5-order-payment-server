@@ -17,6 +17,7 @@ import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -38,11 +39,17 @@ public class MessageProducer {
         if (Objects.nonNull(authToken)) {
             UpdatePointMessage updatePointMessage = UpdatePointMessage.of(preOrder.getPoints(),
                 purePrice, OperationType.USE);
-            UpdateCouponRequest updateCouponRequest = UpdateCouponRequest.from(
-                preOrder.getCouponId(), OperationType.USE);
+
+            List<UpdateCouponRequest> updateCouponRequests = new ArrayList<>();
+            for (Long couponId : preOrder.getCouponIds()) {
+                UpdateCouponRequest updateCouponRequest = UpdateCouponRequest.from(
+                    couponId, OperationType.USE);
+
+                updateCouponRequests.add(updateCouponRequest);
+            }
 
             sendMessage("pointUsedExchange", "pointUsedRoutingKey", updatePointMessage, authToken);
-            sendMessage("couponUsedExchange", "couponUsedRoutingKey", updateCouponRequest,
+            sendMessage("couponUsedExchange", "couponUsedRoutingKey", updateCouponRequests,
                 authToken);
 
             log.info("쿠폰 사용, 포인트 차감 및 적립 메세지가 발행되었습니다.");
@@ -73,21 +80,25 @@ public class MessageProducer {
     /**
      * @param bookIds 주문한 책 ID 리스트
      * @param quantities 주문한 책 수량 리스트
-     * @param couponId 사용한 쿠폰 ID
+     * @param couponIds 사용한 쿠폰 ID 리스트
      * @param points 주문에 사용한 포인트
      * @param purePrice 취소 금액을 제외한 순수 주문 금액
      * */
     public void sendOrderCancelMessageByUser(List<Long> bookIds,
-        List<Integer> quantities, Long couponId,
+        List<Integer> quantities, List<Long> couponIds,
         BigDecimal points, BigDecimal purePrice) {
         JwtUserDetails jwtUserDetails = (JwtUserDetails) SecurityContextHolder.getContext()
             .getAuthentication().getPrincipal();
         String authToken =
             jwtUserDetails != null ? "Bearer " + jwtUserDetails.accessToken() : "";
 
-        if (Objects.nonNull(couponId)) {
-            UpdateCouponRequest updateCouponRequest = UpdateCouponRequest.from(couponId, OperationType.ROLLBACK);
-            sendMessage("couponUnusedExchange", "couponUnusedRoutingKey", updateCouponRequest, authToken);
+        if (!CollectionUtils.isEmpty(couponIds)) {
+            List<UpdateCouponRequest> updateCouponRequests = new ArrayList<>();
+            for (Long couponId : couponIds) {
+                UpdateCouponRequest updateCouponRequest = UpdateCouponRequest.from(couponId, OperationType.ROLLBACK);
+                updateCouponRequests.add(updateCouponRequest);
+            }
+            sendMessage("couponUnusedExchange", "couponUnusedRoutingKey", updateCouponRequests, authToken);
             log.info("사용자 요청에 의해 결제가 취소 쿠폰 롤백 메세지가 발행되었습니다.");
         }
 

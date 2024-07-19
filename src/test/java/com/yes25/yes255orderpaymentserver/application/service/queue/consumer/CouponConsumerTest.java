@@ -12,6 +12,7 @@ import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.Opera
 import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
 import com.yes25.yes255orderpaymentserver.common.utils.AsyncSecurityContextUtils;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.CouponAdaptor;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -55,10 +56,10 @@ class CouponConsumerTest {
         doNothing().when(securityContextUtils).configureSecurityContext(any(Message.class));
 
         // when
-        couponConsumer.receiveCouponUpdateRequestInUse(useRequest, message);
+        couponConsumer.receiveCouponUpdateRequestInUse(List.of(useRequest), message);
 
         // then
-        verify(couponAdaptor, times(1)).updateCouponStatus(useRequest);
+        verify(couponAdaptor, times(1)).updateCouponStatus(List.of(useRequest));
     }
 
     @DisplayName("쿠폰 사용 취소 요청을 보내는지 확인한다.")
@@ -68,10 +69,10 @@ class CouponConsumerTest {
         doNothing().when(securityContextUtils).configureSecurityContext(any(Message.class));
 
         // when
-        couponConsumer.receiveCouponUpdateRequestInRollback(rollbackRequest, message);
+        couponConsumer.receiveCouponUpdateRequestInRollback(List.of(rollbackRequest), message);
 
         // then
-        verify(couponAdaptor, times(1)).updateCouponStatus(rollbackRequest);
+        verify(couponAdaptor, times(1)).updateCouponStatus(List.of(rollbackRequest));
     }
 
     @DisplayName("쿠폰 사용이나 롤백 도중 예외가 발생할 경우, 리커버가 실행되는지 확인한다.")
@@ -81,9 +82,12 @@ class CouponConsumerTest {
         Throwable throwable = new RuntimeException("Test Exception");
         doNothing().when(messageProducer).sendDlxMessage(anyString(), anyString(), any());
 
+        List<UpdateCouponRequest> useRequests = List.of(useRequest);
+        List<UpdateCouponRequest> rollbackRequests = List.of(rollbackRequest);
+
         // when
-        couponConsumer.couponUseRecover(throwable, useRequest);
-        couponConsumer.couponUseRecover(throwable, rollbackRequest);
+        couponConsumer.couponUseRecover(throwable, useRequests);
+        couponConsumer.couponUseRecover(throwable, rollbackRequests);
 
         // then
         verify(messageProducer, times(1)).sendDlxMessage("dlxExchange", "dlx.couponUsedQueue", useRequest);

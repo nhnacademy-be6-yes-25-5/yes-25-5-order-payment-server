@@ -39,18 +39,20 @@ public class PreOrder implements Serializable {
     private String receiveName;
     private String receiveEmail;
     private String receivePhoneNumber;
-    private Long couponId;
+    private List<Long> couponIds;
     private String role;
     private String cartId;
 
     @Builder
     public PreOrder(String preOrderId, List<Long> bookIds, List<Integer> quantities,
-        List<BigDecimal> prices, Long userId, BigDecimal orderTotalAmount,
-        BigDecimal discountPrice, TakeoutType takeoutType, String addressRaw, String addressDetail, String zipcode,
-        String reference, LocalDateTime orderedDate, LocalDate deliveryDate, String orderUserName,
-        String orderUserEmail, String orderUserPhoneNumber, String receiveName, String receiveEmail,
-        String receivePhoneNumber, Long couponId, BigDecimal points, BigDecimal takeoutPrice,
-        BigDecimal shippingFee, String role, String cartId) {
+        List<BigDecimal> prices, Long userId, BigDecimal orderTotalAmount, BigDecimal discountPrice,
+        BigDecimal points, BigDecimal takeoutPrice, BigDecimal shippingFee, TakeoutType takeoutType,
+        String addressRaw, String addressDetail, String zipcode, String reference,
+        LocalDateTime orderedDate, LocalDate deliveryDate, String orderUserName,
+        String orderUserEmail,
+        String orderUserPhoneNumber, String receiveName, String receiveEmail,
+        String receivePhoneNumber,
+        List<Long> couponIds, String role, String cartId) {
         this.preOrderId = preOrderId;
         this.bookIds = bookIds;
         this.quantities = quantities;
@@ -58,6 +60,9 @@ public class PreOrder implements Serializable {
         this.userId = userId;
         this.orderTotalAmount = orderTotalAmount;
         this.discountPrice = discountPrice;
+        this.points = points;
+        this.takeoutPrice = takeoutPrice;
+        this.shippingFee = shippingFee;
         this.takeoutType = takeoutType;
         this.addressRaw = addressRaw;
         this.addressDetail = addressDetail;
@@ -71,10 +76,7 @@ public class PreOrder implements Serializable {
         this.receiveName = receiveName;
         this.receiveEmail = receiveEmail;
         this.receivePhoneNumber = receivePhoneNumber;
-        this.couponId = couponId;
-        this.points = points;
-        this.takeoutPrice = takeoutPrice;
-        this.shippingFee = shippingFee;
+        this.couponIds = couponIds;
         this.role = role;
         this.cartId = cartId;
     }
@@ -100,7 +102,7 @@ public class PreOrder implements Serializable {
             .receiveName(request.receiveName())
             .receiveEmail(request.receiveEmail())
             .receivePhoneNumber(request.receivePhoneNumber())
-            .couponId(request.couponId())
+            .couponIds(request.couponIds())
             .points(request.points())
             .discountPrice(request.discountPrice())
             .takeoutPrice(request.takeoutPrice())
@@ -129,7 +131,6 @@ public class PreOrder implements Serializable {
             .receiveUserName(receiveName)
             .receiveUserEmail(receiveEmail)
             .receiveUserPhoneNumber(receivePhoneNumber)
-            .couponId(couponId)
             .points(points != null ? points : BigDecimal.ZERO)
             .purePrice(purePrice)
             .userRole(role)
@@ -155,5 +156,12 @@ public class PreOrder implements Serializable {
             .subtract(discount)
             .subtract(shipping)
             .subtract(takeout);
+    }
+
+    public OrderCoupon toOrderCoupon(Order order, Long couponId) {
+        return OrderCoupon.builder()
+            .order(order)
+            .userCouponId(couponId)
+            .build();
     }
 }

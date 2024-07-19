@@ -19,6 +19,7 @@ import com.yes25.yes255orderpaymentserver.persistance.RefundStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
+import com.yes25.yes255orderpaymentserver.persistance.domain.OrderCoupon;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
@@ -29,6 +30,7 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.CancelStat
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import com.yes25.yes255orderpaymentserver.persistance.repository.DeliveryRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderBookRepository;
+import com.yes25.yes255orderpaymentserver.persistance.repository.OrderCouponRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
@@ -50,7 +52,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -75,6 +76,7 @@ public class OrderServiceImpl implements OrderService {
     private final ShippingPolicyRepository shippingPolicyRepository;
     private final RefundRepository refundRepository;
     private final RefundStatusRepository refundStatusRepository;
+    private final OrderCouponRepository orderCouponRepository;
 
     private final MessageProducer messageProducer;
 
@@ -96,6 +98,14 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = preOrder.toEntity(orderStatus, takeout, purePrice);
         Order savedOrder = orderRepository.save(order);
+
+        List<OrderCoupon> orderCoupons = new ArrayList<>();
+        for (Long couponId : preOrder.getCouponIds()) {
+            OrderCoupon orderCoupon = preOrder.toOrderCoupon(savedOrder, couponId);
+            orderCoupons.add(orderCoupon);
+        }
+
+        orderCouponRepository.saveAll(orderCoupons);
 
         Payment payment = paymentRepository.findByPreOrderId(savedOrder.getOrderId())
             .orElseThrow(() -> new PaymentNotFoundException(savedOrder.getOrderId()));
@@ -383,8 +393,12 @@ public class OrderServiceImpl implements OrderService {
             .map(OrderBook::getOrderBookQuantity)
             .toList();
 
+        List<Long> couponIds = order.getOrderCoupons().stream()
+            .map(OrderCoupon::getUserCouponId)
+            .toList();
+
         messageProducer.sendOrderCancelMessageByUser(bookIds, quantities,
-            order.getCouponId(), order.getPoints(), order.getPurePrice());
+            couponIds, order.getPoints(), order.getPurePrice());
     }
 
     private List<ReadBookResponse> getBookResponse(List<OrderBook> orderBooks) {
