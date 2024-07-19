@@ -16,10 +16,6 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymen
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.KeyManagerResponse;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +24,6 @@ import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
@@ -93,42 +88,21 @@ public class TossPaymentProcessor implements PaymentProcessor {
     }
 
     private CreatePaymentResponse processingPayment(CreatePaymentRequest request) {
-        String widgetSecretKey = paymentSecretKey;
         Base64.Encoder encoder = Base64.getEncoder();
         byte[] encodedBytes = encoder.encode(
-            (widgetSecretKey + ":").getBytes(StandardCharsets.UTF_8));
+            (paymentSecretKey + ":").getBytes(StandardCharsets.UTF_8));
         String authorizations = "Basic " + new String(encodedBytes);
 
-        HttpURLConnection connection = configureUrl(authorizations);
+        JSONObject obj = new JSONObject();
+        obj.put("paymentKey", request.paymentKey());
+        obj.put("orderId", request.orderId());
+        obj.put("amount", request.amount());
 
-        try (OutputStream outputStream = connection.getOutputStream()) {
-            JSONObject obj = new JSONObject();
-            obj.put("paymentKey", request.paymentKey());
-            obj.put("orderId", request.orderId());
-            obj.put("amount", request.amount());
+        JSONObject response = tossAdaptor.confirmPayment(authorizations, obj.toString());
 
-            outputStream.write(obj.toString().getBytes(StandardCharsets.UTF_8));
-
-            int code = connection.getResponseCode();
-            boolean isSuccess = code == 200;
-
-            InputStream responseStream =
-                isSuccess ? connection.getInputStream() : connection.getErrorStream();
-
-            Reader reader = new InputStreamReader(responseStream, StandardCharsets.UTF_8);
-            JSONParser parser = new JSONParser();
-            JSONObject jsonObject = (JSONObject) parser.parse(reader);
-            responseStream.close();
-
-            if (isSuccess) {
-                Payment payment = savePayment(jsonObject);
-                log.info("결제가 성공적으로 이루어졌습니다. {}", payment);
-                sendPaymentDoneMessage(payment, request);
-            }
-        } catch (Exception e) {
-            log.error("error : ", e);
-            return new CreatePaymentResponse(500);
-        }
+        Payment payment = savePayment(response);
+        log.info("결제가 성공적으로 이루어졌습니다. {}", payment);
+        sendPaymentDoneMessage(payment, request);
 
         return new CreatePaymentResponse(200);
     }

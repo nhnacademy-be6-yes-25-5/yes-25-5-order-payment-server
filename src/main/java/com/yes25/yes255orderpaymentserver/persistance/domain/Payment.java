@@ -67,7 +67,7 @@ public class Payment {
         LocalDateTime requestedAt = LocalDateTime.parse((String) jsonObject.get("requestedAt"), formatter);
 
         return Payment.builder()
-            .paymentAmount(BigDecimal.valueOf((Long) jsonObject.get("totalAmount")))
+            .paymentAmount(BigDecimal.valueOf((Integer) jsonObject.get("totalAmount")))
             .paymentKey((String) jsonObject.get("paymentKey"))
             .approveAt(approvedAt)
             .requestedAt(requestedAt)
