@@ -15,9 +15,6 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePayment
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.KeyManagerResponse;
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Objects;
@@ -144,22 +141,5 @@ public class TossPaymentProcessor implements PaymentProcessor {
         Payment payment = Payment.from(jsonObject);
 
         return paymentRepository.save(payment);
-    }
-
-    private HttpURLConnection configureUrl(String authorizations) {
-        HttpURLConnection connection;
-
-        try {
-            URL url = new URL("https://api.tosspayments.com/v1/payments/confirm");
-            connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestProperty("Authorization", authorizations);
-            connection.setRequestProperty("Content-Type", "application/json");
-            connection.setRequestMethod("POST");
-            connection.setDoOutput(true);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        return connection;
     }
 }
