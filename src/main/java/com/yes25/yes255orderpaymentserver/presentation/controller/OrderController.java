@@ -2,6 +2,7 @@ package com.yes25.yes255orderpaymentserver.presentation.controller;
 
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
+import com.yes25.yes255orderpaymentserver.application.service.OrderStatusService;
 import com.yes25.yes255orderpaymentserver.application.service.PreOrderService;
 import com.yes25.yes255orderpaymentserver.common.jwt.HeaderUtils;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
@@ -43,6 +44,7 @@ public class OrderController {
 
     private final PreOrderService preOrderService;
     private final OrderService orderService;
+    private final OrderStatusService orderStatusService;
 
     @Operation(summary = "주문 생성", description = "새로운 주문을 생성합니다.")
     @ApiResponses(value = {
@@ -119,7 +121,7 @@ public class OrderController {
     public ResponseEntity<UpdateOrderResponse> update(@PathVariable String orderId, @RequestBody UpdateOrderRequest request, @CurrentUser JwtUserDetails jwtUserDetails) {
         return ResponseEntity.ok()
             .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
-            .body(orderService.updateOrderStatusByOrderId(orderId, request, jwtUserDetails.userId()));
+            .body(orderStatusService.updateOrderStatusByOrderId(orderId, request, jwtUserDetails.userId()));
     }
 
     @Operation(summary = "주문 배송 정보 조회", description = "주문 ID로 배송 정보를 조회합니다.")
@@ -167,7 +169,7 @@ public class OrderController {
     @GetMapping("/none/{orderId}")
     public ResponseEntity<ReadOrderDetailResponse> getOrderNoneMember(@PathVariable String orderId,
         @RequestParam String email) {
-        return ResponseEntity.ok(orderService.getOrderByOrderIdAndEmail(orderId, email));
+        return ResponseEntity.ok(orderService.getOrderByOrderIdAndEmailForNoneMember(orderId, email));
     }
 
     @Operation(summary = "모든 주문 상태 업데이트", description = "모든 주문 상태를 완료로 업데이트합니다.")

@@ -2,6 +2,7 @@ package com.yes25.yes255orderpaymentserver.presentation.dto.response;
 
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -9,10 +9,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentRequest;
+import com.yes25.yes255orderpaymentserver.application.service.strategy.impl.TossPayment;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
@@ -58,7 +60,7 @@ class TossPaymentProcessorTest {
     private HttpURLConnection mockConnection;
 
     @InjectMocks
-    private TossPaymentProcessor tossPaymentProcessor;
+    private TossPayment tossPaymentProcessor;
 
     private CreatePaymentRequest createPaymentRequest;
     private Payment payment;
@@ -71,6 +73,7 @@ class TossPaymentProcessorTest {
             "paymentKey",
             "orderId",
             "amount",
+            PaymentProvider.TOSS,
             List.of(1L, 2L),
             List.of(1, 2)
         );

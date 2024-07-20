@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,7 +60,7 @@ class PreOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("PreOrder 저장 테스트")
+    @DisplayName("가주문을 저장하는지 확인한다.")
     void savePreOrder() {
         // given
         CreateOrderRequest request = CreateOrderRequest.builder()
@@ -68,6 +69,7 @@ class PreOrderServiceImplTest {
             .productIds(List.of(1L))
             .quantities(List.of(1))
             .points(BigDecimal.valueOf(1000))
+            .paymentProvider(PaymentProvider.TOSS)
             .build();
         Long userId = 1L;
         PreOrder preOrder = PreOrder.from(request, userId);
@@ -81,7 +83,7 @@ class PreOrderServiceImplTest {
     }
 
     @Test
-    @DisplayName("PreOrder 조회 테스트")
+    @DisplayName("가주문을 조회하는지 확인한다.")
     void getPreOrder() {
         // given
         String orderId = "testOrderId";

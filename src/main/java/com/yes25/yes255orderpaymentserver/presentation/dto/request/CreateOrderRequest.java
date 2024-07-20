@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.presentation.dto.request;
 
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.TakeoutType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,6 +31,7 @@ public record CreateOrderRequest(String orderId,
                                  List<Long> couponIds,
                                  BigDecimal points,
                                  String role,
-                                 String cartId) {
+                                 String cartId,
+                                 PaymentProvider paymentProvider) {
 
 }

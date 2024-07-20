@@ -1,5 +1,6 @@
 package com.yes25.yes255orderpaymentserver.persistance.domain;
 
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.TakeoutType;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import java.io.Serializable;
@@ -42,6 +43,7 @@ public class PreOrder implements Serializable {
     private List<Long> couponIds;
     private String role;
     private String cartId;
+    private PaymentProvider paymentProvider;
 
     @Builder
     public PreOrder(String preOrderId, List<Long> bookIds, List<Integer> quantities,
@@ -52,7 +54,7 @@ public class PreOrder implements Serializable {
         String orderUserEmail,
         String orderUserPhoneNumber, String receiveName, String receiveEmail,
         String receivePhoneNumber,
-        List<Long> couponIds, String role, String cartId) {
+        List<Long> couponIds, String role, String cartId, PaymentProvider paymentProvider) {
         this.preOrderId = preOrderId;
         this.bookIds = bookIds;
         this.quantities = quantities;
@@ -79,6 +81,7 @@ public class PreOrder implements Serializable {
         this.couponIds = couponIds;
         this.role = role;
         this.cartId = cartId;
+        this.paymentProvider = paymentProvider;
     }
 
     public static PreOrder from(CreateOrderRequest request, Long userId) {
@@ -109,6 +112,7 @@ public class PreOrder implements Serializable {
             .shippingFee(request.shippingFee())
             .role(request.role())
             .cartId(request.cartId())
+            .paymentProvider(request.paymentProvider())
             .build();
     }
 

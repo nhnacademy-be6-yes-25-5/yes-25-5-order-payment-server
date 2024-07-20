@@ -1,15 +1,16 @@
-package com.yes25.yes255orderpaymentserver.application.service.impl;
+package com.yes25.yes255orderpaymentserver.application.service.strategy.impl;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
-import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
+import com.yes25.yes255orderpaymentserver.application.service.strategy.PaymentStrategy;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.KeyManagerAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
@@ -26,14 +27,14 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Service
+@Component("toss")
 @RequiredArgsConstructor
 @Slf4j
 @Transactional
-public class TossPaymentProcessor implements PaymentProcessor {
+public class TossPayment implements PaymentStrategy {
 
     private final RabbitTemplate rabbitTemplate;
     private final PaymentRepository paymentRepository;
@@ -97,7 +98,7 @@ public class TossPaymentProcessor implements PaymentProcessor {
 
         JSONObject response = tossAdaptor.confirmPayment(authorizations, obj.toString());
 
-        Payment payment = savePayment(response);
+        Payment payment = savePayment(response, request.paymentProvider());
         log.info("결제가 성공적으로 이루어졌습니다. {}", payment);
         sendPaymentDoneMessage(payment, request);
 
@@ -137,8 +138,8 @@ public class TossPaymentProcessor implements PaymentProcessor {
         rabbitTemplate.convertAndSend("payExchange", "payRoutingKey", response, messagePostProcessor);
     }
 
-    private Payment savePayment(JSONObject jsonObject) {
-        Payment payment = Payment.from(jsonObject);
+    private Payment savePayment(JSONObject jsonObject, PaymentProvider paymentProvider) {
+        Payment payment = Payment.from(jsonObject, paymentProvider);
 
         return paymentRepository.save(payment);
     }

@@ -1,9 +1,9 @@
-package com.yes25.yes255orderpaymentserver.application.service;
+package com.yes25.yes255orderpaymentserver.application.service.strategy;
 
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
 
-public interface PaymentProcessor {
+public interface PaymentStrategy {
 
     CreatePaymentResponse createPayment(CreatePaymentRequest request);
 
