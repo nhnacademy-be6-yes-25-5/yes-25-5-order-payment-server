@@ -87,7 +87,7 @@ class TossPaymentProcessorTest {
 
         jsonObject = new JSONObject();
         jsonObject.put("paymentKey", "paymentKey");
-        jsonObject.put("totalAmount", 10000L);
+        jsonObject.put("totalAmount", 10000);
         jsonObject.put("approvedAt", LocalDateTime.now().toString());
         jsonObject.put("requestedAt", LocalDateTime.now().toString());
         jsonObject.put("method", "카드");
@@ -96,8 +96,12 @@ class TossPaymentProcessorTest {
 
     @DisplayName("결제를 성공적으로 생성하는지 확인한다.")
     @Test
-    void createPayment() throws Exception {
-        // given && when
+    void createPayment() {
+        // given
+        when(tossAdaptor.confirmPayment(anyString(), anyString())).thenReturn(jsonObject);
+        when(paymentRepository.save(any(Payment.class))).thenReturn(payment);
+
+        // when
         CreatePaymentResponse response = tossPaymentProcessor.createPayment(createPaymentRequest);
 
         // then

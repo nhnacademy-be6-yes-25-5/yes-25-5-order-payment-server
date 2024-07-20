@@ -17,7 +17,7 @@ public class JwtAuthorizationRequestInterceptor implements RequestInterceptor {
     public void apply(RequestTemplate template) {
         String url = template.url();
 
-        if (!url.matches(".*/payments/.*/cancel.*")) {
+        if (!url.startsWith("/payments")) {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication != null
                 && authentication.getPrincipal() instanceof JwtUserDetails userDetails) {
