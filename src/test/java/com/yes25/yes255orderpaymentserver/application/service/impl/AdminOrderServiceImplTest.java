@@ -97,6 +97,7 @@ class AdminOrderServiceImplTest {
             .preOrderId("1")
             .paymentKey("qwer")
             .paymentAmount(BigDecimal.valueOf(10000))
+            .paymentProvider(PaymentProvider.TOSS.name())
             .build();
 
         orderBook = OrderBook.builder()
