@@ -1,6 +1,7 @@
 package com.yes25.yes255orderpaymentserver.application.dto.response;
 
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import java.util.List;
 import lombok.Builder;
@@ -9,6 +10,7 @@ import lombok.Builder;
 public record SuccessPaymentResponse(String orderId,
                                      String paymentKey,
                                      Integer paymentAmount,
+                                     PaymentProvider paymentProvider,
                                      List<Long> bookIdList,
                                      List<Integer> quantityList) {
 
@@ -18,6 +20,7 @@ public record SuccessPaymentResponse(String orderId,
             .paymentKey(payment.getPaymentKey())
             .paymentAmount(payment.getPaymentAmount().intValue())
             .bookIdList(request.bookIds())
+            .paymentProvider(request.paymentProvider())
             .quantityList(request.quantities())
             .build();
     }

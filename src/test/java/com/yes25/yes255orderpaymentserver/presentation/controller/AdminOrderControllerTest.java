@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yes25.yes255orderpaymentserver.application.service.AdminOrderService;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.CancelStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CancelOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderStatusRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CancelOrderResponse;
@@ -113,7 +114,7 @@ class AdminOrderControllerTest {
     @Test
     void cancelOrder() throws Exception {
         // given
-        CancelOrderRequest request = new CancelOrderRequest(CancelStatus.ACCESS);
+        CancelOrderRequest request = new CancelOrderRequest(CancelStatus.ACCESS, PaymentProvider.TOSS);
         String orderId = "order";
         CancelOrderResponse response = CancelOrderResponse.from(CancelStatus.ACCESS);
 

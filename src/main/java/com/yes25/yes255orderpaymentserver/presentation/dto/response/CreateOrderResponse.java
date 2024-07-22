@@ -9,7 +9,8 @@ public record CreateOrderResponse(String orderId,
                                   Integer totalAmount,
                                   List<Long> bookIds,
                                   List<Integer> quantities,
-                                  Integer points) {
+                                  Integer points,
+                                  String paymentProvider) {
 
     public static CreateOrderResponse fromRequest(PreOrder preOrder) {
         return CreateOrderResponse.builder()
@@ -18,6 +19,7 @@ public record CreateOrderResponse(String orderId,
             .bookIds(preOrder.getBookIds())
             .quantities(preOrder.getQuantities())
             .points(preOrder.getPoints().intValue())
+            .paymentProvider(preOrder.getPaymentProvider().name().toLowerCase())
             .build();
     }
 }

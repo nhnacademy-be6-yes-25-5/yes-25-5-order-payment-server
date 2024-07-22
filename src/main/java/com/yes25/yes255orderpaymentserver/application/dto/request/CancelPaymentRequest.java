@@ -8,7 +8,7 @@ public record CancelPaymentRequest(String cancelReason, String cancelAmount) {
     public static CancelPaymentRequest from(String cancelReason, Integer cancelAmount) {
         return CancelPaymentRequest.builder()
             .cancelReason(cancelReason)
-//            .cancelAmount(String.valueOf(cancelAmount))
+            .cancelAmount(String.valueOf(cancelAmount))
             .build();
     }
 }

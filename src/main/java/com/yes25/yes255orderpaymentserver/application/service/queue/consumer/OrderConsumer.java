@@ -4,8 +4,8 @@ import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
-import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
 import com.yes25.yes255orderpaymentserver.application.service.PreOrderService;
+import com.yes25.yes255orderpaymentserver.application.service.context.PaymentContext;
 import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
 import com.yes25.yes255orderpaymentserver.common.exception.PaymentException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
@@ -31,7 +31,7 @@ public class OrderConsumer {
     private final OrderService orderService;
     private final PreOrderService preOrderService;
     private final MessageProducer messageProducer;
-    private final PaymentProcessor paymentService;
+    private final PaymentContext paymentContext;
 
     /**
      * @throws PaymentException 결제 완료 후, 결제의 preOrderId와 주문의 orderId가 일치하지 않으면 발생합니다. 재고 확인 및 포인트
@@ -69,6 +69,6 @@ public class OrderConsumer {
         String authToken = (String) properties.getHeaders().get("Authorization");
 
         messageProducer.sendMessage("stockDecreaseExchange", "stockDecreaseRoutingKey", stockRequest, authToken);
-        paymentService.cancelPayment(response.paymentKey(), "결제 처리 중 예상치 못한 예외 발생", response.paymentAmount(), response.orderId());
+        paymentContext.cancelPayment(response.paymentKey(), "결제 처리 중 예상치 못한 예외 발생", response.paymentAmount(), response.orderId(), response.paymentProvider().name().toLowerCase());
     }
 }

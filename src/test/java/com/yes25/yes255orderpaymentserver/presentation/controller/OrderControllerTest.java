@@ -11,9 +11,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
+import com.yes25.yes255orderpaymentserver.application.service.OrderStatusService;
 import com.yes25.yes255orderpaymentserver.application.service.PreOrderService;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreateOrderResponse;
@@ -50,6 +52,9 @@ class OrderControllerTest {
 
     @Mock
     private OrderService orderService;
+
+    @Mock
+    private OrderStatusService orderStatusService;
 
     @InjectMocks
     private OrderController orderController;
@@ -129,7 +134,7 @@ class OrderControllerTest {
     void update() throws Exception {
         // given
         String orderId = "orderId";
-        UpdateOrderRequest request = new UpdateOrderRequest(OrderStatusType.DONE);
+        UpdateOrderRequest request = new UpdateOrderRequest(OrderStatusType.DONE, PaymentProvider.TOSS);
         JwtUserDetails jwtUserDetails = JwtUserDetails.builder()
             .userId(1L)
             .roles(List.of(new SimpleGrantedAuthority("ROLE_USER")))
@@ -194,7 +199,7 @@ class OrderControllerTest {
     void getOrderNoneMember() throws Exception {
         // given
         ReadOrderDetailResponse response = ReadOrderDetailResponse.builder().build();
-        when(orderService.getOrderByOrderIdAndEmail(any(String.class), any(String.class))).thenReturn(response);
+        when(orderService.getOrderByOrderIdAndEmailForNoneMember(any(String.class), any(String.class))).thenReturn(response);
 
         // when && then
         mockMvc.perform(get("/orders/none/{orderId}", "order1")

@@ -5,12 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.anyInt;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
+import com.yes25.yes255orderpaymentserver.application.service.context.PaymentContext;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
@@ -24,6 +25,7 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Refund;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.CancelStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import com.yes25.yes255orderpaymentserver.persistance.repository.DeliveryRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
@@ -71,7 +73,7 @@ class AdminOrderServiceImplTest {
     private RefundStatusRepository refundStatusRepository;
 
     @Mock
-    private PaymentProcessor paymentProcessor;
+    private PaymentContext paymentContext;
 
     @Mock
     private BookAdaptor bookAdaptor;
@@ -95,6 +97,7 @@ class AdminOrderServiceImplTest {
             .preOrderId("1")
             .paymentKey("qwer")
             .paymentAmount(BigDecimal.valueOf(10000))
+            .paymentProvider(PaymentProvider.TOSS.name())
             .build();
 
         orderBook = OrderBook.builder()
@@ -187,12 +190,12 @@ class AdminOrderServiceImplTest {
     @DisplayName("주문을 취소할 때, 올바르게 취소되는지 확인한다.")
     void cancelOrderByOrderId() {
         // given
-        CancelOrderRequest request = mock(CancelOrderRequest.class);
+        CancelOrderRequest request = new CancelOrderRequest(CancelStatus.ACCESS, PaymentProvider.TOSS);
         RefundStatus refundStatus = RefundStatus.builder().build();
         when(refundRepository.findByOrder_OrderId(anyString())).thenReturn(Optional.of(refund));
         when(refundStatusRepository.findByRefundStatusName(anyString())).thenReturn(
             Optional.of(refundStatus));
-        when(request.status()).thenReturn(CancelStatus.ACCESS);
+        doNothing().when(paymentContext).cancelPayment(anyString(), anyString(), anyInt(), anyString(), anyString());
 
         // when
         CancelOrderResponse response = adminOrderService.cancelOrderByOrderId("1", request);
@@ -201,8 +204,8 @@ class AdminOrderServiceImplTest {
         assertThat(response).isNotNull();
         verify(refundRepository, times(1)).findByOrder_OrderId(anyString());
         verify(refundStatusRepository, times(1)).findByRefundStatusName(anyString());
-        verify(paymentProcessor, times(1)).cancelPayment(anyString(), anyString(), anyInt(),
-            anyString());
+        verify(paymentContext, times(1)).cancelPayment(anyString(), anyString(), anyInt(),
+            anyString(), anyString());
     }
 
     @Test
@@ -246,7 +249,7 @@ class AdminOrderServiceImplTest {
     @DisplayName("환불 상태를 찾지 못할 때, 예외를 던지는지 확인한다.")
     void cancelOrderByOrderId_RefundStatusNotFound() {
         // given
-        CancelOrderRequest request = new CancelOrderRequest(CancelStatus.NONE);
+        CancelOrderRequest request = new CancelOrderRequest(CancelStatus.NONE, PaymentProvider.TOSS);
         when(refundRepository.findByOrder_OrderId(anyString())).thenReturn(Optional.of(refund));
         when(refundStatusRepository.findByRefundStatusName(anyString())).thenReturn(
             Optional.empty());

@@ -3,14 +3,12 @@ package com.yes25.yes255orderpaymentserver.application.service;
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PreOrder;
-import com.yes25.yes255orderpaymentserver.presentation.dto.request.UpdateOrderRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDeliveryResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderDetailResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadOrderStatusResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadPaymentOrderResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderAllResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadUserOrderResponse;
-import com.yes25.yes255orderpaymentserver.presentation.dto.response.UpdateOrderResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -32,15 +30,13 @@ public interface OrderService {
 
     void updateOrderStatusToDone();
 
-    UpdateOrderResponse updateOrderStatusByOrderId(String orderId, UpdateOrderRequest request, Long userId);
-
     ReadOrderDeliveryResponse getByOrderIdAndUserId(String orderId);
 
     List<ReadPurePriceResponse> getPurePriceByDate(LocalDate now);
 
     ReadOrderDetailResponse getOrderByOrderId(String orderId, Long userId);
 
-    ReadOrderDetailResponse getOrderByOrderIdAndEmail(String orderId, String email);
+    ReadOrderDetailResponse getOrderByOrderIdAndEmailForNoneMember(String orderId, String email);
 
     Boolean existOrderHistoryByUserIdAndBookId(Long userId, Long bookId);
 }

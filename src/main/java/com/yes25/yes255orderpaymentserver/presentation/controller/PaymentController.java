@@ -1,7 +1,7 @@
 package com.yes25.yes255orderpaymentserver.presentation.controller;
 
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
-import com.yes25.yes255orderpaymentserver.application.service.PaymentProcessor;
+import com.yes25.yes255orderpaymentserver.application.service.context.PaymentContext;
 import com.yes25.yes255orderpaymentserver.common.jwt.HeaderUtils;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.common.jwt.annotation.CurrentUser;
@@ -17,14 +17,19 @@ import java.util.List;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/payments")
 public class PaymentController {
 
-    private final PaymentProcessor paymentService;
+    private final PaymentContext paymentContext;
     private final OrderService orderService;
 
     @Operation(summary = "결제 확인", description = "결제를 확인하고 결제 정보를 생성합니다.")
@@ -37,12 +42,12 @@ public class PaymentController {
     public ResponseEntity<CreatePaymentResponse> confirmPayment(@RequestBody CreatePaymentRequest request,
         @CurrentUser JwtUserDetails jwtUserDetails) {
         if (Objects.isNull(jwtUserDetails)) {
-            return ResponseEntity.ok(paymentService.createPayment(request));
+            return ResponseEntity.ok(paymentContext.createPayment(request));
         }
 
         return ResponseEntity.ok()
             .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
-            .body(paymentService.createPayment(request));
+            .body(paymentContext.createPayment(request));
     }
 
     @Operation(summary = "주문별 결제 내역 조회", description = "주문 ID로 모든 결제 내역을 조회합니다.")
@@ -73,11 +78,11 @@ public class PaymentController {
     public ResponseEntity<CreatePaymentResponse> confirmPaymentByZero(@RequestBody CreatePaymentRequest request,
         @CurrentUser JwtUserDetails jwtUserDetails) {
         if (Objects.isNull(jwtUserDetails)) {
-            return ResponseEntity.ok(paymentService.createPaymentByZeroAmount(request));
+            return ResponseEntity.ok(paymentContext.createPaymentByZeroAmount(request));
         }
 
         return ResponseEntity.ok()
             .headers(HeaderUtils.addAuthHeaders(jwtUserDetails))
-            .body(paymentService.createPaymentByZeroAmount(request));
+            .body(paymentContext.createPaymentByZeroAmount(request));
     }
 }

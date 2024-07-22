@@ -1,6 +1,7 @@
 package com.yes25.yes255orderpaymentserver.presentation.dto.request;
 
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.List;
 public record CreatePaymentRequest(String paymentKey,
                                    String orderId,
                                    String amount,
+                                   PaymentProvider paymentProvider,
                                    List<Long> bookIds,
                                    List<Integer> quantities) {
 
@@ -18,6 +20,7 @@ public record CreatePaymentRequest(String paymentKey,
             .paymentKey(paymentKey)
             .requestedAt(LocalDateTime.now())
             .approveAt(LocalDateTime.now())
+            .paymentProvider(paymentProvider.name().toLowerCase())
             .paymentMethod("일반 결제 - 0원")
             .build();
     }

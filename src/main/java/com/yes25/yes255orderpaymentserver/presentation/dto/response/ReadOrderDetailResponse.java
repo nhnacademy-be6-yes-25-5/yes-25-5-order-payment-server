@@ -6,6 +6,7 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Refund;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.CancelStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,7 +41,8 @@ public record ReadOrderDetailResponse(
     List<String> bookNames,
     List<Integer> quantities,
     List<BigDecimal> bookPrices,
-    CancelStatus cancelStatus) {
+    CancelStatus cancelStatus,
+    PaymentProvider paymentProvider) {
 
     public static ReadOrderDetailResponse of(Order order, List<ReadBookResponse> responses,
         List<OrderBook> orderBooks) {
@@ -100,6 +102,7 @@ public record ReadOrderDetailResponse(
             .bookTotalPrice(bookTotalPrice)
             .bookPrices(bookPrices)
             .cancelStatus(cancelStatus)
+            .paymentProvider(PaymentProvider.from(order.getPayment().getPaymentProvider()))
             .build();
     }
 }
