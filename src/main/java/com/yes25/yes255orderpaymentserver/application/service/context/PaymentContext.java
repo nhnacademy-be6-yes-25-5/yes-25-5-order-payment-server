@@ -1,7 +1,7 @@
 package com.yes25.yes255orderpaymentserver.application.service.context;
 
-import com.yes25.yes255orderpaymentserver.application.service.strategy.PaymentStrategy;
-import com.yes25.yes255orderpaymentserver.application.service.strategy.PaymentStrategyFactory;
+import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.PaymentStrategy;
+import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.PaymentStrategyProvider;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentContext {
 
-    private final PaymentStrategyFactory paymentStrategyFactory;
+    private final PaymentStrategyProvider paymentStrategyFactory;
 
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) {
         PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy(

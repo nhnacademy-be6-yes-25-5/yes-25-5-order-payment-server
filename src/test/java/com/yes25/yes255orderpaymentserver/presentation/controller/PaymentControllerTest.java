@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.application.service.context.PaymentContext;
-import com.yes25.yes255orderpaymentserver.application.service.strategy.PaymentStrategy;
 import com.yes25.yes255orderpaymentserver.application.service.impl.TestUserDetailsService;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreateOrderRequest;
 import org.junit.jupiter.api.BeforeEach;
