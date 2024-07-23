@@ -34,8 +34,7 @@ public class OrderConsumer {
     private final PaymentContext paymentContext;
 
     /**
-     * @throws PaymentException 결제 완료 후, 결제의 preOrderId와 주문의 orderId가 일치하지 않으면 발생합니다. 재고 확인 및 포인트
-     *                          적립은 타 서버 완료 시 확인이 가능합니다. 현재는 주석처리 하였습니다.
+     * @throws PaymentException 결제 완료 후, 결제의 preOrderId와 주문의 orderId가 일치하지 않으면 발생합니다.
      */
     @RabbitListener(queues = "payQueue")
     @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 2000), retryFor = Exception.class)
