@@ -11,17 +11,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentContext {
 
-    private final PaymentStrategyProvider paymentStrategyFactory;
+    private final PaymentStrategyProvider paymentStrategyProvider;
 
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) {
-        PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy(
+        PaymentStrategy paymentStrategy = paymentStrategyProvider.getStrategy(
             request.paymentProvider().name().toLowerCase());
 
         return paymentStrategy.createPayment(request);
     }
 
     public CreatePaymentResponse createPaymentByZeroAmount(CreatePaymentRequest request) {
-        PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy(
+        PaymentStrategy paymentStrategy = paymentStrategyProvider.getStrategy(
             request.paymentProvider().name().toLowerCase());
 
         return paymentStrategy.createPaymentByZeroAmount(request);
@@ -32,7 +32,7 @@ public class PaymentContext {
         Integer paymentAmount,
         String orderId,
         String paymentProvider) {
-        PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy(paymentProvider);
+        PaymentStrategy paymentStrategy = paymentStrategyProvider.getStrategy(paymentProvider);
 
         paymentStrategy.cancelPayment(paymentKey, cancelReason, paymentAmount, orderId);
     }
