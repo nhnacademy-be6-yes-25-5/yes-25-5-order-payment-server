@@ -38,7 +38,7 @@ public class OrderConsumer {
      */
     @RabbitListener(queues = "payQueue")
     @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 2000), retryFor = Exception.class)
-    public void receivePayment(SuccessPaymentResponse response, Message message) {
+    public void confirmOrder(SuccessPaymentResponse response, Message message) {
         MessageProperties properties = message.getMessageProperties();
         String authToken = (String) properties.getHeaders().get("Authorization");
 
@@ -67,7 +67,7 @@ public class OrderConsumer {
         MessageProperties properties = message.getMessageProperties();
         String authToken = (String) properties.getHeaders().get("Authorization");
 
-        messageProducer.sendMessage("stockDecreaseExchange", "stockDecreaseRoutingKey", stockRequest, authToken);
         paymentContext.cancelPayment(response.paymentKey(), "결제 처리 중 예상치 못한 예외 발생", response.paymentAmount(), response.orderId(), response.paymentProvider().name().toLowerCase());
+        messageProducer.sendMessage("stockDecreaseExchange", "stockDecreaseRoutingKey", stockRequest, authToken);
     }
 }

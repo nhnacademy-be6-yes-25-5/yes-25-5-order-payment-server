@@ -75,7 +75,7 @@ class OrderConsumerTest {
         when(preOrder.calculatePurePrice()).thenReturn(BigDecimal.valueOf(9000));
 
         // when
-        orderConsumer.receivePayment(successPaymentResponse, message);
+        orderConsumer.confirmOrder(successPaymentResponse, message);
 
         // then
         assertTrue(output.getOut().contains("인증 헤더가 비어있습니다. 비회원으로 처리합니다."));
@@ -90,7 +90,7 @@ class OrderConsumerTest {
         when(preOrder.calculatePurePrice()).thenReturn(BigDecimal.valueOf(9000));
 
         // when
-        orderConsumer.receivePayment(successPaymentResponse, message);
+        orderConsumer.confirmOrder(successPaymentResponse, message);
 
         // then
         verify(preOrderService).getPreOrder(successPaymentResponse.orderId());
@@ -105,7 +105,7 @@ class OrderConsumerTest {
         when(preOrderService.getPreOrder(anyString())).thenReturn(null);
 
         // when && then
-        assertThrows(PaymentException.class, () -> orderConsumer.receivePayment(successPaymentResponse, message));
+        assertThrows(PaymentException.class, () -> orderConsumer.confirmOrder(successPaymentResponse, message));
     }
 
     @Test
