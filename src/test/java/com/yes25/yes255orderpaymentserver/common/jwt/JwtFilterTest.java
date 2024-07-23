@@ -17,6 +17,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -50,39 +52,12 @@ class JwtFilterTest {
         SecurityContextHolder.setContext(new SecurityContextImpl());
     }
 
-    @Test
+    @ParameterizedTest
     @DisplayName("Authorization 헤더가 없는 경우 필터를 통과하는지 확인한다.")
-    void shouldPassFilterWhenNoAuthorizationHeaderForPaymentsAndPolicies() throws ServletException, IOException {
+    @ValueSource(strings = {"/payments", "/orders", "/orders/logs"})
+    void shouldPassFilterWhenNoAuthorizationHeaderForPaymentsAndPolicies(String path) throws ServletException, IOException {
         // given
-        request.setServletPath("/payments");
-
-        // when
-        jwtFilter.doFilterInternal(request, response, filterChain);
-
-        // then
-        verify(filterChain).doFilter(request, response);
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-    }
-
-    @Test
-    @DisplayName("Authorization 헤더가 없는 경우 필터를 통과하는지 확인한다.")
-    void shouldPassFilterWhenNoAuthorizationHeaderForOrders() throws ServletException, IOException {
-        // given
-        request.setServletPath("/orders");
-
-        // when
-        jwtFilter.doFilterInternal(request, response, filterChain);
-
-        // then
-        verify(filterChain).doFilter(request, response);
-        assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
-    }
-
-    @Test
-    @DisplayName("특정 경로에 대해 필터를 통과하는지 확인한다.")
-    void shouldPassFilterForSpecificPaths() throws ServletException, IOException {
-        // given
-        request.setServletPath("/orders/logs");
+        request.setServletPath(path);
 
         // when
         jwtFilter.doFilterInternal(request, response, filterChain);
