@@ -11,8 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yes25.yes255orderpaymentserver.application.dto.response.ReadPurePriceResponse;
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
-import com.yes25.yes255orderpaymentserver.application.service.OrderStatusService;
 import com.yes25.yes255orderpaymentserver.application.service.PreOrderService;
+import com.yes25.yes255orderpaymentserver.application.service.context.OrderStatusContext;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
@@ -54,7 +54,7 @@ class OrderControllerTest {
     private OrderService orderService;
 
     @Mock
-    private OrderStatusService orderStatusService;
+    private OrderStatusContext orderStatusContext;
 
     @InjectMocks
     private OrderController orderController;

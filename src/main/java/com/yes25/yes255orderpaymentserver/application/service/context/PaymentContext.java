@@ -1,7 +1,7 @@
 package com.yes25.yes255orderpaymentserver.application.service.context;
 
-import com.yes25.yes255orderpaymentserver.application.service.strategy.PaymentStrategy;
-import com.yes25.yes255orderpaymentserver.application.service.strategy.PaymentStrategyFactory;
+import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.PaymentStrategy;
+import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.PaymentStrategyProvider;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
 import lombok.RequiredArgsConstructor;
@@ -11,17 +11,17 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class PaymentContext {
 
-    private final PaymentStrategyFactory paymentStrategyFactory;
+    private final PaymentStrategyProvider paymentStrategyProvider;
 
     public CreatePaymentResponse createPayment(CreatePaymentRequest request) {
-        PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy(
+        PaymentStrategy paymentStrategy = paymentStrategyProvider.getStrategy(
             request.paymentProvider().name().toLowerCase());
 
         return paymentStrategy.createPayment(request);
     }
 
     public CreatePaymentResponse createPaymentByZeroAmount(CreatePaymentRequest request) {
-        PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy(
+        PaymentStrategy paymentStrategy = paymentStrategyProvider.getStrategy(
             request.paymentProvider().name().toLowerCase());
 
         return paymentStrategy.createPaymentByZeroAmount(request);
@@ -32,7 +32,7 @@ public class PaymentContext {
         Integer paymentAmount,
         String orderId,
         String paymentProvider) {
-        PaymentStrategy paymentStrategy = paymentStrategyFactory.getStrategy(paymentProvider);
+        PaymentStrategy paymentStrategy = paymentStrategyProvider.getStrategy(paymentProvider);
 
         paymentStrategy.cancelPayment(paymentKey, cancelReason, paymentAmount, orderId);
     }

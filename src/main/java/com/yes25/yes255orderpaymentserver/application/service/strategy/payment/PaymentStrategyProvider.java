@@ -1,4 +1,4 @@
-package com.yes25.yes255orderpaymentserver.application.service.strategy;
+package com.yes25.yes255orderpaymentserver.application.service.strategy.payment;
 
 import com.yes25.yes255orderpaymentserver.common.exception.ApplicationException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class PaymentStrategyFactory {
+public class PaymentStrategyProvider {
 
     private final Map<String, PaymentStrategy> strategies;
 

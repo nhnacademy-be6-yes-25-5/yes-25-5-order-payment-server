@@ -4,8 +4,6 @@ import com.yes25.yes255orderpaymentserver.application.dto.request.ReadBookInfoRe
 import com.yes25.yes255orderpaymentserver.application.service.AdminOrderService;
 import com.yes25.yes255orderpaymentserver.application.service.context.PaymentContext;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
-import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
-import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.RefundStatus;
@@ -86,10 +84,12 @@ public class AdminOrderServiceImpl implements AdminOrderService {
     @Override
     public void updateOrderStatusByOrderId(String orderId, UpdateOrderStatusRequest request) {
         Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new OrderNotFoundException(orderId));
+            .orElseThrow(() -> new EntityNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. 주문 ID : " + orderId, 404, LocalDateTime.now())));
         OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(
                 request.orderStatusType().name())
-            .orElseThrow(() -> new OrderStatusNotFoundException(request.orderStatusType().name()));
+            .orElseThrow(() -> new EntityNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 주문 상태를 찾을 수 없습니다. 주문상태명 : " + request.orderStatusType().name(), 404, LocalDateTime.now())));
 
         order.updateOrderStatusAndUpdatedAtAndDeliveryStartedAt(orderStatus, LocalDateTime.now());
 

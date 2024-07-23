@@ -34,12 +34,11 @@ public class OrderConsumer {
     private final PaymentContext paymentContext;
 
     /**
-     * @throws PaymentException 결제 완료 후, 결제의 preOrderId와 주문의 orderId가 일치하지 않으면 발생합니다. 재고 확인 및 포인트
-     *                          적립은 타 서버 완료 시 확인이 가능합니다. 현재는 주석처리 하였습니다.
+     * @throws PaymentException 결제 완료 후, 결제의 preOrderId와 주문의 orderId가 일치하지 않으면 발생합니다.
      */
     @RabbitListener(queues = "payQueue")
     @Retryable(maxAttempts = 5, backoff = @Backoff(delay = 2000), retryFor = Exception.class)
-    public void receivePayment(SuccessPaymentResponse response, Message message) {
+    public void confirmOrder(SuccessPaymentResponse response, Message message) {
         MessageProperties properties = message.getMessageProperties();
         String authToken = (String) properties.getHeaders().get("Authorization");
 
@@ -68,7 +67,7 @@ public class OrderConsumer {
         MessageProperties properties = message.getMessageProperties();
         String authToken = (String) properties.getHeaders().get("Authorization");
 
-        messageProducer.sendMessage("stockDecreaseExchange", "stockDecreaseRoutingKey", stockRequest, authToken);
         paymentContext.cancelPayment(response.paymentKey(), "결제 처리 중 예상치 못한 예외 발생", response.paymentAmount(), response.orderId(), response.paymentProvider().name().toLowerCase());
+        messageProducer.sendMessage("stockDecreaseExchange", "stockDecreaseRoutingKey", stockRequest, authToken);
     }
 }

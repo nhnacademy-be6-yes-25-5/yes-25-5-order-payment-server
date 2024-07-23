@@ -13,9 +13,12 @@ spring:
   datasource:
     dbcp2:
       validation-query: SELECT 1
-      initial-size: '20'
-      max-idle: '10'
-      min-idle: '1'
+      initial-size: 20
+      max-idle: 10
+      min-idle: 1
+      max-total: 200
+      test-on-borrow: true
+      test-while-idle: true
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/boradoo
     username: root

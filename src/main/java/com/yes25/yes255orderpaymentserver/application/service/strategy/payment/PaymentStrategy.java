@@ -1,4 +1,4 @@
-package com.yes25.yes255orderpaymentserver.application.service.strategy;
+package com.yes25.yes255orderpaymentserver.application.service.strategy.payment;
 
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;

@@ -1,10 +1,10 @@
-package com.yes25.yes255orderpaymentserver.application.service.strategy.impl;
+package com.yes25.yes255orderpaymentserver.application.service.strategy.payment.impl;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
-import com.yes25.yes255orderpaymentserver.application.service.strategy.PaymentStrategy;
+import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.PaymentStrategy;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.KeyManagerAdaptor;

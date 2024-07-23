@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentRequest;
-import com.yes25.yes255orderpaymentserver.application.service.strategy.impl.TossPayment;
+import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.impl.TossPayment;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
