@@ -26,6 +26,7 @@ Yes25.5의 메세지 기반 주문 및 결제 시스템을 담당하는 서버�
 
 
 <br/>
+<br/>
 
 ## 🖥️ 화면 구성
 
@@ -46,6 +47,7 @@ Yes25.5의 메세지 기반 주문 및 결제 시스템을 담당하는 서버�
 > 결제 화면
 
 
+<br/>
 <br/>
 
 ## ✅ 주요 기능
@@ -69,7 +71,192 @@ Yes25.5의 메세지 기반 주문 및 결제 시스템을 담당하는 서버�
 - 환불은 관리자의 승인이 필요
 
 
+## 🔫 트러블 슈팅
 
+> 링크 추가 예정
+
+- [가주문 도입기]()
+- [메세지 기반 아키텍처의 필요성]()
+- [If문 지옥을 벗어나자]()
+
+
+<br/>
+<br/>
+
+## ⚙️ 패키지 구조
+
+```
+├── Yes255OrderPaymentServerApplication.java
+├── application
+│   ├── dto
+│   │   ├── request
+│   │   │   ├── CancelPaymentRequest.java
+│   │   │   ├── ReadBookInfoResponse.java
+│   │   │   ├── StockRequest.java
+│   │   │   ├── UpdateCouponRequest.java
+│   │   │   ├── UpdatePointMessage.java
+│   │   │   ├── UpdatePointRequest.java
+│   │   │   ├── UpdateRefundRequest.java
+│   │   │   ├── UpdateUserCartQuantityRequest.java
+│   │   │   └── enumtype
+│   │   │       └── OperationType.java
+│   │   └── response
+│   │       ├── ReadBookResponse.java
+│   │       ├── ReadPurePriceResponse.java
+│   │       ├── SuccessPaymentResponse.java
+│   │       └── UpdatePointResponse.java
+│   └── service
+│       ├── AdminOrderService.java
+│       ├── MyPageOrderService.java
+│       ├── OrderService.java
+│       ├── PolicyService.java
+│       ├── PreOrderService.java
+│       ├── context
+│       │   ├── OrderStatusContext.java
+│       │   └── PaymentContext.java
+│       ├── impl
+│       │   ├── AdminOrderServiceImpl.java
+│       │   ├── MyPageOrderServiceImpl.java
+│       │   ├── OrderServiceImpl.java
+│       │   ├── PolicyServiceImpl.java
+│       │   └── PreOrderServiceImpl.java
+│       ├── queue
+│       │   ├── consumer
+│       │   │   ├── BookStockConsumer.java
+│       │   │   ├── CartConsumer.java
+│       │   │   ├── CouponConsumer.java
+│       │   │   ├── OrderConsumer.java
+│       │   │   └── PointConsumer.java
+│       │   └── producer
+│       │       └── MessageProducer.java
+│       ├── scheduler
+│       │   └── OrderScheduler.java
+│       └── strategy
+│           ├── payment
+│           │   ├── PaymentStrategy.java
+│           │   ├── PaymentStrategyProvider.java
+│           │   └── impl
+│           │       ├── KakaoPayment.java
+│           │       ├── NaverPayment.java
+│           │       └── TossPayment.java
+│           └── status
+│               ├── OrderStatusStrategy.java
+│               ├── OrderStatusStrategyProvider.java
+│               └── impl
+│                   ├── CancelStatusStrategy.java
+│                   ├── RefundStatusStrategy.java
+│                   └── ReturnStatusStrategy.java
+├── common
+│   ├── appender
+│   │   └── HttpAppender.java
+│   ├── config
+│   │   ├── AppConfig.java
+│   │   ├── EurekaConfig.java
+│   │   ├── FeignClientConfig.java
+│   │   ├── RabbitMQConfig.java
+│   │   ├── RedissonConfig.java
+│   │   ├── RetryConfig.java
+│   │   ├── SchedulerConfig.java
+│   │   ├── SecurityConfig.java
+│   │   └── SwaggerConfig.java
+│   ├── decoder
+│   │   └── CustomErrorDecoder.java
+│   ├── exception
+│   │   ├── AccessDeniedException.java
+│   │   ├── ApplicationException.java
+│   │   ├── DefaultException.java
+│   │   ├── EntityNotFoundException.java
+│   │   ├── FeignClientException.java
+│   │   ├── JwtException.java
+│   │   ├── PaymentException.java
+│   │   ├── TokenCookieMissingException.java
+│   │   └── payload
+│   │       └── ErrorStatus.java
+│   ├── handler
+│   │   └── GlobalRestControllerAdvice.java
+│   ├── interceptor
+│   │   ├── JwtAuthorizationRequestInterceptor.java
+│   │   └── LoggingRequestInterceptor.java
+│   ├── jwt
+│   │   ├── HeaderUtils.java
+│   │   ├── JwtFilter.java
+│   │   ├── JwtProvider.java
+│   │   ├── JwtUserDetails.java
+│   │   └── annotation
+│   │       └── CurrentUser.java
+│   └── utils
+│       └── AsyncSecurityContextUtils.java
+├── infrastructure
+│   └── adaptor
+│       ├── AuthAdaptor.java
+│       ├── BookAdaptor.java
+│       ├── CouponAdaptor.java
+│       ├── KeyManagerAdaptor.java
+│       ├── TossAdaptor.java
+│       └── UserAdaptor.java
+├── persistance
+│   ├── RefundStatus.java
+│   ├── domain
+│   │   ├── Delivery.java
+│   │   ├── Order.java
+│   │   ├── OrderBook.java
+│   │   ├── OrderCoupon.java
+│   │   ├── OrderStatus.java
+│   │   ├── Payment.java
+│   │   ├── PreOrder.java
+│   │   ├── Refund.java
+│   │   ├── ShippingPolicy.java
+│   │   ├── Takeout.java
+│   │   └── enumtype
+│   │       ├── CancelStatus.java
+│   │       ├── OrderStatusType.java
+│   │       ├── PaymentProvider.java
+│   │       └── TakeoutType.java
+│   └── repository
+│       ├── DeliveryRepository.java
+│       ├── OrderBookRepository.java
+│       ├── OrderCouponRepository.java
+│       ├── OrderRepository.java
+│       ├── OrderStatusRepository.java
+│       ├── PaymentRepository.java
+│       ├── RefundRepository.java
+│       ├── RefundStatusRepository.java
+│       ├── ShippingPolicyRepository.java
+│       └── TakeoutRepository.java
+└── presentation
+    ├── controller
+    │   ├── AdminOrderController.java
+    │   ├── MyPageController.java
+    │   ├── OrderController.java
+    │   ├── PaymentController.java
+    │   └── PolicyController.java
+    └── dto
+        ├── request
+        │   ├── CancelOrderRequest.java
+        │   ├── CreateOrderRequest.java
+        │   ├── CreatePaymentRequest.java
+        │   ├── ReadMyOrderHistoryRequest.java
+        │   ├── UpdateOrderRequest.java
+        │   └── UpdateOrderStatusRequest.java
+        └── response
+            ├── CancelOrderResponse.java
+            ├── CreateOrderResponse.java
+            ├── CreatePaymentResponse.java
+            ├── JwtAuthResponse.java
+            ├── KeyManagerResponse.java
+            ├── ReadAllOrderResponse.java
+            ├── ReadAllUserOrderCancelStatusResponse.java
+            ├── ReadMyOrderHistoryResponse.java
+            ├── ReadOrderDeliveryResponse.java
+            ├── ReadOrderDetailResponse.java
+            ├── ReadOrderStatusResponse.java
+            ├── ReadPaymentOrderResponse.java
+            ├── ReadShippingPolicyResponse.java
+            ├── ReadTakeoutResponse.java
+            ├── ReadUserOrderAllResponse.java
+            ├── ReadUserOrderResponse.java
+            └── UpdateOrderResponse.java
+```
 
 
 
