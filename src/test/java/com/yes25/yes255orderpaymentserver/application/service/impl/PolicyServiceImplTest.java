@@ -2,10 +2,9 @@ package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-import com.yes25.yes255orderpaymentserver.common.exception.PolicyNotFoundException;
+import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.persistance.domain.ShippingPolicy;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
 import com.yes25.yes255orderpaymentserver.persistance.repository.ShippingPolicyRepository;
@@ -13,7 +12,6 @@ import com.yes25.yes255orderpaymentserver.persistance.repository.TakeoutReposito
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadShippingPolicyResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.ReadTakeoutResponse;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -107,7 +105,7 @@ class PolicyServiceImplTest {
         when(shippingPolicyRepository.findByShippingPolicyFeeAndShippingPolicyIsReturnPolicyFalse(BigDecimal.ZERO)).thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(PolicyNotFoundException.class, () -> policyService.findFreeShippingPolicy());
+        assertThrows(EntityNotFoundException.class, () -> policyService.findFreeShippingPolicy());
     }
 
     @DisplayName("모든 포장 정책을 가져오는지 확인한다.")

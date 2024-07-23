@@ -1,7 +1,7 @@
 package com.yes25.yes255orderpaymentserver.application.service.impl;
 
 import com.yes25.yes255orderpaymentserver.application.service.PolicyService;
-import com.yes25.yes255orderpaymentserver.common.exception.PolicyNotFoundException;
+import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.ShippingPolicy;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
@@ -41,7 +41,7 @@ public class PolicyServiceImpl implements PolicyService {
     @Override
     public ReadShippingPolicyResponse findFreeShippingPolicy() {
         ShippingPolicy shippingPolicy = shippingPolicyRepository.findByShippingPolicyFeeAndShippingPolicyIsReturnPolicyFalse(BigDecimal.ZERO)
-            .orElseThrow(() -> new PolicyNotFoundException(
+            .orElseThrow(() -> new EntityNotFoundException(
                 ErrorStatus.toErrorStatus("무료 배송 정책을 찾을 수 없습니다.", 404, LocalDateTime.now())
             ));
 

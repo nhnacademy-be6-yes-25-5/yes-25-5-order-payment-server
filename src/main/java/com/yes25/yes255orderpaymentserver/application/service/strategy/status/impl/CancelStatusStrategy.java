@@ -5,7 +5,6 @@ import com.yes25.yes255orderpaymentserver.application.service.queue.producer.Mes
 import com.yes25.yes255orderpaymentserver.application.service.strategy.status.OrderStatusStrategy;
 import com.yes25.yes255orderpaymentserver.common.exception.AccessDeniedException;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
-import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;

@@ -13,8 +13,6 @@ import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.application.service.context.PaymentContext;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
-import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
-import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.RefundStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
@@ -216,7 +214,7 @@ class AdminOrderServiceImplTest {
         when(orderRepository.findById(anyString())).thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(OrderNotFoundException.class,
+        assertThrows(EntityNotFoundException.class,
             () -> adminOrderService.updateOrderStatusByOrderId("1", request));
     }
 
@@ -229,7 +227,7 @@ class AdminOrderServiceImplTest {
         when(orderStatusRepository.findByOrderStatusName(anyString())).thenReturn(Optional.empty());
 
         // when & then
-        assertThrows(OrderStatusNotFoundException.class,
+        assertThrows(EntityNotFoundException.class,
             () -> adminOrderService.updateOrderStatusByOrderId("1", request));
     }
 

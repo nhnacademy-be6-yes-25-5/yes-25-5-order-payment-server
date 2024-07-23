@@ -6,9 +6,6 @@ import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymen
 import com.yes25.yes255orderpaymentserver.application.service.OrderService;
 import com.yes25.yes255orderpaymentserver.common.exception.AccessDeniedException;
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
-import com.yes25.yes255orderpaymentserver.common.exception.OrderNotFoundException;
-import com.yes25.yes255orderpaymentserver.common.exception.OrderStatusNotFoundException;
-import com.yes25.yes255orderpaymentserver.common.exception.PaymentNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Delivery;
@@ -91,7 +88,8 @@ public class OrderServiceImpl implements OrderService {
         orderCouponRepository.saveAll(orderCoupons);
 
         Payment payment = paymentRepository.findByPreOrderId(savedOrder.getOrderId())
-            .orElseThrow(() -> new PaymentNotFoundException(savedOrder.getOrderId()));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorStatus.toErrorStatus(
+                "해당 주문에 대한 결제 정보를 찾을 수 없습니다. 주문 ID : " + savedOrder.getOrderId(), 404, LocalDateTime.now())));
         payment.addOrder(savedOrder);
 
         List<OrderBook> orderBooks = new ArrayList<>();
@@ -126,7 +124,7 @@ public class OrderServiceImpl implements OrderService {
     public ReadUserOrderResponse findByOrderIdAndUserId(String orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
             .orElseThrow(() -> new EntityNotFoundException(
-                ErrorStatus.toErrorStatus("해당하는 엔티티를 찾을 수 없습니다. : " + orderId, 404,
+                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. : " + orderId, 404,
                     LocalDateTime.now())
             ));
 
@@ -139,7 +137,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<ReadPaymentOrderResponse> findAllOrderByOrderId(String orderId) {
         Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new OrderNotFoundException(orderId));
+            .orElseThrow(() -> new EntityNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. 주문 ID : " + orderId, 404, LocalDateTime.now())));
         List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
         List<ReadBookResponse> responses = getBookResponse(orderBooks);
 
@@ -152,7 +151,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ReadOrderStatusResponse findOrderStatusByOrderId(String orderId) {
         Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new OrderNotFoundException(orderId));
+            .orElseThrow(() -> new EntityNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. 주문 ID : " + orderId, 404, LocalDateTime.now())
+            ));
 
         return ReadOrderStatusResponse.fromEntity(order);
     }
@@ -164,7 +165,8 @@ public class OrderServiceImpl implements OrderService {
             OrderStatusType.DELIVERING.name(), now);
         OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(
                 OrderStatusType.DONE.name())
-            .orElseThrow(() -> new OrderStatusNotFoundException(OrderStatusType.DONE.name()));
+            .orElseThrow(() -> new EntityNotFoundException(ErrorStatus.toErrorStatus(
+                "해당하는 주문 상태를 찾을 수 없습니다. 요청 정보 : " + OrderStatusType.DONE.name(), 404, LocalDateTime.now())));
 
         for (Order order : orders) {
             order.updateOrderStatusAndUpdatedAt(orderStatus, now);
@@ -176,7 +178,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ReadOrderDeliveryResponse getByOrderIdAndUserId(String orderId) {
         Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new OrderNotFoundException(orderId));
+            .orElseThrow(() -> new EntityNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. 주문 ID : " + orderId, 404, LocalDateTime.now())
+            ));
         List<OrderBook> orderBooks = orderBookRepository.findByOrder(order);
         List<ReadBookResponse> responses = getBookResponse(orderBooks);
 
@@ -228,7 +232,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ReadOrderDetailResponse getOrderByOrderId(String orderId, Long userId) {
         Order order = orderRepository.findById(orderId)
-            .orElseThrow(() -> new OrderNotFoundException(orderId));
+            .orElseThrow(() -> new EntityNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. 주문 ID : " + orderId, 404, LocalDateTime.now())
+            ));
 
         if (!order.isCustomerIdEqualTo(userId)) {
             throw new AccessDeniedException("주문 내역의 정보와 사용자가 일치하지 않습니다. 사용자 ID : " + userId);
@@ -240,7 +246,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public ReadOrderDetailResponse getOrderByOrderIdAndEmailForNoneMember(String orderId, String email) {
         Order order = orderRepository.findByOrderIdAndOrderUserEmail(orderId, email)
-            .orElseThrow(() -> new OrderNotFoundException(orderId));
+            .orElseThrow(() -> new EntityNotFoundException(
+                ErrorStatus.toErrorStatus("해당하는 주문을 찾을 수 없습니다. 주문 ID : " + orderId, 404, LocalDateTime.now())
+            ));
 
         return getOrderDetailResponse(order);
     }
