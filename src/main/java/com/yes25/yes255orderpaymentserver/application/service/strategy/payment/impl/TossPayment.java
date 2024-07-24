@@ -4,30 +4,41 @@ import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentR
 import com.yes25.yes255orderpaymentserver.application.dto.request.StockRequest;
 import com.yes25.yes255orderpaymentserver.application.dto.request.enumtype.OperationType;
 import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymentResponse;
+import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
+import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.PaymentRetryService;
 import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.PaymentStrategy;
+import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
+import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.KeyManagerAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
+import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
+import com.yes25.yes255orderpaymentserver.persistance.domain.OrderCoupon;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
-import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
+import com.yes25.yes255orderpaymentserver.persistance.domain.PaymentDetail;
+import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentDetailRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.KeyManagerResponse;
 import jakarta.annotation.PostConstruct;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONObject;
-import org.springframework.amqp.core.MessagePostProcessor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component("toss")
@@ -36,11 +47,15 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class TossPayment implements PaymentStrategy {
 
-    private final RabbitTemplate rabbitTemplate;
-    private final PaymentRepository paymentRepository;
+    private final MessageProducer messageProducer;
     private final TossAdaptor tossAdaptor;
     private final BookAdaptor bookAdaptor;
     private final KeyManagerAdaptor keyManagerAdaptor;
+
+    private final PaymentRepository paymentRepository;
+    private final PaymentDetailRepository paymentDetailRepository;
+
+    private final PaymentRetryService paymentRetryService;
 
     private String paymentSecretKey;
 
@@ -77,7 +92,10 @@ public class TossPayment implements PaymentStrategy {
         checkBookStock(request);
 
         Payment payment = request.toEntity();
-        paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.save(payment);
+
+        PaymentDetail paymentDetail = request.zeroPay(savedPayment);
+        paymentDetailRepository.save(paymentDetail);
 
         log.info("결제가 성공적으로 이루어졌습니다. {}", payment);
         sendPaymentDoneMessage(payment, request);
@@ -96,11 +114,20 @@ public class TossPayment implements PaymentStrategy {
         obj.put("orderId", request.orderId());
         obj.put("amount", request.amount());
 
-        JSONObject response = tossAdaptor.confirmPayment(authorizations, obj.toString());
-
-        Payment payment = savePayment(response, request.paymentProvider());
-        log.info("결제가 성공적으로 이루어졌습니다. {}", payment);
+        Payment payment = savePayment(request);
         sendPaymentDoneMessage(payment, request);
+
+        try {
+            JSONObject response = tossAdaptor.confirmPayment(authorizations, obj.toString());
+            PaymentDetail paymentDetail = PaymentDetail.from(response, payment);
+            paymentDetailRepository.save(paymentDetail);
+
+            log.info("결제가 성공적으로 이루어졌습니다. {}", payment);
+        } catch (Exception e) {
+            log.error("결제 승인 중 에러 발생 : {}", e.getMessage());
+            CompletableFuture.runAsync(new DelegatingSecurityContextRunnable(
+                () -> paymentRetryService.retryPaymentConfirm(request, authorizations, obj, 0, payment.getPaymentId())));
+        }
 
         return new CreatePaymentResponse(200);
     }
@@ -126,20 +153,12 @@ public class TossPayment implements PaymentStrategy {
             authToken = null;
         }
 
-        MessagePostProcessor messagePostProcessor = message -> {
-            if (authToken != null) {
-                message.getMessageProperties().setHeader("Authorization", authToken);
-            }
-            return message;
-        };
-
         SuccessPaymentResponse response = SuccessPaymentResponse.of(payment, request);
-
-        rabbitTemplate.convertAndSend("payExchange", "payRoutingKey", response, messagePostProcessor);
+        messageProducer.sendMessage("payExchange", "payRoutingKey", response, authToken);
     }
 
-    private Payment savePayment(JSONObject jsonObject, PaymentProvider paymentProvider) {
-        Payment payment = Payment.from(jsonObject, paymentProvider);
+    private Payment savePayment(CreatePaymentRequest request) {
+        Payment payment = request.toEntity();
 
         return paymentRepository.save(payment);
     }

@@ -18,7 +18,7 @@ public record SuccessPaymentResponse(String orderId,
         return SuccessPaymentResponse.builder()
             .orderId(payment.getPreOrderId())
             .paymentKey(payment.getPaymentKey())
-            .paymentAmount(payment.getPaymentAmount().intValue())
+            .paymentAmount(Integer.valueOf(request.amount()))
             .bookIdList(request.bookIds())
             .paymentProvider(request.paymentProvider())
             .quantityList(request.quantities())

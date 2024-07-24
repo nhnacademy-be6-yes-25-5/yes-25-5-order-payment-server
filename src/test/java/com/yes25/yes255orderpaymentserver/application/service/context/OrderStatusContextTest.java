@@ -69,8 +69,6 @@ class OrderStatusContextTest {
             .paymentId(1L)
             .preOrderId("order-1234")
             .paymentKey("dsadsad")
-            .paymentAmount(BigDecimal.valueOf(10000))
-            .paymentMethod("카드")
             .build();
 
         order = Order.builder()

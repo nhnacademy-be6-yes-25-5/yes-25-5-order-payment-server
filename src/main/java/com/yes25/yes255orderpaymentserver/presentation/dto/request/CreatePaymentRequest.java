@@ -1,6 +1,7 @@
 package com.yes25.yes255orderpaymentserver.presentation.dto.request;
 
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
+import com.yes25.yes255orderpaymentserver.persistance.domain.PaymentDetail;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,12 +17,18 @@ public record CreatePaymentRequest(String paymentKey,
     public Payment toEntity() {
         return Payment.builder()
             .preOrderId(orderId)
-            .paymentAmount(BigDecimal.ZERO)
             .paymentKey(paymentKey)
-            .requestedAt(LocalDateTime.now())
-            .approveAt(LocalDateTime.now())
             .paymentProvider(paymentProvider.name().toLowerCase())
-            .paymentMethod("일반 결제 - 0원")
+            .build();
+    }
+
+    public PaymentDetail zeroPay(Payment payment) {
+        return PaymentDetail.builder()
+            .paymentAmount(BigDecimal.ZERO)
+            .approveAt(LocalDateTime.now())
+            .requestedAt(LocalDateTime.now())
+            .paymentMethod("0원 결제")
+            .payment(payment)
             .build();
     }
 }

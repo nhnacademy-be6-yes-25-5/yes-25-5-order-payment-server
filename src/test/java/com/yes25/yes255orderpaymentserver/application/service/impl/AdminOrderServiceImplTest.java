@@ -20,6 +20,7 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
+import com.yes25.yes255orderpaymentserver.persistance.domain.PaymentDetail;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Refund;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.CancelStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
@@ -89,13 +90,19 @@ class AdminOrderServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        PaymentDetail paymentDetail = PaymentDetail.builder()
+            .paymentDetailId(1L)
+            .paymentAmount(BigDecimal.ZERO)
+            .paymentMethod("카드")
+            .payment(payment)
+            .build();
+
         payment = Payment.builder()
             .paymentId(1L)
-            .paymentMethod("카드")
             .preOrderId("1")
             .paymentKey("qwer")
-            .paymentAmount(BigDecimal.valueOf(10000))
             .paymentProvider(PaymentProvider.TOSS.name())
+            .paymentDetail(paymentDetail)
             .build();
 
         orderBook = OrderBook.builder()

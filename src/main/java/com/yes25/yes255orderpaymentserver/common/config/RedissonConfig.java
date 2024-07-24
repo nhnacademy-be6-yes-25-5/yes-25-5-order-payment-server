@@ -15,6 +15,7 @@ public class RedissonConfig {
         config.useSingleServer()
             .setAddress("redis://133.186.241.167:6379")
             .setPassword("*N2vya7H@muDTwdNMR!")
+            .setDatabase(18)
             .setConnectionPoolSize(64)
             .setConnectionMinimumIdleSize(24);
 

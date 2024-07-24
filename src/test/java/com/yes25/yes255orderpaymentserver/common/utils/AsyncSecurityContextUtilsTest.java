@@ -11,6 +11,7 @@ import com.yes25.yes255orderpaymentserver.common.jwt.JwtProvider;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.AuthAdaptor;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.JwtAuthResponse;
 import java.util.Collections;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageProperties;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,6 +46,7 @@ class AsyncSecurityContextUtilsTest {
     @BeforeEach
     void setUp() {
         when(message.getMessageProperties()).thenReturn(messageProperties);
+        SecurityContextHolder.clearContext();
     }
 
     @DisplayName("유효한 토큰이 주어졌을 때 보안 컨텍스트가 올바르게 설정되는지 확인한다")
@@ -58,6 +61,13 @@ class AsyncSecurityContextUtilsTest {
         when(messageProperties.getHeaders()).thenReturn(Collections.singletonMap("Authorization", authToken));
         when(jwtProvider.getUserNameFromToken(token)).thenReturn(uuid);
         when(authAdaptor.getUserInfoByUUID(uuid)).thenReturn(jwtAuthResponse);
+
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+            uuid,
+            null,
+            List.of(new SimpleGrantedAuthority("ROLE_USER"))
+        );
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         // when
         securityContextUtils.configureSecurityContext(message);
