@@ -39,7 +39,7 @@ public class AsyncSecurityContextUtils {
         JwtAuthResponse jwtAuthResponse = authAdaptor.getUserInfoByUUID(uuid);
 
         JwtUserDetails jwtUserDetails = JwtUserDetails.of(jwtAuthResponse.customerId(),
-            jwtAuthResponse.role(), token, jwtAuthResponse.refreshJwt());
+            jwtAuthResponse.role(), token, (String) properties.getHeaders().get("Refresh-Token"));
 
         UsernamePasswordAuthenticationToken newAuthToken = new UsernamePasswordAuthenticationToken(
             jwtUserDetails, null,

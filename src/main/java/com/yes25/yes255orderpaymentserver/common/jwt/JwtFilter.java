@@ -50,15 +50,14 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String token = getToken(request);
-        String uuid = jwtProvider.getUserNameFromToken(token);
-        JwtAuthResponse jwtAuthResponse = authAdaptor.getUserInfoByUUID(uuid);
+        JwtAuthResponse user = jwtProvider.getLoginUserFromToken(token);
 
-        JwtUserDetails jwtUserDetails = JwtUserDetails.of(jwtAuthResponse.customerId(),
-            jwtAuthResponse.role(), token, jwtAuthResponse.refreshJwt());
+        JwtUserDetails jwtUserDetails = JwtUserDetails.of(user.customerId(),
+                user.role(), token, request.getHeader("Refresh-token"));
 
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
             jwtUserDetails, null,
-            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + jwtAuthResponse.role()))
+            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.role()))
         );
 
         SecurityContextHolder.getContext().setAuthentication(authToken);
