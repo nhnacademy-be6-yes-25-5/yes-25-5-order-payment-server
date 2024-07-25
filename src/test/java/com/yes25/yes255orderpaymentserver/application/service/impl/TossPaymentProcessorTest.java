@@ -96,7 +96,6 @@ class TossPaymentProcessorTest {
         payment = Payment.builder()
             .paymentId(1L)
             .paymentKey("paymentKey")
-            .preOrderId("orderId")
             .paymentDetail(paymentDetail)
             .build();
 

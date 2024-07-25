@@ -18,7 +18,6 @@ public record CreatePaymentRequest(String paymentKey,
 
     public Payment toEntity() {
         return Payment.builder()
-            .preOrderId(orderId)
             .paymentKey(paymentKey)
             .paymentProvider(paymentProvider.name().toLowerCase())
             .build();

@@ -27,9 +27,6 @@ public class Payment {
     private String paymentKey;
 
     @Column(nullable = false)
-    private String preOrderId;
-
-    @Column(nullable = false)
     private String paymentProvider;
 
     @OneToOne(mappedBy = "payment", cascade = CascadeType.ALL)
@@ -40,11 +37,10 @@ public class Payment {
     private Order order;
 
     @Builder
-    public Payment(Long paymentId, String paymentKey, String preOrderId, String paymentProvider,
+    public Payment(Long paymentId, String paymentKey, String paymentProvider,
         PaymentDetail paymentDetail, Order order) {
         this.paymentId = paymentId;
         this.paymentKey = paymentKey;
-        this.preOrderId = preOrderId;
         this.paymentProvider = paymentProvider;
         this.paymentDetail = paymentDetail;
         this.order = order;

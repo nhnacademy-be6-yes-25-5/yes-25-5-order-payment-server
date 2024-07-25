@@ -90,7 +90,6 @@ class ReturnStatusStrategyTest {
 
         payment = Payment.builder()
             .paymentId(1L)
-            .preOrderId("order-1234")
             .paymentKey("dsadsad")
             .paymentDetail(paymentDetail)
             .build();

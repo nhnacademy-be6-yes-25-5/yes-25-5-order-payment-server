@@ -99,7 +99,6 @@ class AdminOrderServiceImplTest {
 
         payment = Payment.builder()
             .paymentId(1L)
-            .preOrderId("1")
             .paymentKey("qwer")
             .paymentProvider(PaymentProvider.TOSS.name())
             .paymentDetail(paymentDetail)

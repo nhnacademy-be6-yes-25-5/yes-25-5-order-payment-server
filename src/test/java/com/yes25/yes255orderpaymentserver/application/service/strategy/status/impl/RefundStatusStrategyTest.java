@@ -76,7 +76,6 @@ class RefundStatusStrategyTest {
 
         payment = Payment.builder()
             .paymentId(1L)
-            .preOrderId("order-1234")
             .paymentKey("dsadsad")
             .build();
 
