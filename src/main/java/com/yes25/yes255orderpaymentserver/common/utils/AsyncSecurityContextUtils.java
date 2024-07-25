@@ -4,7 +4,6 @@ import com.yes25.yes255orderpaymentserver.common.exception.JwtException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtProvider;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
-import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.AuthAdaptor;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.JwtAuthResponse;
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Component;
 public class AsyncSecurityContextUtils {
 
     private final JwtProvider jwtProvider;
-    private final AuthAdaptor authAdaptor;
 
     public void configureSecurityContext(Message message) {
         MessageProperties properties = message.getMessageProperties();
@@ -35,8 +33,7 @@ public class AsyncSecurityContextUtils {
         }
 
         String token = getToken(authToken);
-        String uuid = jwtProvider.getUserNameFromToken(token);
-        JwtAuthResponse jwtAuthResponse = authAdaptor.getUserInfoByUUID(uuid);
+        JwtAuthResponse jwtAuthResponse = jwtProvider.getJwtAuthFromToken(token);
 
         JwtUserDetails jwtUserDetails = JwtUserDetails.of(jwtAuthResponse.customerId(),
             jwtAuthResponse.role(), token, (String) properties.getHeaders().get("Refresh-Token"));

@@ -2,7 +2,6 @@ package com.yes25.yes255orderpaymentserver.common.jwt;
 
 import com.yes25.yes255orderpaymentserver.common.exception.JwtException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
-import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.AuthAdaptor;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.JwtAuthResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -23,7 +22,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
-    private final AuthAdaptor authAdaptor;
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
         FilterChain filterChain) throws ServletException, IOException {
@@ -50,7 +49,7 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String token = getToken(request);
-        JwtAuthResponse user = jwtProvider.getLoginUserFromToken(token);
+        JwtAuthResponse user = jwtProvider.getJwtAuthFromToken(token);
 
         JwtUserDetails jwtUserDetails = JwtUserDetails.of(user.customerId(),
                 user.role(), token, request.getHeader("Refresh-token"));

@@ -69,6 +69,5 @@ eureka:
 api:
   books-users: http://127.0.0.1:8061
   coupon: http://127.0.0.1:8081
-  auth : http://127.0.0.1:8050
 
 logHost: localhost
