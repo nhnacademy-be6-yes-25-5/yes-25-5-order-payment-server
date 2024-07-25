@@ -6,7 +6,9 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentPro
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import lombok.Builder;
 
+@Builder
 public record CreatePaymentRequest(String paymentKey,
                                    String orderId,
                                    String amount,
