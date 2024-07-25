@@ -7,14 +7,10 @@ import com.yes25.yes255orderpaymentserver.application.dto.response.SuccessPaymen
 import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
 import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.PaymentRetryService;
 import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.PaymentStrategy;
-import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
-import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.KeyManagerAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
-import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
-import com.yes25.yes255orderpaymentserver.persistance.domain.OrderCoupon;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PaymentDetail;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentDetailRepository;
@@ -23,11 +19,8 @@ import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePayment
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.KeyManagerResponse;
 import jakarta.annotation.PostConstruct;
-import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +31,6 @@ import org.springframework.security.concurrent.DelegatingSecurityContextRunnable
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Component("toss")
@@ -46,6 +38,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 @Transactional
 public class TossPayment implements PaymentStrategy {
+
+    private static final int MAX_ATTEMPTS = 60;
+    private static final int RETRY_DELAY_MS = 10000;
 
     private final MessageProducer messageProducer;
     private final TossAdaptor tossAdaptor;
@@ -126,7 +121,7 @@ public class TossPayment implements PaymentStrategy {
         } catch (Exception e) {
             log.error("결제 승인 중 에러 발생 : {}", e.getMessage());
             CompletableFuture.runAsync(new DelegatingSecurityContextRunnable(
-                () -> paymentRetryService.retryPaymentConfirm(request, authorizations, obj, 0, payment.getPaymentId())));
+                () -> paymentRetryService.retryPaymentConfirm(request, authorizations, obj, 0, payment.getPaymentId(), MAX_ATTEMPTS, RETRY_DELAY_MS)));
         }
 
         return new CreatePaymentResponse(200);

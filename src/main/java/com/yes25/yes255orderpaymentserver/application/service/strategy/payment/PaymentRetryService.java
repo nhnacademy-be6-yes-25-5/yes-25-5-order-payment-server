@@ -4,10 +4,14 @@ import com.yes25.yes255orderpaymentserver.application.service.queue.producer.Mes
 import com.yes25.yes255orderpaymentserver.common.exception.EntityNotFoundException;
 import com.yes25.yes255orderpaymentserver.common.exception.payload.ErrorStatus;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
+import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderCoupon;
+import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
 import com.yes25.yes255orderpaymentserver.persistance.domain.PaymentDetail;
+import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
+import com.yes25.yes255orderpaymentserver.persistance.repository.OrderStatusRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentDetailRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
@@ -26,21 +30,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class PaymentRetryService {
 
-    private static final int MAX_ATTEMPTS = 60;
-    private static final int RETRY_DELAY_MS = 10000;
-
     private final MessageProducer messageProducer;
     private final TossAdaptor tossAdaptor;
 
     private final PaymentRepository paymentRepository;
     private final PaymentDetailRepository paymentDetailRepository;
+    private final OrderStatusRepository orderStatusRepository;
 
     public void retryPaymentConfirm(CreatePaymentRequest request, String authorizations,
-        JSONObject obj, int attempt, Long paymentId) {
+        JSONObject obj, int attempt, Long paymentId, int maxAttempts, int retryDelayMs) {
 
-        while (attempt < MAX_ATTEMPTS) {
+        while (attempt < maxAttempts) {
             try {
-                Thread.sleep(RETRY_DELAY_MS);
+                Thread.sleep(retryDelayMs);
 
                 JSONObject response = tossAdaptor.confirmPayment(authorizations, obj.toString());
 
@@ -58,7 +60,6 @@ public class PaymentRetryService {
                 Thread.currentThread().interrupt();
                 return;
             } catch (Exception ignore) {
-                log.error("error", ignore);
                 attempt++;
             }
         }
@@ -69,6 +70,16 @@ public class PaymentRetryService {
                 "결제 정보를 찾을 수 없습니다. 결제 ID : " + paymentId, 404, LocalDateTime.now())));
 
         sendPaymentRetryFailureMessage(payment);
+        updateOrderStatusToPaymentConfirmDenied(payment);
+    }
+
+    private void updateOrderStatusToPaymentConfirmDenied(Payment payment) {
+        Order order = payment.getOrder();
+        OrderStatus orderStatus = orderStatusRepository.findByOrderStatusName(OrderStatusType.PAYMENT_CONFIRM_DENIED.name())
+            .orElseThrow(() -> new EntityNotFoundException(
+                ErrorStatus.toErrorStatus("주문 상태를 찾을 수 없습니다.", 404, LocalDateTime.now())));
+
+        order.updateOrderStatusAndUpdatedAt(orderStatus, LocalDateTime.now());
     }
 
     private void sendPaymentRetryFailureMessage(Payment payment) {
