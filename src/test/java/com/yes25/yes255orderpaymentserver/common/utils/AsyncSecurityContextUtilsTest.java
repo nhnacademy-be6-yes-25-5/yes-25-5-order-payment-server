@@ -43,6 +43,7 @@ class AsyncSecurityContextUtilsTest {
 
     @BeforeEach
     void setUp() {
+        SecurityContextHolder.clearContext();
         when(message.getMessageProperties()).thenReturn(messageProperties);
     }
 
