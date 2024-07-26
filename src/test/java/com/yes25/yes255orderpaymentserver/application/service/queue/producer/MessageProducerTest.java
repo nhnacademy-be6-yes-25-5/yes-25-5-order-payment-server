@@ -49,6 +49,7 @@ class MessageProducerTest {
         String authToken = "authToken";
         String cartId = "cartId";
 
+        when(preOrder.getCouponIds()).thenReturn(List.of(1L));
         when(preOrder.getPoints()).thenReturn(new BigDecimal("100"));
         when(preOrder.getBookIds()).thenReturn(List.of(1L, 2L));
         when(preOrder.getQuantities()).thenReturn(List.of(1, 2));

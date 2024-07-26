@@ -42,7 +42,8 @@ public record ReadOrderDetailResponse(
     List<Integer> quantities,
     List<BigDecimal> bookPrices,
     CancelStatus cancelStatus,
-    PaymentProvider paymentProvider) {
+    PaymentProvider paymentProvider,
+    List<Long> bookIds) {
 
     public static ReadOrderDetailResponse of(Order order, List<ReadBookResponse> responses,
         List<OrderBook> orderBooks) {
@@ -57,6 +58,10 @@ public record ReadOrderDetailResponse(
 
     private static ReadOrderDetailResponse buildResponse(Order order, List<ReadBookResponse> responses,
         List<OrderBook> orderBooks, CancelStatus cancelStatus) {
+        List<Long> bookIds = responses.stream()
+            .map(ReadBookResponse::bookId)
+            .toList();
+
         List<String> bookNames = responses.stream()
             .map(ReadBookResponse::bookName)
             .toList();
@@ -103,6 +108,7 @@ public record ReadOrderDetailResponse(
             .bookPrices(bookPrices)
             .cancelStatus(cancelStatus)
             .paymentProvider(PaymentProvider.from(order.getPayment().getPaymentProvider()))
+            .bookIds(bookIds)
             .build();
     }
 }

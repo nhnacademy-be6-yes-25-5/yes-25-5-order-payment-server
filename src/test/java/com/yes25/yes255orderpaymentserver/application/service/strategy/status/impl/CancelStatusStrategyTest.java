@@ -15,6 +15,7 @@ import com.yes25.yes255orderpaymentserver.persistance.domain.Order;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderBook;
 import com.yes25.yes255orderpaymentserver.persistance.domain.OrderStatus;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
+import com.yes25.yes255orderpaymentserver.persistance.domain.PaymentDetail;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Takeout;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.OrderStatusType;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
@@ -81,12 +82,16 @@ class CancelStatusStrategyTest {
 
         orderBooks = List.of(orderBook);
 
+        PaymentDetail paymentDetail = PaymentDetail.builder()
+            .paymentDetailId(1L)
+            .paymentAmount(BigDecimal.ZERO)
+            .paymentMethod("카드")
+            .build();
+
         payment = Payment.builder()
             .paymentId(1L)
-            .preOrderId("order-1234")
             .paymentKey("dsadsad")
-            .paymentAmount(BigDecimal.valueOf(10000))
-            .paymentMethod("카드")
+            .paymentDetail(paymentDetail)
             .build();
 
         order = Order.builder()
