@@ -9,12 +9,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.application.dto.request.CancelPaymentRequest;
+import com.yes25.yes255orderpaymentserver.application.service.queue.producer.MessageProducer;
 import com.yes25.yes255orderpaymentserver.application.service.strategy.payment.impl.TossPayment;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtUserDetails;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.BookAdaptor;
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.TossAdaptor;
 import com.yes25.yes255orderpaymentserver.persistance.domain.Payment;
+import com.yes25.yes255orderpaymentserver.persistance.domain.PaymentDetail;
 import com.yes25.yes255orderpaymentserver.persistance.domain.enumtype.PaymentProvider;
+import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentDetailRepository;
 import com.yes25.yes255orderpaymentserver.persistance.repository.PaymentRepository;
 import com.yes25.yes255orderpaymentserver.presentation.dto.request.CreatePaymentRequest;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.CreatePaymentResponse;
@@ -51,6 +54,9 @@ class TossPaymentProcessorTest {
     private TossAdaptor tossAdaptor;
 
     @Mock
+    private MessageProducer messageProducer;
+
+    @Mock
     private SecurityContext securityContext;
 
     @Mock
@@ -58,6 +64,9 @@ class TossPaymentProcessorTest {
 
     @Mock
     private HttpURLConnection mockConnection;
+
+    @Mock
+    private PaymentDetailRepository paymentDetailRepository;
 
     @InjectMocks
     private TossPayment tossPaymentProcessor;
@@ -72,20 +81,22 @@ class TossPaymentProcessorTest {
         createPaymentRequest = new CreatePaymentRequest(
             "paymentKey",
             "orderId",
-            "amount",
+            "10000",
             PaymentProvider.TOSS,
             List.of(1L, 2L),
             List.of(1, 2)
         );
 
+        PaymentDetail paymentDetail = PaymentDetail.builder()
+            .paymentDetailId(1L)
+            .paymentAmount(BigDecimal.ZERO)
+            .paymentMethod("카드")
+            .build();
+
         payment = Payment.builder()
             .paymentId(1L)
             .paymentKey("paymentKey")
-            .paymentAmount(BigDecimal.valueOf(10000))
-            .approveAt(LocalDateTime.now())
-            .requestedAt(LocalDateTime.now())
-            .paymentMethod("카드")
-            .preOrderId("orderId")
+            .paymentDetail(paymentDetail)
             .build();
 
         jsonObject = new JSONObject();

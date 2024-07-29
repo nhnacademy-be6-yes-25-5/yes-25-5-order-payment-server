@@ -46,9 +46,9 @@ public class CancelStatusStrategy implements OrderStatusStrategy {
 
         log.info("사용자 요청으로 인해 결제 취소를 진행합니다.");
 
-        if (order.getPayment().getPaymentAmount().compareTo(BigDecimal.ZERO) != 0) {
+        if (order.getPayment().getPaymentDetail().getPaymentAmount().compareTo(BigDecimal.ZERO) != 0) {
             paymentContext.cancelPayment(order.getPayment().getPaymentKey(), "사용자 요청",
-                order.getPayment().getPaymentAmount().intValue(),
+                order.getPayment().getPaymentDetail().getPaymentAmount().intValue(),
                 order.getOrderId(), request.paymentProvider().name().toLowerCase());
         }
 

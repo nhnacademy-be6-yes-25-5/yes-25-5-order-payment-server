@@ -87,7 +87,7 @@ public class OrderServiceImpl implements OrderService {
 
         orderCouponRepository.saveAll(orderCoupons);
 
-        Payment payment = paymentRepository.findByPreOrderId(savedOrder.getOrderId())
+        Payment payment = paymentRepository.findByPaymentKey(response.paymentKey())
             .orElseThrow(() -> new EntityNotFoundException(ErrorStatus.toErrorStatus(
                 "해당 주문에 대한 결제 정보를 찾을 수 없습니다. 주문 ID : " + savedOrder.getOrderId(), 404, LocalDateTime.now())));
         payment.addOrder(savedOrder);

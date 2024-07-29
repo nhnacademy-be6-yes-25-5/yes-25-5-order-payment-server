@@ -6,5 +6,6 @@ public enum OrderStatusType {
     DONE,
     REFUND,
     CANCEL,
-    RETURN
+    RETURN,
+    PAYMENT_CONFIRM_DENIED
 }

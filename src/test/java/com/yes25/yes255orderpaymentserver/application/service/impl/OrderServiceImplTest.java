@@ -161,11 +161,8 @@ class OrderServiceImplTest {
 
         payment = Payment.builder()
             .paymentId(1L)
-            .preOrderId("order-1234")
             .paymentKey("dsadsad")
-            .paymentAmount(BigDecimal.valueOf(10000))
             .paymentProvider(PaymentProvider.TOSS.name().toLowerCase())
-            .paymentMethod("카드")
             .build();
 
         order = Order.builder()
@@ -215,7 +212,7 @@ class OrderServiceImplTest {
         when(takeoutRepository.findByTakeoutName(anyString())).thenReturn(Optional.of(takeout));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderBookRepository.saveAll(anyList())).thenReturn(orderBooks);
-        when(paymentRepository.findByPreOrderId(anyString())).thenReturn(Optional.of(payment));
+        when(paymentRepository.findByPaymentKey(anyString())).thenReturn(Optional.of(payment));
 
         // when
         orderService.createOrder(preOrder, purePrice, response);

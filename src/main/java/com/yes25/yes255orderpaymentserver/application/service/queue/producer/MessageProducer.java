@@ -40,6 +40,10 @@ public class MessageProducer {
             UpdatePointMessage updatePointMessage = UpdatePointMessage.of(preOrder.getPoints(),
                 purePrice, OperationType.USE);
 
+            sendMessage("pointUsedExchange", "pointUsedRoutingKey", updatePointMessage, authToken);
+        }
+
+        if (!CollectionUtils.isEmpty(preOrder.getCouponIds())) {
             List<UpdateCouponRequest> updateCouponRequests = new ArrayList<>();
             for (Long couponId : preOrder.getCouponIds()) {
                 UpdateCouponRequest updateCouponRequest = UpdateCouponRequest.from(
@@ -48,11 +52,8 @@ public class MessageProducer {
                 updateCouponRequests.add(updateCouponRequest);
             }
 
-            sendMessage("pointUsedExchange", "pointUsedRoutingKey", updatePointMessage, authToken);
             sendMessage("couponUsedExchange", "couponUsedRoutingKey", updateCouponRequests,
                 authToken);
-
-            log.info("쿠폰 사용, 포인트 차감 및 적립 메세지가 발행되었습니다.");
         }
 
         List<UpdateUserCartQuantityRequest> userCartQuantityRequests = createUserCartQuantityRequests(

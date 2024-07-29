@@ -64,7 +64,7 @@ public class ReturnStatusStrategy implements OrderStatusStrategy {
             throw new AccessDeniedException("반품 가능 기간이 지났습니다. 주문 ID : " + order.getOrderId());
         }
 
-        return order.getPayment().getPaymentAmount()
+        return order.getPayment().getPaymentDetail().getPaymentAmount()
             .subtract(refundPolicy.getShippingPolicyFee());
     }
 }
