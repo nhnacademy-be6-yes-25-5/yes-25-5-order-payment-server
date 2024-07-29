@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.common.exception.JwtException;
-import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.AuthAdaptor;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.JwtAuthResponse;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -33,8 +32,6 @@ class JwtFilterTest {
     @Mock
     private JwtProvider jwtProvider;
 
-    @Mock
-    private AuthAdaptor authAdaptor;
 
     @Mock
     private FilterChain filterChain;
@@ -75,11 +72,9 @@ class JwtFilterTest {
         request.setServletPath("/orders");
         request.addHeader("Authorization", "Bearer valid-token");
 
-        String uuid = "uuid";
-        JwtAuthResponse jwtAuthResponse = new JwtAuthResponse(1L, "USER", "active", "refreshToken");
+        JwtAuthResponse jwtAuthResponse = new JwtAuthResponse(1L, "USER", "active");
 
-        when(jwtProvider.getUserNameFromToken(anyString())).thenReturn(uuid);
-        when(authAdaptor.getUserInfoByUUID(anyString())).thenReturn(jwtAuthResponse);
+        when(jwtProvider.getJwtAuthFromToken(anyString())).thenReturn(jwtAuthResponse);
 
         // when
         jwtFilter.doFilterInternal(request, response, filterChain);

@@ -33,15 +33,6 @@ public class JwtProvider {
         }
     }
 
-    public String getUserNameFromToken(String token) {
-        return Jwts.parserBuilder()
-            .setSigningKey(secretKey)
-            .build()
-            .parseClaimsJws(token)
-            .getBody()
-            .getSubject();
-    }
-
     private Claims parseToken(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)
