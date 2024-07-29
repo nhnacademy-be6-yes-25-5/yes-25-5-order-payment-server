@@ -8,7 +8,6 @@ import static org.mockito.Mockito.when;
 
 import com.yes25.yes255orderpaymentserver.common.exception.JwtException;
 import com.yes25.yes255orderpaymentserver.common.jwt.JwtProvider;
-import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.AuthAdaptor;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.JwtAuthResponse;
 import java.util.Collections;
 import java.util.List;
@@ -30,9 +29,6 @@ class AsyncSecurityContextUtilsTest {
 
     @Mock
     private JwtProvider jwtProvider;
-
-    @Mock
-    private AuthAdaptor authAdaptor;
 
     @InjectMocks
     private AsyncSecurityContextUtils securityContextUtils;
@@ -56,15 +52,13 @@ class AsyncSecurityContextUtilsTest {
         // given
         String authToken = "Bearer validToken";
         String token = "validToken";
-        String uuid = "user-uuid";
-        JwtAuthResponse jwtAuthResponse = new JwtAuthResponse(1L, "USER", "active", "refreshJwt");
+        JwtAuthResponse jwtAuthResponse = new JwtAuthResponse(1L, "USER", "active");
 
         when(messageProperties.getHeaders()).thenReturn(Collections.singletonMap("Authorization", authToken));
-        when(jwtProvider.getUserNameFromToken(token)).thenReturn(uuid);
-        when(authAdaptor.getUserInfoByUUID(uuid)).thenReturn(jwtAuthResponse);
+        when(jwtProvider.getJwtAuthFromToken(token)).thenReturn(jwtAuthResponse);
 
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-            uuid,
+                jwtAuthResponse,
             null,
             List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );
@@ -108,10 +102,9 @@ class AsyncSecurityContextUtilsTest {
     @Test
     void getToken_withValidBearerToken() {
         // given
-        JwtAuthResponse jwtAuthResponse = new JwtAuthResponse(1L, "USER", "active", "refreshJwt");
+        JwtAuthResponse jwtAuthResponse = new JwtAuthResponse(1L, "USER", "active");
         when(messageProperties.getHeaders()).thenReturn(Collections.singletonMap("Authorization", "Bearer validToken"));
-        when(jwtProvider.getUserNameFromToken(anyString())).thenReturn("uuid");
-        when(authAdaptor.getUserInfoByUUID(anyString())).thenReturn(jwtAuthResponse);
+        when(jwtProvider.getJwtAuthFromToken(anyString())).thenReturn(jwtAuthResponse);
 
         // when
         assertDoesNotThrow(() ->

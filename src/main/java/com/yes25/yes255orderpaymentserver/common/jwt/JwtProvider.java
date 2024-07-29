@@ -1,8 +1,9 @@
 package com.yes25.yes255orderpaymentserver.common.jwt;
 
 import com.yes25.yes255orderpaymentserver.infrastructure.adaptor.KeyManagerAdaptor;
+import com.yes25.yes255orderpaymentserver.presentation.dto.response.JwtAuthResponse;
 import com.yes25.yes255orderpaymentserver.presentation.dto.response.KeyManagerResponse;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
@@ -32,12 +33,24 @@ public class JwtProvider {
         }
     }
 
-    public String getUserNameFromToken(String token) {
+    private Claims parseToken(String token) {
         return Jwts.parserBuilder()
-            .setSigningKey(secretKey)
-            .build()
-            .parseClaimsJws(token)
-            .getBody()
-            .getSubject();
+                .setSigningKey(secretKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public JwtAuthResponse getJwtAuthFromToken(String token) {
+            Claims claims = parseToken(token);
+
+            Long customerId = claims.get("userId", Long.class);
+            String role = claims.get("userRole", String.class);
+            String loginStatusName = claims.get("loginStatus", String.class);
+
+            return JwtAuthResponse.builder()
+                    .customerId(customerId)
+                    .role(role)
+                    .loginStateName(loginStatusName).build();
     }
 }
