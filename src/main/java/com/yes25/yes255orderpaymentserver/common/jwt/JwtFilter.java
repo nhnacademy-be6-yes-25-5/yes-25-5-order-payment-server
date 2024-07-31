@@ -33,7 +33,7 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (path.equals("/orders") && StringUtils.isEmpty(request.getHeader("Authorization"))) {
+        if ((path.equals("/orders") || path.startsWith("/orders/status")) && StringUtils.isEmpty(request.getHeader("Authorization"))) {
             filterChain.doFilter(request, response);
             return;
         }
